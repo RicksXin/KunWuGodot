@@ -1,0 +1,16 @@
+{
+  "//": "迁移前候选方案 B 的兼容快照。当前 D0 Game.settle_production() 不读取本表，1.0 正式数值以 Docs/PRD/03_灵源院与交易行_PRD.md 为准。",
+  "//方案": "候选方案 B：灵粮岗产 2、其余维护减半。仅供旧曲线审计与结构校验，不得误记为已经接入运行时。",
+  "//停工顺序": "本字段保存候选方案 B 的确定性停工顺序；spiritGrain 不得出现。1.0 PRD 的结算顺序和单周期数值必须在正式灵源院升级时独立实现。",
+  "production_rates": {
+    "cycleSeconds": 30,
+    "jobs": {
+      "spiritGrain": { "outputPerWorker": 2, "grainUpkeepPerWorker": 0 },
+      "spiritWood": { "outputPerWorker": 1, "grainUpkeepPerWorker": 1 },
+      "darkIron": { "outputPerWorker": 1, "grainUpkeepPerWorker": 2 },
+      "spiritStone": { "outputPerWorker": 1, "grainUpkeepPerWorker": 3 },
+      "gengJing": { "outputPerWorker": 1, "grainUpkeepPerWorker": 6 }
+    },
+    "shutdownOrder": ["gengJing", "spiritStone", "darkIron", "spiritWood"]
+  }
+}

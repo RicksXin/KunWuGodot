@@ -1,0 +1,8 @@
+.godot/
+.DS_Store
+._*
+builds/
+export/
+.mono/
+*.tmp
+user://

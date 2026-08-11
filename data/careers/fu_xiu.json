@@ -1,0 +1,22 @@
+{
+  "id": "fu_xiu",
+  "nameKey": "career.fu_xiu",
+  "tier": 0,
+  "primaryAttribute": "technique",
+  "skillIds": [
+    "fei_fu",
+    "fu_shen_fu",
+    "hu_shen_fu"
+  ],
+  "baseAttributes": {
+    "strength": 5,
+    "magic": 11,
+    "technique": 15,
+    "speed": 9,
+    "constitution": 8,
+    "armor": 5,
+    "resistance": 10
+  },
+  "baseHp": 90,
+  "//growth": "七维成长率见 assets/data/balance/growth_rates.json（按职业 id 索引）"
+}

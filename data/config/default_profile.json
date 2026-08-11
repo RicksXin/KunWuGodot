@@ -1,0 +1,177 @@
+{
+  "wallet": {
+    "spiritGrain": 120,
+    "spiritWood": 0,
+    "darkIron": 0,
+    "spiritStone": 0,
+    "gengJing": 0,
+    "soulCrystal": 0,
+    "immortalCoin": 0
+  },
+  "camp": {
+    "buildingLevels": {
+      "yi_shi_dian": 1,
+      "ling_pu": 1,
+      "zhao_xian_tai": 0,
+      "bai_bao_ku": 1,
+      "lian_qi_fang": 0,
+      "jiao_yi_hang": 0,
+      "huan_hun_tan": 0
+    },
+    "workerCount": 6,
+    "workerAssignments": {
+      "spiritGrain": 0,
+      "spiritWood": 0,
+      "darkIron": 0,
+      "spiritStone": 0,
+      "gengJing": 0
+    },
+    "resourceStorageLevels": {
+      "spiritGrain": 1,
+      "spiritWood": 1,
+      "darkIron": 1
+    },
+    "lastSettledAtUtc": 0
+  },
+  "roster": [
+    {
+      "instanceId": "hero_wu_xiu_01",
+      "definitionId": "hero_wu_xiu_01",
+      "nameKey": "hero.shi_yan",
+      "careerId": "wu_xiu",
+      "spiritualRootId": "pseudo_root",
+      "realmId": "lian_qi",
+      "level": 1,
+      "attributes": {
+        "strength": 15,
+        "magic": 4,
+        "technique": 7,
+        "speed": 8,
+        "constitution": 14,
+        "armor": 11,
+        "resistance": 6
+      },
+      "maxHp": 232,
+      "currentHp": 224,
+      "skillIds": [
+        "zhan_ji",
+        "tiao_xin",
+        "chong_zhuang"
+      ],
+      "isDead": false,
+      "stamina": 100
+    },
+    {
+      "instanceId": "hero_fa_xiu_01",
+      "definitionId": "hero_fa_xiu_01",
+      "nameKey": "hero.lu_qing",
+      "careerId": "fa_xiu",
+      "spiritualRootId": "pseudo_root",
+      "realmId": "lian_qi",
+      "level": 1,
+      "attributes": {
+        "strength": 4,
+        "magic": 16,
+        "technique": 10,
+        "speed": 8,
+        "constitution": 7,
+        "armor": 4,
+        "resistance": 11
+      },
+      "maxHp": 140,
+      "currentHp": 140,
+      "skillIds": [
+        "ling_huo_dan",
+        "ning_shuang_hu",
+        "ling_neng_zhen_dang"
+      ],
+      "isDead": false,
+      "stamina": 100
+    },
+    {
+      "instanceId": "hero_yi_xiu_01",
+      "definitionId": "hero_yi_xiu_01",
+      "nameKey": "hero.bai_ling",
+      "careerId": "yi_xiu",
+      "spiritualRootId": "pseudo_root",
+      "realmId": "lian_qi",
+      "level": 1,
+      "attributes": {
+        "strength": 4,
+        "magic": 14,
+        "technique": 11,
+        "speed": 9,
+        "constitution": 8,
+        "armor": 5,
+        "resistance": 12
+      },
+      "maxHp": 156,
+      "currentHp": 156,
+      "skillIds": [
+        "hui_chun_shu",
+        "qing_xin_jue",
+        "ling_guang_ji"
+      ],
+      "isDead": false,
+      "stamina": 100
+    },
+    {
+      "instanceId": "hero_qian_xiu_01",
+      "definitionId": "hero_qian_xiu_01",
+      "nameKey": "hero.mo_yan",
+      "careerId": "qian_xiu",
+      "spiritualRootId": "mixed_root",
+      "realmId": "lian_qi",
+      "level": 1,
+      "attributes": {
+        "strength": 10,
+        "magic": 5,
+        "technique": 14,
+        "speed": 14,
+        "constitution": 8,
+        "armor": 6,
+        "resistance": 6
+      },
+      "maxHp": 160,
+      "currentHp": 160,
+      "skillIds": [
+        "ying_xi",
+        "tou_ren",
+        "yan_dun"
+      ],
+      "isDead": false,
+      "stamina": 100
+    }
+  ],
+  "inventory": {
+    "pickaxe": 3,
+    "lens": 1,
+    "return_talisman": 1
+  },
+  "storyFlags": {
+    "tutorial_started": false
+  },
+  "completedMapObjects": {},
+  "expeditionPreparation": {
+    "partyPresets": [
+      {
+        "presetId": "party_01",
+        "name": "1队",
+        "slots": [
+          "hero_wu_xiu_01",
+          "hero_fa_xiu_01",
+          "hero_yi_xiu_01",
+          "hero_qian_xiu_01"
+        ]
+      }
+    ],
+    "activePresetId": "party_01",
+    "loadout": {
+      "spiritGrain": 60,
+      "pickaxe": 0,
+      "lens": 0
+    },
+    "lastStaminaSettledAtUtc": 0
+  },
+  "expedition": null
+}

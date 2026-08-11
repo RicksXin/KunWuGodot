@@ -1,0 +1,33 @@
+* text=auto eol=lf
+
+*.gd text
+*.gdshader text
+*.tscn text
+*.tres text
+*.godot text
+*.uid text
+*.import text
+*.json text
+*.md text diff=markdown
+*.csv text
+*.yml text
+*.yaml text
+*.svg text
+*.txt text
+*.tmx text
+*.tsx text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.7z binary
+*.xlsx binary
+
+addons/** linguist-vendored
+third_party/** linguist-vendored
+Docs/** linguist-documentation

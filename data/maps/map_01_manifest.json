@@ -1,0 +1,9 @@
+{
+  "mapId": "map_01",
+  "schemaVersion": 2,
+  "status": "d0_demo",
+  "scenePath": "res://scenes/map.tscn",
+  "mapDataPath": "res://data/maps/map_01_demo.json",
+  "tileSetPath": "res://assets/maps/map_01/puny_dungeon/punyworld-dungeon-tileset.png",
+  "artLicense": "CC0-1.0"
+}
