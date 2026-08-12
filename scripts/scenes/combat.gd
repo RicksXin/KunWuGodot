@@ -67,7 +67,7 @@ func _build_scene() -> void:
 		add_child(line)
 	KWUI.label(self, "破禁山麓 · 遭遇战", Rect2(72.5, 22.5, 230, 24), 13, Color("#c6cdb9"), HORIZONTAL_ALIGNMENT_CENTER)
 	tick_label = KWUI.label(self, "战斗 0.0 秒", Rect2(5.5, 53.5, 90, 20), 10, Color("#849d9c"))
-	var flee := KWUI.button(self, "逃生", Rect2(282.5, 22.5, 86, 44), 13)
+	var flee := KWUI.combat_button(self, "逃生", Rect2(282.5, 22.5, 86, 44), 13)
 	flee.pressed.connect(_escape)
 	flee.visible = false
 	escape_button = flee
@@ -75,10 +75,12 @@ func _build_scene() -> void:
 	unit_hosts[100] = enemy_host
 	_add_enemy_silhouette(enemy_host)
 	KWUI.panel(enemy_host, Rect2(1, 149, 84, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var enemy_name := KWUI.button(enemy_host, "残禁石傀", Rect2(4, 145, 78, 18), 11)
+	var enemy_name := KWUI.combat_button(enemy_host, "残禁石傀", Rect2(4, 145, 78, 18), 11)
 	enemy_name.name = "Name"
 	enemy_name.disabled = true
 	enemy_name.add_theme_stylebox_override("normal", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
+	enemy_name.add_theme_stylebox_override("disabled", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
+	enemy_name.add_theme_color_override("font_disabled_color", Color8(235, 230, 207))
 	KWUI.label(enemy_host, "傀", Rect2(2, 164, 12, 12), 8, Color("#dbb57a"), HORIZONTAL_ALIGNMENT_CENTER).name = "Race"
 	var enemy_bar := ProgressBar.new()
 	enemy_bar.name = "Hp"
@@ -100,7 +102,7 @@ func _build_scene() -> void:
 		portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		KWUI.panel(host, Rect2(1, 149, 84, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var name_button := KWUI.button(host, "", Rect2(4, 145, 78, 18), 10)
+		var name_button := KWUI.combat_button(host, "", Rect2(4, 145, 78, 18), 10)
 		name_button.name = "Name"
 		name_button.add_theme_stylebox_override("normal", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
 		name_button.add_theme_stylebox_override("hover", KWUI.style_box(Color("#1f3936aa"), Color("#4dd5c088"), 2, 1))
@@ -121,7 +123,7 @@ func _build_scene() -> void:
 	skill_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	KWUI.label(skill_card, "行动就绪 · 请选择技能", Rect2(13.5, 4, 240, 18), 10, Color("#abb8a6"), HORIZONTAL_ALIGNMENT_CENTER)
 	for index in 3:
-		var skill_button := KWUI.button(skill_card, "技能", Rect2(14.5 + index * 82, 28, 74, 42), 11)
+		var skill_button := KWUI.combat_button(skill_card, "技能", Rect2(14.5 + index * 82, 28, 74, 42), 11)
 		skill_button.pressed.connect(_choose_skill.bind(index))
 		skill_buttons.append(skill_button)
 	skill_panel = skill_card
@@ -157,7 +159,7 @@ func _build_loot_overlay() -> void:
 	KWUI.label(backpack, "当前野外背包", Rect2(10, 10, 125, 22), 13, Color("#d5cdaa"))
 	KWUI.label(backpack, "点击物品可丢弃 1 个并释放负重", Rect2(130, 10, 160, 20), 10, Color("#8f9a8f"), HORIZONTAL_ALIGNMENT_RIGHT)
 	for index in 5:
-		var row := KWUI.button(backpack, "空", Rect2(13, 43 + index * 29, 277, 25), 11)
+		var row := KWUI.combat_button(backpack, "空", Rect2(13, 43 + index * 29, 277, 25), 11)
 		row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		row.visible = false
 		row.pressed.connect(_drop_loot_item.bind(index))
@@ -167,9 +169,9 @@ func _build_loot_overlay() -> void:
 	for index in 4:
 		loot_reward_labels.append(KWUI.label(rewards, "", Rect2(15, 38 + index * 25, 273, 22), 11, Color("#d5cdaa")))
 	loot_status_label = KWUI.label(panel, "", Rect2(20, 440, 295, 34), 11, Color("#a8c2a6"), HORIZONTAL_ALIGNMENT_CENTER)
-	loot_take_all_button = KWUI.button(panel, "全部拾取", Rect2(24, 478, 134, 44), 13)
+	loot_take_all_button = KWUI.combat_button(panel, "全部拾取", Rect2(24, 478, 134, 44), 13)
 	loot_take_all_button.pressed.connect(_take_all_loot)
-	var leave := KWUI.button(panel, "离开", Rect2(177, 478, 134, 44), 13)
+	var leave := KWUI.combat_button(panel, "离开", Rect2(177, 478, 134, 44), 13)
 	leave.pressed.connect(_leave_loot)
 
 func _process(delta: float) -> void:
@@ -309,7 +311,7 @@ func _apply_damage(target: Dictionary, damage: int) -> void:
 
 func _refresh() -> void:
 	escape_button.visible = not finished and _escape_available()
-	escape_button.disabled = finished
+	KWUI.set_combat_button_disabled(escape_button, finished)
 	if is_instance_valid(tick_label): tick_label.text = "战斗 %.1f 秒" % (float(combat_ticks) / 20.0)
 	for unit in units:
 		var host: Panel = unit_hosts.get(int(unit["unit_id"]))
@@ -373,7 +375,7 @@ func _refresh_skill_panel() -> void:
 		var definition := KWCombatResolver.skill_by_id(Game.combat_config, skill_id)
 		var cooldown := int(cooldowns.get(skill_id, 0))
 		button.text = "%s\n冷却" % Game.text(definition.get("nameKey", skill_id)) if cooldown > 0 else Game.text(definition.get("nameKey", skill_id))
-		button.disabled = cooldown > 0
+		KWUI.set_combat_button_disabled(button, cooldown > 0)
 
 func _escape_available() -> bool:
 	for unit in units:
@@ -405,7 +407,7 @@ func _show_outcome(victory: bool) -> void:
 	_refresh()
 	KWUI.label(outcome_panel, "战斗胜利" if victory else "全队阵亡", Rect2(15, 29, 295, 38), 24, KWUI.GOLD if victory else KWUI.RED, HORIZONTAL_ALIGNMENT_CENTER)
 	KWUI.label(outcome_panel, "战斗已结束，战利品正在结算" if victory else "本次入山队伍失去战斗能力。\n修士将进入还魂殿待处理。", Rect2(25, 75, 275, 60), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var next := KWUI.button(outcome_panel, "返回地图" if victory else "返回营地", Rect2(53, 166, 219, 48), 15)
+	var next := KWUI.combat_button(outcome_panel, "返回地图" if victory else "返回营地", Rect2(53, 166, 219, 48), 15)
 	next.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/map.tscn" if victory else "res://scenes/camp.tscn"))
 	outcome_overlay.visible = true
 
@@ -443,7 +445,7 @@ func _show_loot_overlay() -> void:
 	for reward in Game.combat_config.get("encounters", [])[0].get("loot", []): reward_weight += int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))
 	loot_status_label.text = "全部拾取后：%d/%d" % [burden + reward_weight, limit]
 	loot_status_label.add_theme_color_override("font_color", Color("#a8c2a6") if burden + reward_weight <= limit else Color("#eb8b6f"))
-	loot_take_all_button.disabled = burden + reward_weight > limit
+	KWUI.set_combat_button_disabled(loot_take_all_button, burden + reward_weight > limit)
 
 func _take_all_loot() -> void:
 	var expedition: Dictionary = Game.profile.get("expedition", {})

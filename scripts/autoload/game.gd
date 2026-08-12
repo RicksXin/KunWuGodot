@@ -15,8 +15,14 @@ var ling_pu_config: Dictionary = {}
 var combat_config: Dictionary = {}
 var map_definition: Dictionary = {}
 var loaded_from_save := false
+var suppress_profile_writes := false
 
 func _ready() -> void:
+	# Tool scripts and editor scans are validation contexts, never gameplay.
+	# They must not settle elapsed production into the user's real save file.
+	suppress_profile_writes = Engine.is_editor_hint() \
+		or OS.get_cmdline_args().has("--script") \
+		or OS.get_cmdline_user_args().has("--no-profile-write")
 	_load_json_tables()
 	_load_profile()
 	settle_production()
@@ -79,6 +85,9 @@ func _merge_missing(target: Dictionary, defaults: Dictionary) -> void:
 			_merge_missing(target[key], defaults[key])
 
 func save_profile() -> bool:
+	if suppress_profile_writes:
+		emit_signal("state_changed")
+		return true
 	var payload := JSON.stringify(profile, "\t")
 	var tmp := FileAccess.open(PROFILE_TMP_PATH, FileAccess.WRITE)
 	if tmp == null:
@@ -150,6 +159,8 @@ func settle_production() -> void:
 	_save_quietly()
 
 func _save_quietly() -> void:
+	if suppress_profile_writes:
+		return
 	var payload := JSON.stringify(profile, "\t")
 	var file := FileAccess.open(PROFILE_PATH, FileAccess.WRITE)
 	if file:

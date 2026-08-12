@@ -12,6 +12,7 @@
 | `Camp.scene` + Camp Prefab | `scenes/camp.tscn` + `scripts/scenes/camp.gd` | 三层营地 UI；中央 `ScrollContainer` 保持横滑 |
 | `Map.scene` / `TiledMap` | `scenes/map.tscn` + `map_canvas.gd` | 领域数据沿用 `map_01_demo.json`；D0 地图用 Godot 绘制像素灰盒，保留 CC0 TMX/tileset 供后续 TileMapLayer 替换 |
 | `Combat.scene` / Presenter | `scenes/combat.tscn` + `combat.gd` | 固定时间步、技能目标、伤害/治疗、手动/自动、撤离和胜负结算 |
+| Cocos 程序化按钮组件 | `KWUI.camp_button/map_button/combat_button` + `camp_button_visual.gd` | 迁入营地 Inline/Footer 三态、地图与战斗配色及 0.96 按压反馈；营地可见层与至少 48px 触控层分离 |
 | `GameState` / `SaveService` | `scripts/autoload/game.gd` | 资源、营地、修士、远征状态聚合；原子临时文件写入 `user://kunwu_profile.json` |
 | TS 领域函数 | `scripts/domain/*.gd` 与 `Game` 领域方法 | `KWCombatResolver` 独立处理技能解析；迷雾、四方向移动、生产结算保持源规则 |
 | Cocos Asset Bundle | `assets/` + `data/` | Godot 首次导入后按 `res://` 加载；地图/营地资源目录仍按 bundle 语义分组 |
@@ -30,8 +31,12 @@
 - Puny Dungeon CC0 来源快照、TMX、TSX 和 tileset；Godot 版当前以领域数据绘制可读灰盒，
   不会损坏或改写第三方源文件。
 - 当前文档入口为 `Docs/README.md`；迁移前执行级技术文档集中在 `Docs/LegacyCocos/`，只作审计。
-- 项目数据结构由 `tools/validate_project_data.gd` 校验；Dual Grid 笔刷由
-  `tools/validate_tilemapdual_brush.gd` 校验。
+- 项目数据结构由 `tools/validate_project_data.gd` 校验；面板按钮由
+  `tools/validate_button_styles.gd` 校验；营地建筑布局由
+  `tools/validate_camp_layout.tscn -- --no-profile-write` 校验；灵源院布局通过隔离工程运行
+  `tools/validate_ling_pu_layout.tscn -- --no-profile-write` 校验；Dual Grid 笔刷由
+  `tools/validate_tilemapdual_brush.gd` 校验。`Game` 会自动禁止编辑器与 `--script` 工具写入
+  `user://kunwu_profile.json`；所有测试场景仍必须显式传入 `--no-profile-write`。
 
 ## 可运行闭环
 

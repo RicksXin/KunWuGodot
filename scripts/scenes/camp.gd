@@ -11,18 +11,19 @@ const BOTTOM_HUD_RECT := Rect2(0, 745, 375, 48)
 const BUILDINGS := [
 	# 名称牌和状态标记使用建筑中心为原点的 Godot 本地像素偏移。
 	{"id": "yi_shi_dian", "name": "议事殿", "x": 426, "y": 153, "w": 247, "h": 165, "name_offset": Vector2(2.166667, 67.055556), "badge_offset": Vector2(33.409722, 57.197917)},
-	{"id": "ling_pu", "name": "灵源院", "x": 724, "y": 514, "w": 247, "h": 165, "name_offset": Vector2(-2.5, 72.5), "badge_offset": Vector2(26.5, 72.5)},
+	{"id": "ling_pu", "name": "灵源院", "x": 724, "y": 560, "w": 247, "h": 165, "name_offset": Vector2(-2.5, 72.5), "badge_offset": Vector2(26.5, 72.5)},
 	{"id": "zhao_xian_tai", "name": "招贤馆", "x": 252, "y": 358, "w": 247, "h": 165, "name_offset": Vector2(8.5, 67.5), "badge_offset": Vector2(38.409722, 57.197917)},
 	{"id": "bai_bao_ku", "name": "百宝库", "x": 71, "y": 284, "w": 206, "h": 137, "name_offset": Vector2(-10, 58.5), "badge_offset": Vector2(18, 58.5)},
 	{"id": "lian_qi_fang", "name": "炼器坊", "x": 571, "y": 339, "w": 247, "h": 165, "name_offset": Vector2(-27.5, 76.5), "badge_offset": Vector2(0.5, 76.5)},
 	{"id": "jiao_yi_hang", "name": "交易行", "x": 748, "y": 271, "w": 206, "h": 137, "name_offset": Vector2(-13, 54.5), "badge_offset": Vector2(15, 54.5)},
-	{"id": "huan_hun_tan", "name": "还魂殿", "x": 38, "y": 464, "w": 206, "h": 137, "name_offset": Vector2(7, 58.5), "badge_offset": Vector2(35, 58.5)},
-	{"id": "portal", "name": "启程", "x": 421, "y": 535, "w": 206, "h": 139, "name_offset": Vector2(0, 49.5), "badge_offset": Vector2.ZERO}
+	{"id": "huan_hun_tan", "name": "还魂殿", "x": 38, "y": 492, "w": 206, "h": 137, "name_offset": Vector2(7, 58.5), "badge_offset": Vector2(35, 58.5)},
+	{"id": "portal", "name": "传送阵", "x": 421, "y": 575, "w": 206, "h": 139, "name_offset": Vector2(0, 49.5), "badge_offset": Vector2.ZERO}
 ]
 
 var resource_labels: Dictionary = {}
 var currency_label: Label
 var modal: Control
+var ling_pu_confirmation: Control
 var toast_panel: Panel
 var toast_label: Label
 var toast_serial := 0
@@ -173,6 +174,7 @@ func _build_panorama() -> void:
 
 func _add_building(parent: Control, info: Dictionary) -> void:
 	var host := Control.new()
+	host.name = info["id"]
 	host.position = Vector2(info["x"], info["y"])
 	host.size = Vector2(info["w"], info["h"])
 	parent.add_child(host)
@@ -183,6 +185,7 @@ func _add_building(parent: Control, info: Dictionary) -> void:
 		var locked_path := texture_path.trim_suffix(".png") + "_locked.png"
 		if ResourceLoader.exists(locked_path): texture_path = locked_path
 	var image := KWUI.texture(host, texture_path, Rect2(0, 0, info["w"], info["h"]))
+	image.name = "BuildingImage"
 	image.stretch_mode = TextureRect.STRETCH_SCALE
 	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var button := Button.new()
@@ -195,8 +198,10 @@ func _add_building(parent: Control, info: Dictionary) -> void:
 	var name_center := Vector2(float(info["w"]) / 2.0, float(info["h"]) / 2.0) + Vector2(info["name_offset"])
 	var plate_size := Vector2(84, 20) if id == "portal" else Vector2(58, 20)
 	var plate := KWUI.panel(host, Rect2(name_center - plate_size / 2.0, plate_size), Color("#202a27f5") if id == "portal" else (Color("#202a2799") if level <= 0 else Color("#241d18eb")), Color("#6f8f85") if id == "portal" else (Color("#5e6a66b3") if level <= 0 else Color("#80623af2")))
+	plate.name = "NamePlate"
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var title := KWUI.label(host, info["name"], Rect2(name_center - plate_size / 2.0, plate_size), 10 if id != "portal" else 11, Color("#abb2ab") if level <= 0 and id != "portal" else Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	title.name = "NameLabel"
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if level <= 0:
 		var badge_center := Vector2(float(info["w"]) / 2.0, float(info["h"]) / 2.0) + Vector2(info["badge_offset"])
@@ -313,15 +318,18 @@ func _make_modal(title: String, background_path: String = "") -> Panel:
 	var title_rect := Rect2(0, 41, panel_rect.size.x, 24)
 	var title_size := 20
 	if background_path.contains("ling_pu"):
-		title_rect = Rect2(0, 33, panel_rect.size.x, 25)
-		title_size = 21
+		# Cocos prepareLingPuContentLayout 的标题中心位于 page y=166；Ark Pixel
+		# 20px 在 Godot 中实际最小行高为 27px，因此用 y=41 保持同一中心线。
+		title_rect = Rect2(0, 41, panel_rect.size.x, 27)
+		title_size = 20
 	elif background_path.contains("council_npc_dialog"):
 		title_rect = Rect2(0, 36, panel_rect.size.x, 16)
 		title_size = 12
 	var title_label := KWUI.label(body, title, title_rect, title_size, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	title_label.name = "%sTitle" % title
 	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if title == "设置与存档":
-		var close := KWUI.button(body, "×", Rect2(panel_rect.size.x - 48, 12, 42, 42), 22)
+		var close := KWUI.camp_button(body, "×", Rect2(panel_rect.size.x - 48, 12, 42, 42), "inline", false, 22)
 		close.pressed.connect(_close_modal)
 	return body
 
@@ -329,19 +337,13 @@ func _close_modal() -> void:
 	# 弹层中的动态立绘会与弹层一起释放，先清除动画更新列表，
 	# 避免下一帧继续访问已经 queue_free 的 TextureRect。
 	animated_portraits.clear()
+	ling_pu_confirmation = null
 	if is_instance_valid(modal): modal.queue_free()
 	modal = null
 
 func _camp_button(parent: Node, text: String, rect: Rect2, primary := false, font_size := 14) -> Button:
-	var button := KWUI.button(parent, text, rect, font_size)
-	var base := Color("#322518") if primary else Color("#241d18")
-	var outer := Color("#cd9e4a") if primary else Color("#b58a42")
-	var inner := Color("#b58a42") if primary else Color("#80623a")
-	button.add_theme_stylebox_override("normal", KWUI.style_box(base, outer, 4, 1))
-	button.add_theme_stylebox_override("hover", KWUI.style_box(Color("#46351f"), Color("#dbb052"), 4, 1))
-	button.add_theme_stylebox_override("pressed", KWUI.style_box(Color("#211a13"), inner, 4, 1))
-	button.add_theme_stylebox_override("disabled", KWUI.style_box(Color("#181816"), Color("#5e6a66"), 4, 1))
-	return button
+	var kind := "inline" if rect.size.y <= 32.0 else "footer"
+	return KWUI.camp_button(parent, text, rect, kind, primary, font_size)
 
 func _add_icon_button(parent: Node, rect: Rect2, path: String, disabled := false) -> Button:
 	var button := Button.new()
@@ -360,12 +362,14 @@ func _add_icon_button(parent: Node, rect: Rect2, path: String, disabled := false
 func _open_ling_pu() -> void:
 	Game.settle_production()
 	var body := _make_modal("灵源院", "res://assets/camp/ui/ling_pu/ui_ling_pu_panel_body.png")
+	body.name = "LingPuPanelBody"
 	var camp: Dictionary = Game.profile["camp"]
 	var assignments: Dictionary = camp["workerAssignments"]
 	var assigned := 0
 	for id in assignments: assigned += int(assignments[id])
 	var idle := int(camp["workerCount"]) - assigned
-	KWUI.label(body, "闲置杂役：%d" % idle, Rect2(251, 69, 78, 18), 12, Color("#b58a42"))
+	var idle_worker_label := KWUI.label(body, "闲置杂役：%d" % idle, Rect2(248.5, 77, 70, 16), 12, Color("#b58a42"))
+	idle_worker_label.name = "IdleWorkerLabel"
 	var jobs := [
 		{"id": "spiritGrain", "name": "灵粮", "open": true},
 		{"id": "spiritWood", "name": "灵木", "open": true},
@@ -373,36 +377,45 @@ func _open_ling_pu() -> void:
 	]
 	# 当前 Godot 页面只激活前三行；灵晶和庚精是后续版本预留节点，
 	# 不能在迁移版中绘制成“尚未开放”的第四、第五行。
-	var row_centers := [130.9, 212.1, 295.4]
+	# Cocos 的 870×222 @3x 资源槽：逻辑尺寸 290×74，前三行间保留 4px/6px。
+	var row_centers := [137.5, 215.5, 295.5]
 	for index in jobs.size():
 		var definition: Dictionary = jobs[index]
 		var job: String = definition["id"]
 		var opened: bool = definition["open"]
 		var row_center: float = row_centers[index]
-		var row_art := KWUI.texture(body, "res://assets/camp/ui/council/ui_council_npc_item_default.png", Rect2(45.5, row_center - 41.7, 283, 50))
+		var row_art := KWUI.texture(body, "res://assets/camp/ui/council/ui_council_npc_item_default.png", Rect2(51, row_center - 40, 272, 48))
+		row_art.name = "%sRowBackground" % job
 		row_art.stretch_mode = TextureRect.STRETCH_SCALE
 		row_art.modulate = Color.WHITE
 		row_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var job_icon := KWUI.texture(body, "res://assets/camp/ui/top/icon_resource_%s.png" % RESOURCE_ICONS[job], Rect2(48.4, row_center - 33.4, 33.3, 33.3))
+		var job_icon := KWUI.texture(body, "res://assets/camp/ui/top/icon_resource_%s.png" % RESOURCE_ICONS[job], Rect2(54, row_center - 32, 32, 32))
 		job_icon.modulate = Color.WHITE if opened else Color(0.55, 0.55, 0.55, 0.72)
 		job_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		KWUI.label(body, definition["name"], Rect2(93.4, row_center - 34.4, 31.3, 18.8), 14, Color("#e8dcbb"))
+		KWUI.label(body, definition["name"], Rect2(97, row_center - 33, 30, 18), 14, Color("#e8dcbb"))
 		var rate_text := "产量 +%d" % int(assignments.get(job, 0))
-		KWUI.label(body, rate_text, Rect2(140.6, row_center - 33.3, 62.5, 16.7), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		KWUI.label(body, rate_text, Rect2(142, row_center - 32, 60, 16), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
 		var stock_text := "%d / %d" % [Game.wallet_value(job), Game.resource_capacity(job)]
-		KWUI.label(body, stock_text, Rect2(82.3, row_center - 15.6, 114.6, 16.7), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
-		var upgrade := _camp_button(body, "升级", Rect2(250.5, row_center - 34.4, 75, 29), false, 12)
-		upgrade.pressed.connect(_upgrade_storage.bind(job))
+		KWUI.label(body, stock_text, Rect2(86.5, row_center - 15, 110, 16), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		var resource_config: Dictionary = Game.ling_pu_config.get("resources", {}).get(job, {})
+		var storage_level := int(camp.get("resourceStorageLevels", {}).get(job, 1))
+		var storage_maxed := storage_level >= (resource_config.get("capacities", []) as Array).size()
+		var upgrade := _camp_button(body, "已满级" if storage_maxed else "升级", Rect2(248, row_center - 33, 72, 28), false, 12)
+		upgrade.name = "%sUpgradeButton" % job
+		upgrade.disabled = storage_maxed
+		upgrade.pressed.connect(_open_storage_upgrade_confirmation.bind(job))
 		var worker_count := int(assignments.get(job, 0)) if opened else 0
-		var minus := _add_icon_button(body, Rect2(221.4, row_center - 1, 50, 50), "res://assets/camp/ui/ling_pu/icon_action_minus.png", worker_count <= 0)
+		var minus := _add_icon_button(body, Rect2(220, row_center - 1, 48, 48), "res://assets/camp/ui/ling_pu/icon_action_minus.png", worker_count <= 0)
 		minus.pressed.connect(_adjust_worker.bind(job, -1))
-		KWUI.label(body, "%d/%d" % [worker_count, int(camp["workerCount"])], Rect2(260.5, row_center + 15.6, 50, 16.7), 12, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
-		var plus := _add_icon_button(body, Rect2(301, row_center - 1, 50, 50), "res://assets/camp/ui/ling_pu/icon_action_plus.png", assigned >= int(camp["workerCount"]))
+		KWUI.label(body, "%d/%d" % [worker_count, int(camp["workerCount"])], Rect2(258, row_center + 15, 48, 16), 12, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+		var plus := _add_icon_button(body, Rect2(296, row_center - 1, 48, 48), "res://assets/camp/ui/ling_pu/icon_action_plus.png", assigned >= int(camp["workerCount"]))
 		plus.pressed.connect(_adjust_worker.bind(job, 1))
-		KWUI.label(body, "岗位运转", Rect2(51.6, row_center + 16.7, 114.6, 14.6), 10, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
-	var recruit := _camp_button(body, "杂役招募", Rect2(39, 570, 137.5, 46), false, 14)
+		KWUI.label(body, "岗位运转", Rect2(57, row_center + 16, 110, 14), 10, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+	var recruit := _camp_button(body, "杂役招募", Rect2(42, 558.5, 132, 44), false, 14)
+	recruit.name = "RecruitButton"
 	recruit.pressed.connect(_open_recruit_confirmation)
-	var close := _camp_button(body, "关闭", Rect2(197.5, 570, 137.5, 46), false, 14)
+	var close := _camp_button(body, "关闭", Rect2(200, 558.5, 132, 44), false, 14)
+	close.name = "CloseButton"
 	close.pressed.connect(_close_modal)
 
 func _adjust_worker(job: String, delta: int) -> void:
@@ -417,33 +430,86 @@ func _recruit_workers() -> void:
 	_open_ling_pu()
 
 func _open_recruit_confirmation() -> void:
-	_close_modal()
-	modal = Control.new()
-	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	modal.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(modal)
+	_open_ling_pu_confirmation("recruit")
+
+func _open_storage_upgrade_confirmation(job: String) -> void:
+	var resource: Dictionary = Game.ling_pu_config.get("resources", {}).get(job, {})
+	var levels: Dictionary = Game.profile.get("camp", {}).get("resourceStorageLevels", {})
+	if int(levels.get(job, 1)) >= (resource.get("capacities", []) as Array).size():
+		_show_feedback("%s储量已满级" % Game.resource_label(job), 1)
+		return
+	_open_ling_pu_confirmation("upgrade", job)
+
+func _open_ling_pu_confirmation(kind: String, job := "") -> void:
+	if not is_instance_valid(modal):
+		return
+	_close_ling_pu_confirmation()
+	ling_pu_confirmation = Control.new()
+	ling_pu_confirmation.name = "LingPuConfirmation"
+	ling_pu_confirmation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ling_pu_confirmation.mouse_filter = Control.MOUSE_FILTER_STOP
+	modal.add_child(ling_pu_confirmation)
 	var blocker := ColorRect.new()
-	blocker.color = Color(0, 0, 0, 0.86)
+	blocker.color = Color(0, 0, 0, 0.95)
 	blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	modal.add_child(blocker)
+	ling_pu_confirmation.add_child(blocker)
 	var body := Control.new()
-	body.position = Vector2(24, 275.5)
+	body.name = "DialogPanel"
+	body.position = Vector2(24, 242)
 	body.size = Vector2(327, 266)
-	modal.add_child(body)
+	ling_pu_confirmation.add_child(body)
 	var art := KWUI.texture(body, "res://assets/camp/ui/ling_pu/ui_ling_pu_recruit_panel.png", Rect2(0, 0, 327, 266))
 	art.stretch_mode = TextureRect.STRETCH_SCALE
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	KWUI.label(body, "招募杂役", Rect2(0, 18, 327, 28), 20, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
-	KWUI.texture(body, "res://assets/camp/ui/top/icon_resource_spirit_grain.png", Rect2(139.5, 64, 32, 32))
-	var recruit_cost := int(Game.ling_pu_config.get("recruitSpiritGrainCost", 50))
-	var granted := int(Game.ling_pu_config.get("workersPerRecruit", 5))
-	KWUI.label(body, "需要 %d 灵粮" % recruit_cost, Rect2(40, 104, 247, 24), 15, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
-	KWUI.label(body, "杂役 +%d" % granted, Rect2(55, 139, 217, 24), 15, Color("#58b9b4"), HORIZONTAL_ALIGNMENT_CENTER)
-	var confirm := _camp_button(body, "招募", Rect2(23, 196, 132, 44), true, 14)
-	confirm.disabled = Game.wallet_value("spiritGrain") < recruit_cost
-	confirm.pressed.connect(_recruit_workers)
-	var cancel := _camp_button(body, "取消", Rect2(172, 196, 132, 44), false, 14)
-	cancel.pressed.connect(_open_ling_pu)
+	var title := "招募杂役"
+	var icon_id := "spiritGrain"
+	var cost := int(Game.ling_pu_config.get("recruitSpiritGrainCost", 50))
+	var cost_text := "灵粮%d" % cost
+	var detail_text := "杂役 +%d" % int(Game.ling_pu_config.get("workersPerRecruit", 5))
+	var stock := Game.wallet_value("spiritGrain")
+	var confirm_text := "招募"
+	if kind == "upgrade":
+		var resource: Dictionary = Game.ling_pu_config.get("resources", {}).get(job, {})
+		var levels: Dictionary = Game.profile.get("camp", {}).get("resourceStorageLevels", {})
+		var level := int(levels.get(job, 1))
+		var capacities: Array = resource.get("capacities", [])
+		var costs: Array = resource.get("upgradeSpiritWoodCosts", [])
+		cost = int(costs[level - 1]) if level > 0 and level - 1 < costs.size() else 0
+		var current_capacity := int(capacities[level - 1]) if level > 0 and level - 1 < capacities.size() else 0
+		var next_capacity := int(capacities[level]) if level < capacities.size() else current_capacity
+		title = "%s储量升级" % Game.resource_label(job)
+		icon_id = "spiritWood"
+		cost_text = "灵木%d" % cost
+		detail_text = "最大储量 %d → %d" % [current_capacity, next_capacity]
+		stock = Game.wallet_value("spiritWood")
+		confirm_text = "升级"
+	var title_label := KWUI.label(body, title, Rect2(0, 27, 327, 24), 20, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	title_label.name = "DialogTitle"
+	var item_slot := KWUI.panel(body, Rect2(144, 67, 40, 40), Color("#111917"), Color("#80623a"))
+	item_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var icon := KWUI.texture(body, "res://assets/camp/ui/top/icon_resource_%s.png" % RESOURCE_ICONS[icon_id], Rect2(148, 71, 32, 32))
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	KWUI.label(body, "需要", Rect2(123, 121, 32, 16), 16, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	KWUI.label(body, cost_text, Rect2(145.5, 119, 70, 20), 16, Color("#b58a42"), HORIZONTAL_ALIGNMENT_CENTER)
+	var missing := maxi(0, cost - stock)
+	KWUI.label(body, "" if missing <= 0 else "缺少%s %d" % ["灵木" if kind == "upgrade" else "灵粮", missing], Rect2(59, 143, 210, 16), 16, Color("#b94a3e"), HORIZONTAL_ALIGNMENT_CENTER)
+	KWUI.label(body, detail_text, Rect2(59, 198, 210, 20), 16, Color("#6f945f"), HORIZONTAL_ALIGNMENT_CENTER)
+	# 旧 Cocos/Figma 中两颗 Footer 按钮位于 327×266 框体下方，间隔 6px。
+	var confirm := _camp_button(body, confirm_text, Rect2(22, 272, 132, 44), false, 14)
+	confirm.name = "ConfirmButton"
+	confirm.disabled = missing > 0
+	if kind == "upgrade":
+		confirm.pressed.connect(_upgrade_storage.bind(job))
+	else:
+		confirm.pressed.connect(_recruit_workers)
+	var cancel := _camp_button(body, "取消", Rect2(173, 272, 132, 44), false, 14)
+	cancel.name = "CancelButton"
+	cancel.pressed.connect(_close_ling_pu_confirmation)
+
+func _close_ling_pu_confirmation() -> void:
+	if is_instance_valid(ling_pu_confirmation):
+		ling_pu_confirmation.queue_free()
+	ling_pu_confirmation = null
 
 func _upgrade_storage(job: String) -> void:
 	if Game.upgrade_storage(job): _show_feedback("储量已升级", 0)
@@ -783,9 +849,9 @@ func _open_settings() -> void:
 	KWUI.label(body, "存档位置", Rect2(25, 72, 290, 30), 13, KWUI.MUTED)
 	KWUI.label(body, "user://kunwu_profile.json", Rect2(25, 103, 290, 34), 12, KWUI.TEXT)
 	KWUI.label(body, "Godot 会在生产、移动、结算和场景切换前后自动保存。", Rect2(25, 150, 290, 62), 12, KWUI.MUTED)
-	var save := KWUI.button(body, "立即保存", Rect2(55, 245, 235, 48), 14)
+	var save := _camp_button(body, "立即保存", Rect2(55, 245, 235, 48), true, 14)
 	save.pressed.connect(func(): Game.save_profile(); _show_feedback("存档已写入", 0))
-	var reset := KWUI.button(body, "重置新档", Rect2(55, 320, 235, 48), 14)
+	var reset := _camp_button(body, "重置新档", Rect2(55, 320, 235, 48), false, 14)
 	reset.pressed.connect(func(): Game.reset_profile(); _close_modal(); get_tree().reload_current_scene())
 	KWUI.label(body, "迁移版保留源项目内部资源 ID 与七维字段，存档采用可读 JSON。", Rect2(30, 410, 285, 80), 11, KWUI.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 

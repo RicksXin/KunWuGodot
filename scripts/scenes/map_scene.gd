@@ -54,15 +54,15 @@ func _build_scene() -> void:
 	burden_label = KWUI.label(info, "负重 --/--", Rect2(8, 39, 141, 24), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	grain_label = KWUI.label(info, "灵粮：---", Rect2(8, 66, 141, 24), 13, Color("#dbcb84"), HORIZONTAL_ALIGNMENT_CENTER)
 	var actions := KWUI.panel(top, Rect2(174.5, 3, 192, 102), Color("#1c242afa"), Color("#607770"))
-	rest_button = KWUI.button(actions, "休整", Rect2(9, 5, 54, 48), 12)
+	rest_button = KWUI.map_button(actions, "休整", Rect2(9, 5, 54, 48), 12)
 	rest_button.pressed.connect(_open_rest)
-	return_button = KWUI.button(actions, "归营", Rect2(69, 5, 54, 48), 12)
+	return_button = KWUI.map_button(actions, "归营", Rect2(69, 5, 54, 48), 12)
 	return_button.pressed.connect(_return_with_talisman)
-	var party := KWUI.button(actions, "队伍", Rect2(129, 5, 54, 48), 12)
+	var party := KWUI.map_button(actions, "队伍", Rect2(129, 5, 54, 48), 12)
 	party.pressed.connect(_show_feedback.bind("当前四人小队状态正常", 0))
-	var backpack := KWUI.button(actions, "背包", Rect2(39, 55, 54, 48), 12)
+	var backpack := KWUI.map_button(actions, "背包", Rect2(39, 55, 54, 48), 12)
 	backpack.pressed.connect(_open_backpack)
-	var settings := KWUI.button(actions, "设置", Rect2(99, 55, 54, 48), 12)
+	var settings := KWUI.map_button(actions, "设置", Rect2(99, 55, 54, 48), 12)
 	settings.pressed.connect(_show_feedback.bind("地图设置尚未开放", 1))
 	var task := KWUI.panel(top, Rect2(10, 113, 355, 40), Color("#1c242afa"), Color("#607770"))
 	KWUI.label(task, "主线：探索东北残禁，击败石傀", Rect2(10, 5, 335, 30), 13, Color("#e8e0be"))
@@ -84,16 +84,16 @@ func _build_scene() -> void:
 	grain_warning.visible = false
 	grain_warning_label = KWUI.label(grain_warning, "", Rect2(10, 5, 325, 30), 13, Color("#ffdca4"), HORIZONTAL_ALIGNMENT_CENTER)
 	var bottom := KWUI.panel(self, Rect2(0, 675, 375, 142), Color("#05090ceb"), Color("#607770"))
-	var up := KWUI.button(bottom, "↑", Rect2(51.5, 11, 48, 48), 16)
+	var up := KWUI.map_button(bottom, "↑", Rect2(51.5, 11, 48, 48), 16)
 	up.pressed.connect(_move.bind(0, 1))
 	movement_buttons["0:1"] = up
-	var left := KWUI.button(bottom, "←", Rect2(0.5, 60, 48, 48), 16)
+	var left := KWUI.map_button(bottom, "←", Rect2(0.5, 60, 48, 48), 16)
 	left.pressed.connect(_move.bind(-1, 0))
 	movement_buttons["-1:0"] = left
-	var down := KWUI.button(bottom, "↓", Rect2(51.5, 60, 48, 48), 16)
+	var down := KWUI.map_button(bottom, "↓", Rect2(51.5, 60, 48, 48), 16)
 	down.pressed.connect(_move.bind(0, -1))
 	movement_buttons["0:-1"] = down
-	var right := KWUI.button(bottom, "→", Rect2(102.5, 60, 48, 48), 16)
+	var right := KWUI.map_button(bottom, "→", Rect2(102.5, 60, 48, 48), 16)
 	right.pressed.connect(_move.bind(1, 0))
 	movement_buttons["1:0"] = right
 	hint_label = KWUI.label(bottom, "归营符 0 · 休整 1", Rect2(192.5, 43.5, 174, 55), 13, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
@@ -126,11 +126,11 @@ func _build_rest_overlay() -> void:
 	rest_chance_label = KWUI.label(card, "剩余休整次数：--", Rect2(21, 64.5, 295, 25), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	rest_food_label = KWUI.label(card, "野外食材：--", Rect2(21, 94, 295, 42), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	rest_heal_label = KWUI.label(card, "运功疗伤：--", Rect2(21, 139, 295, 30), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	replenish_button = KWUI.button(card, "补充灵粮", Rect2(10, 202, 100, 48), 13)
+	replenish_button = KWUI.map_button(card, "补充灵粮", Rect2(10, 202, 100, 48), 13)
 	replenish_button.pressed.connect(_replenish_rest)
-	heal_button = KWUI.button(card, "运功疗伤", Rect2(118.5, 202, 100, 48), 13)
+	heal_button = KWUI.map_button(card, "运功疗伤", Rect2(118.5, 202, 100, 48), 13)
 	heal_button.pressed.connect(_heal_rest)
-	var continue_button := KWUI.button(card, "结束休整", Rect2(227, 202, 100, 48), 13)
+	var continue_button := KWUI.map_button(card, "结束休整", Rect2(227, 202, 100, 48), 13)
 	continue_button.pressed.connect(_continue_rest)
 
 func _build_backpack_overlay() -> void:
@@ -142,7 +142,7 @@ func _build_backpack_overlay() -> void:
 	backpack_grid.size = Vector2(285, 190)
 	card.add_child(backpack_grid)
 	backpack_empty_label = KWUI.label(card, "尚未获得临时战利品", Rect2(23, 57, 285, 190), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var close := KWUI.button(card, "关闭", Rect2(102.5, 283, 126, 48), 14)
+	var close := KWUI.map_button(card, "关闭", Rect2(102.5, 283, 126, 48), 14)
 	close.pressed.connect(func(): backpack_overlay.visible = false)
 
 func _build_entry_return_overlay() -> void:
@@ -150,9 +150,9 @@ func _build_entry_return_overlay() -> void:
 	var card := KWUI.panel(entry_return_overlay, Rect2(28, 313.5, 319, 190), Color("#1b191dfc"), Color("#607770"))
 	KWUI.label(card, "返回入口传送阵", Rect2(19.5, 23, 280, 34), 19, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
 	KWUI.label(card, "是否结束本次入山并返回营地？", Rect2(20.5, 62, 278, 42), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var confirm := KWUI.button(card, "确认归营", Rect2(18.5, 126, 132, 48), 14)
+	var confirm := KWUI.map_button(card, "确认归营", Rect2(18.5, 126, 132, 48), 14)
 	confirm.pressed.connect(_return_camp)
-	var cancel := KWUI.button(card, "取消", Rect2(168.5, 126, 132, 48), 14)
+	var cancel := KWUI.map_button(card, "取消", Rect2(168.5, 126, 132, 48), 14)
 	cancel.pressed.connect(func(): entry_return_overlay.visible = false)
 
 func _build_event_overlay() -> void:
@@ -173,7 +173,7 @@ func _build_event_overlay() -> void:
 		["leave", "离开", Callable(self, "_close_event")]
 	]
 	for definition in definitions:
-		var button := KWUI.button(object_panel, str(definition[1]), Rect2(0, 280, 92, 46), 14)
+		var button := KWUI.map_button(object_panel, str(definition[1]), Rect2(0, 280, 92, 46), 14)
 		button.visible = false
 		button.pressed.connect(definition[2])
 		event_buttons[str(definition[0])] = button
@@ -267,15 +267,15 @@ func _refresh() -> void:
 		grain_warning_label.text = "警告：灵粮已尽，护体灵息仅可支撑 %d 步" % maxi(0, 4 - depletion_steps)
 	hint_label.text = "归营符 %d · 休整 %d" % [int(Game.profile.get("inventory", {}).get("return_talisman", 0)), int(expedition.get("restUsesRemaining", 0))]
 	var resting := bool(expedition.get("isResting", false))
-	if is_instance_valid(rest_button): rest_button.disabled = resting or int(expedition.get("restUsesRemaining", 0)) <= 0
-	if is_instance_valid(return_button): return_button.disabled = resting
+	if is_instance_valid(rest_button): KWUI.set_map_button_disabled(rest_button, resting or int(expedition.get("restUsesRemaining", 0)) <= 0)
+	if is_instance_valid(return_button): KWUI.set_map_button_disabled(return_button, resting)
 	if is_instance_valid(rest_overlay): rest_overlay.visible = resting
 	for key in movement_buttons:
 		var move_button: Button = movement_buttons[key]
 		var parts := str(key).split(":")
 		var dx := int(parts[0])
 		var dy := int(parts[1])
-		move_button.disabled = resting or not _can_move(dx, dy)
+		KWUI.set_map_button_disabled(move_button, resting or not _can_move(dx, dy))
 	_refresh_rest_overlay()
 	_refresh_backpack_overlay()
 
@@ -318,7 +318,7 @@ func _show_object(object: Dictionary) -> void:
 	for key in event_buttons:
 		var event_button: Button = event_buttons[key]
 		event_button.visible = false
-		event_button.disabled = false
+		KWUI.set_map_button_disabled(event_button, false)
 	for action in actions:
 		var key := str(action)
 		if not event_buttons.has(key): continue
@@ -415,8 +415,8 @@ func _refresh_rest_overlay() -> void:
 	rest_food_label.text = "野外食材：%s" % "  ·  ".join(food_text)
 	var healing_percent := int(field.get("healingPercent", 25))
 	rest_heal_label.text = "运功疗伤：本次已使用" if bool(expedition.get("restHealingUsed", false)) else "运功疗伤：恢复 %d%% 最大生命" % healing_percent
-	replenish_button.disabled = int(expedition.get("remainingGrain", 0)) >= int(expedition.get("grainCapacity", 0)) or not _has_rest_food(expedition, field)
-	heal_button.disabled = bool(expedition.get("restHealingUsed", false))
+	KWUI.set_map_button_disabled(replenish_button, int(expedition.get("remainingGrain", 0)) >= int(expedition.get("grainCapacity", 0)) or not _has_rest_food(expedition, field))
+	KWUI.set_map_button_disabled(heal_button, bool(expedition.get("restHealingUsed", false)))
 
 func _has_rest_food(expedition: Dictionary, field: Dictionary) -> bool:
 	for food in field.get("foodItems", []):
