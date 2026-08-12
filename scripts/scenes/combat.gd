@@ -19,18 +19,31 @@ var loot_backpack_buttons: Array[Button] = []
 var loot_reward_labels: Array[Label] = []
 var loot_take_all_button: Button
 var escape_button: Button
+var animated_portraits: Array[Dictionary] = []
+var current_encounter: Dictionary = {}
 
 func _ready() -> void:
 	if Game.profile.get("expedition") == null:
 		call_deferred("_go_camp")
 		return
+	current_encounter = Game.get_encounter()
+	if current_encounter.is_empty():
+		call_deferred("_go_map")
+		return
 	_build_units()
+	if units.filter(func(unit): return unit.get("side") == "enemy").is_empty():
+		call_deferred("_go_map")
+		return
 	_build_scene()
 	_refresh()
 	set_process(true)
 
 func _go_camp() -> void:
 	get_tree().change_scene_to_file("res://scenes/camp.tscn")
+
+func _go_map() -> void:
+	Game.clear_active_encounter()
+	get_tree().change_scene_to_file("res://scenes/map.tscn")
 
 func _build_units() -> void:
 	var heroes: Array = Game.party_heroes()
@@ -39,11 +52,10 @@ func _build_units() -> void:
 		var hero: Dictionary = heroes[index]
 		var initial_timer := int(timers[index] if index < timers.size() else 30)
 		units.append({"unit_id": index + 1, "name": Game.text(hero.get("nameKey", "修士")), "side": "ally", "hero": hero, "hp": int(hero.get("currentHp", hero.get("maxHp", 1))), "max_hp": int(hero.get("maxHp", 1)), "attrs": hero.get("attributes", {}), "skills": hero.get("skillIds", []), "timer": initial_timer, "action_max": initial_timer, "auto": true, "dead": false, "shield": 0, "cooldowns": {}, "statuses": []})
-	var encounters: Array = Game.combat_config.get("encounters", [])
-	if encounters.is_empty(): return
-	var enemy: Dictionary = encounters[0].get("enemies", [])[0]
-	var enemy_timer := int(enemy.get("initialActionTimer", 45))
-	units.append({"unit_id": 100, "name": Game.text(enemy.get("nameKey", "残禁石傀")), "side": "enemy", "enemy": enemy, "hp": int(enemy.get("maxHp", 480)), "max_hp": int(enemy.get("maxHp", 480)), "attrs": enemy.get("attributes", {}), "skills": enemy.get("skillIds", []), "timer": enemy_timer, "action_max": enemy_timer, "auto": true, "dead": false, "shield": 0, "cooldowns": {}, "statuses": []})
+	for enemy_index in current_encounter.get("enemies", []).size():
+		var enemy: Dictionary = current_encounter.get("enemies", [])[enemy_index]
+		var enemy_timer := int(enemy.get("initialActionTimer", 45))
+		units.append({"unit_id": 100 + enemy_index, "name": Game.text(enemy.get("nameKey", "敌人")), "side": "enemy", "enemy": enemy, "hp": int(enemy.get("maxHp", 1)), "max_hp": int(enemy.get("maxHp", 1)), "attrs": enemy.get("attributes", {}), "skills": enemy.get("skillIds", []), "timer": enemy_timer, "action_max": enemy_timer, "auto": true, "dead": false, "shield": 0, "cooldowns": {}, "statuses": []})
 
 func _build_scene() -> void:
 	var bg := ColorRect.new()
@@ -99,6 +111,19 @@ func _build_scene() -> void:
 		unit_hosts[index + 1] = host
 		var portrait_path: String = str(["shi_yan", "lu_qing", "bai_ling", "mo_yan"][index])
 		var portrait := KWUI.texture(host, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_path, Rect2(0, 0, 86, 205))
+		var idle_sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [portrait_path, portrait_path]
+		var idle_sheet: Texture2D = load(idle_sheet_path) if ResourceLoader.exists(idle_sheet_path) else null
+		if idle_sheet:
+			var frames := _sheet_frames(idle_sheet, 4, 2)
+			portrait.texture = frames[0]
+			portrait.size = Vector2(86, 149)
+			animated_portraits.append({
+				"node": portrait,
+				"frames": frames,
+				"frame_duration": 1.0 / 6.0,
+				"elapsed": 0.0,
+				"frame_index": 0
+			})
 		portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		KWUI.panel(host, Rect2(1, 149, 84, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -175,11 +200,46 @@ func _build_loot_overlay() -> void:
 	leave.pressed.connect(_leave_loot)
 
 func _process(delta: float) -> void:
+	_update_animated_portraits(delta)
 	if finished: return
 	timer_accum += delta
 	while timer_accum >= 0.2:
 		timer_accum -= 0.2
 		_step(4)
+
+func _update_animated_portraits(delta: float) -> void:
+	for index in range(animated_portraits.size() - 1, -1, -1):
+		var animation: Dictionary = animated_portraits[index]
+		var portrait_reference: Variant = animation.get("node")
+		if not is_instance_valid(portrait_reference):
+			animated_portraits.remove_at(index)
+			continue
+		var portrait := portrait_reference as TextureRect
+		var frames: Array = animation.get("frames", [])
+		if portrait == null or frames.is_empty():
+			animated_portraits.remove_at(index)
+			continue
+		var elapsed := float(animation.get("elapsed", 0.0)) + delta
+		var frame_duration := maxf(float(animation.get("frame_duration", 1.0 / 6.0)), 0.001)
+		var frame_index := int(animation.get("frame_index", 0))
+		while elapsed >= frame_duration:
+			elapsed -= frame_duration
+			frame_index = (frame_index + 1) % frames.size()
+		portrait.texture = frames[frame_index]
+		animation["elapsed"] = elapsed
+		animation["frame_index"] = frame_index
+		animated_portraits[index] = animation
+
+func _sheet_frames(sheet: Texture2D, columns: int, rows: int) -> Array[Texture2D]:
+	var frame_count := maxi(1, columns * rows)
+	var frame_size := Vector2(floori(sheet.get_width() / float(columns)), floori(sheet.get_height() / float(rows)))
+	var frames: Array[Texture2D] = []
+	for index in frame_count:
+		var frame := AtlasTexture.new()
+		frame.atlas = sheet
+		frame.region = Rect2(Vector2(index % columns, floori(index / columns)) * frame_size, frame_size)
+		frames.append(frame)
+	return frames
 
 func _step(ticks: int) -> void:
 	combat_ticks += ticks
@@ -271,7 +331,7 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 		return
 	var enemies := units.filter(func(u): return u["side"] == "enemy" and not u["dead"])
 	if enemies.is_empty(): _finish_victory(); return
-	var target: Dictionary = enemies[0]
+	var target: Dictionary = enemies.front()
 	if str(skill.get("targetType", "")).contains("LOWEST"):
 		for candidate in enemies:
 			if candidate["hp"] < target["hp"]: target = candidate
@@ -378,9 +438,10 @@ func _refresh_skill_panel() -> void:
 		KWUI.set_combat_button_disabled(button, cooldown > 0)
 
 func _escape_available() -> bool:
+	var escape_percent := int(current_encounter.get("escapeEnemyHpPercent", 35))
 	for unit in units:
 		if unit["side"] == "enemy":
-			return int(unit["hp"]) * 100 <= int(unit["max_hp"]) * 35
+			return int(unit["hp"]) * 100 <= int(unit["max_hp"]) * escape_percent
 	return false
 
 func _finish_victory() -> void:
@@ -389,10 +450,11 @@ func _finish_victory() -> void:
 	for unit in units:
 		if unit["side"] == "ally":
 			unit["hero"]["currentHp"] = int(unit["hp"])
-	var already: bool = bool(Game.profile.get("completedMapObjects", {}).get("map_01.can_jin_shi_kui_01", false))
+	var completion_key := Game.map_object_key(Game.get_active_map_id(), Game.get_active_map_object_id())
+	var already: bool = bool(Game.profile.get("completedMapObjects", {}).get(completion_key, false))
 	if not already:
-		Game.profile["completedMapObjects"]["map_01.can_jin_shi_kui_01"] = true
-		var soul_reward := int(Game.combat_config.get("encounters", [])[0].get("soulCrystalReward", 200))
+		Game.profile["completedMapObjects"][completion_key] = true
+		var soul_reward := int(current_encounter.get("soulCrystalReward", 0))
 		Game.profile["wallet"]["soulCrystal"] = int(Game.profile["wallet"].get("soulCrystal", 0)) + soul_reward
 	Game.save_profile()
 	_show_loot_overlay()
@@ -431,18 +493,18 @@ func _show_loot_overlay() -> void:
 	for label in loot_reward_labels:
 		label.visible = false
 	var reward_index := 0
-	var soul_reward := int(Game.combat_config.get("encounters", [])[0].get("soulCrystalReward", 200))
+	var soul_reward := int(current_encounter.get("soulCrystalReward", 0))
 	if reward_index < loot_reward_labels.size():
 		loot_reward_labels[reward_index].text = "魂晶 +%d（已获得）" % soul_reward
 		loot_reward_labels[reward_index].visible = true
 		reward_index += 1
-	for reward in Game.combat_config.get("encounters", [])[0].get("loot", []):
+	for reward in current_encounter.get("loot", []):
 		if reward_index >= loot_reward_labels.size(): break
 		loot_reward_labels[reward_index].text = "%s ×%d    重量 %d" % [Game.text(str(reward.get("nameKey", reward.get("itemId", "战利品"))), str(reward.get("itemId", "战利品"))), int(reward.get("amount", 1)), int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))]
 		loot_reward_labels[reward_index].visible = true
 		reward_index += 1
 	var reward_weight := 0
-	for reward in Game.combat_config.get("encounters", [])[0].get("loot", []): reward_weight += int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))
+	for reward in current_encounter.get("loot", []): reward_weight += int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))
 	loot_status_label.text = "全部拾取后：%d/%d" % [burden + reward_weight, limit]
 	loot_status_label.add_theme_color_override("font_color", Color("#a8c2a6") if burden + reward_weight <= limit else Color("#eb8b6f"))
 	KWUI.set_combat_button_disabled(loot_take_all_button, burden + reward_weight > limit)
@@ -450,7 +512,7 @@ func _show_loot_overlay() -> void:
 func _take_all_loot() -> void:
 	var expedition: Dictionary = Game.profile.get("expedition", {})
 	var loot: Dictionary = expedition.get("temporaryLoot", {})
-	for reward in Game.combat_config.get("encounters", [])[0].get("loot", []):
+	for reward in current_encounter.get("loot", []):
 		var item_id := str(reward.get("itemId", ""))
 		loot[item_id] = int(loot.get(item_id, 0)) + int(reward.get("amount", 1))
 	expedition["temporaryLoot"] = loot
@@ -459,6 +521,7 @@ func _take_all_loot() -> void:
 
 func _leave_loot() -> void:
 	loot_overlay.visible = false
+	Game.clear_active_encounter()
 	get_tree().change_scene_to_file("res://scenes/map.tscn")
 
 func _drop_loot_item(index: int) -> void:
@@ -477,10 +540,7 @@ func _drop_loot_item(index: int) -> void:
 	_show_loot_overlay()
 
 func _loot_weight(item_id: String) -> int:
-	if item_id == "pickaxe": return 12
-	if item_id == "lens": return 4
-	if item_id == "beast_meat": return 2
-	return 1
+	return Game.item_weight(item_id)
 
 func _current_expedition_burden() -> int:
 	var expedition: Dictionary = Game.profile.get("expedition", {})
@@ -490,27 +550,23 @@ func _current_expedition_burden() -> int:
 	return burden
 
 func _burden_limit() -> int:
-	var limit := 60
-	for hero in Game.party_heroes():
-		var attributes: Dictionary = hero.get("attributes", {})
-		limit += int(attributes.get("strength", 0)) * 2 + int(attributes.get("constitution", 0))
-	return limit
+	return Game.expedition_burden_limit(Game.party_heroes())
 
 func _escape() -> void:
 	if finished: return
 	if not _escape_available():
-		_show_log("敌方生命未低于 35%，暂时无法撤离")
+		_show_log("敌方生命未低于 %d%%，暂时无法撤离" % int(current_encounter.get("escapeEnemyHpPercent", 35)))
 		return
 	for unit in units:
 		if unit["side"] == "ally": unit["hero"]["currentHp"] = int(unit["hp"])
-	Game.save_profile()
+	Game.clear_active_encounter()
 	get_tree().change_scene_to_file("res://scenes/map.tscn")
 
 func _give_up() -> void:
 	if finished: return
 	for unit in units:
 		if unit["side"] == "ally": unit["hero"]["currentHp"] = int(unit["hp"])
-	Game.save_profile()
+	Game.clear_active_encounter()
 	get_tree().change_scene_to_file("res://scenes/map.tscn")
 
 func _show_log(message: String) -> void:

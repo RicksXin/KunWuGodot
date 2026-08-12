@@ -520,7 +520,8 @@ func _open_expedition() -> void:
 	var body := _make_modal("入山整备", "res://assets/camp/ui/expedition/ui_expedition_panel_body.png")
 	if Game.profile.get("expedition") != null:
 		KWUI.label(body, "检测到未结束的探索进度", Rect2(30, 130, 299, 40), 16, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
-		var resume := _camp_button(body, "继续探索 · 破禁山麓", Rect2(62, 220, 235, 50), true, 15)
+		var active_map := Game.get_map_definition()
+		var resume := _camp_button(body, "继续探索 · %s" % Game.text(str(active_map.get("nameKey", "")), str(active_map.get("name", Game.get_active_map_id()))), Rect2(62, 220, 235, 50), true, 15)
 		resume.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/map.tscn"))
 		var close_resume := _camp_button(body, "返回营地", Rect2(113.5, 556, 132, 44), false, 14)
 		close_resume.pressed.connect(_close_modal)
@@ -529,7 +530,7 @@ func _open_expedition() -> void:
 		expedition_draft = Game.profile.get("expeditionPreparation", {}).get("loadout", {"spiritGrain": 60, "pickaxe": 0, "lens": 0}).duplicate(true)
 	KWUI.label(body, "传送阵 · 昆吾山外缘", Rect2(89.5, 76, 180, 16), 12, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
 	var portraits := ["shi_yan", "lu_qing", "bai_ling", "mo_yan"]
-	var heroes: Array = Game.profile.get("roster", [])
+	var heroes: Array = Game.party_heroes()
 	for index in portraits.size():
 		var hero: Dictionary = heroes[index]
 		_add_expedition_hero_card(body, Rect2(31 + index * 74.5, 98, 71, 163), portraits[index], hero)
@@ -550,15 +551,16 @@ func _open_expedition() -> void:
 		tab.pressed.connect(_show_feedback.bind("该队伍栏尚未解锁" if index > 0 else "当前为 1 队", 1 if index > 0 else 0))
 	var rest := _camp_button(body, "调息", Rect2(240, 273, 72, 28), false, 10)
 	rest.disabled = true
-	var burden_limit := _expedition_burden_limit(heroes)
-	var burden := int(expedition_draft.get("spiritGrain", 0)) + int(expedition_draft.get("pickaxe", 0)) * 12 + int(expedition_draft.get("lens", 0)) * 4
+	var burden_limit := Game.expedition_burden_limit(heroes)
+	var burden := int(expedition_draft.get("spiritGrain", 0)) * Game.item_weight("spiritGrain") + int(expedition_draft.get("pickaxe", 0)) * Game.item_weight("pickaxe") + int(expedition_draft.get("lens", 0)) * Game.item_weight("lens")
 	KWUI.label(body, "负重：", Rect2(128, 314, 43, 20), 12, Color("#91a49e"))
 	KWUI.label(body, "%d / %d" % [burden, burden_limit], Rect2(171, 314, 76, 20), 12, Color("#e58b52") if burden > burden_limit else Color("#e8dcbb"))
 	_add_expedition_loadout_row(body, "spiritGrain", "灵粮", "res://assets/camp/ui/top/icon_resource_spirit_grain.png", 366, Game.wallet_value("spiritGrain"), burden_limit)
 	_add_expedition_loadout_row(body, "pickaxe", "开山镐", "res://assets/camp/ui/expedition/icon_expedition_pickaxe.png", 410, int(Game.profile.get("inventory", {}).get("pickaxe", 0)), burden_limit)
 	_add_expedition_loadout_row(body, "lens", "探灵镜", "res://assets/camp/ui/expedition/icon_expedition_lens.png", 454, int(Game.profile.get("inventory", {}).get("lens", 0)), burden_limit)
 	var depart := _camp_button(body, "传送", Rect2(30, 556, 132, 44), true, 14)
-	depart.disabled = int(expedition_draft.get("spiritGrain", 0)) < 20 or burden > burden_limit
+	var default_map_rule := Game.get_expedition_map_rule(ConfigRepository.default_map_id())
+	depart.disabled = int(expedition_draft.get("spiritGrain", 0)) < int(default_map_rule.get("minimumCarriedGrain", 0)) or burden > burden_limit
 	depart.pressed.connect(_open_map_selection)
 	var close := _camp_button(body, "返回", Rect2(185.5, 556, 132, 44), false, 14)
 	close.pressed.connect(_close_modal)
@@ -588,7 +590,7 @@ func _add_expedition_hero_card(parent: Control, rect: Rect2, portrait_id: String
 	art_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(art_clip)
 	var portrait := KWUI.texture(art_clip, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_id, Rect2(-9.25, -7.2, 64, 153.2))
-	if portrait_id == "shi_yan" or portrait_id == "lu_qing":
+	if portrait_id == "shi_yan" or portrait_id == "lu_qing" or portrait_id == "mo_yan":
 		var sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [portrait_id, portrait_id]
 		var sheet: Texture2D = load(sheet_path)
 		if sheet:
@@ -597,12 +599,14 @@ func _add_expedition_hero_card(parent: Control, rect: Rect2, portrait_id: String
 			animated_portraits.append({
 				"node": portrait,
 				"frames": frames,
-				"frame_duration": 1.0 / 4.0,
+				"frame_duration": 1.0 / 6.0,
 				"elapsed": 0.0,
 				"frame_index": 0
 			})
-			portrait.position = Vector2(-28.25, -7.2)
-			portrait.size = Vector2(102, 153.2)
+			# 动画帧只包含 86×149 人物表现层；卡片继续用自己的
+			# 45.5×139.3 Mask 居中裁切，不把底部信息区烘焙进人物图。
+			portrait.position = Vector2(-20.25, -4.88)
+			portrait.size = Vector2(86, 149)
 	portrait.stretch_mode = TextureRect.STRETCH_SCALE
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 卡面信息区从立绘底部向上渐暗，四行文字直接压在人物上。
@@ -638,8 +642,8 @@ func _add_expedition_loadout_row(parent: Control, item_id: String, item_name: St
 	var minus := _add_icon_button(parent, Rect2(159.5, center_y - 24, 48, 48), "res://assets/camp/ui/ling_pu/icon_action_minus.png", count <= 0)
 	minus.pressed.connect(_adjust_expedition_item.bind(item_id, -1, available, burden_limit))
 	KWUI.label(parent, "%d / %d" % [count, available], Rect2(197.5, center_y - 9, 84, 18), 11, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
-	var item_weight: int = int({"spiritGrain": 1, "pickaxe": 12, "lens": 4}.get(item_id, 1))
-	var current_burden := int(expedition_draft.get("spiritGrain", 0)) + int(expedition_draft.get("pickaxe", 0)) * 12 + int(expedition_draft.get("lens", 0)) * 4
+	var item_weight := Game.item_weight(item_id)
+	var current_burden := int(expedition_draft.get("spiritGrain", 0)) * Game.item_weight("spiritGrain") + int(expedition_draft.get("pickaxe", 0)) * Game.item_weight("pickaxe") + int(expedition_draft.get("lens", 0)) * Game.item_weight("lens")
 	var plus := _add_icon_button(parent, Rect2(271.5, center_y - 24, 48, 48), "res://assets/camp/ui/ling_pu/icon_action_plus.png", count >= available or current_burden + int(item_weight) > burden_limit)
 	plus.pressed.connect(_adjust_expedition_item.bind(item_id, 1, available, burden_limit))
 
@@ -648,17 +652,10 @@ func _adjust_expedition_item(item_id: String, delta: int, available: int, burden
 	var next := clampi(current + delta, 0, available)
 	var draft := expedition_draft.duplicate(true)
 	draft[item_id] = next
-	var burden := int(draft.get("spiritGrain", 0)) + int(draft.get("pickaxe", 0)) * 12 + int(draft.get("lens", 0)) * 4
+	var burden := int(draft.get("spiritGrain", 0)) * Game.item_weight("spiritGrain") + int(draft.get("pickaxe", 0)) * Game.item_weight("pickaxe") + int(draft.get("lens", 0)) * Game.item_weight("lens")
 	if burden > burden_limit: return
 	expedition_draft = draft
 	_open_expedition()
-
-func _expedition_burden_limit(heroes: Array) -> int:
-	var limit := 60
-	for hero in heroes:
-		var attributes: Dictionary = hero.get("attributes", {})
-		limit += int(attributes.get("strength", 0)) * 2 + int(attributes.get("constitution", 0))
-	return limit
 
 func _open_hero_selection() -> void:
 	_close_modal()
@@ -750,7 +747,8 @@ func _open_map_selection() -> void:
 	var maps: Array = Game.expedition_config.get("maps", [])
 	for index in maps.size():
 		var map_info: Dictionary = maps[index]
-		var unlock_flag := str(map_info.get("unlockFlag", ""))
+		var unlock_value: Variant = map_info.get("unlockFlag", "")
+		var unlock_flag := "" if unlock_value == null else str(unlock_value)
 		var unlocked := unlock_flag.is_empty() or bool(Game.profile.get("storyFlags", {}).get(unlock_flag, false))
 		var row := Button.new()
 		row.position = Vector2(51.5, 164 + index * 76)
@@ -766,7 +764,7 @@ func _open_map_selection() -> void:
 		var map_rule := "灵息 %d · 每步灵粮 %d" % [int(map_info.get("staminaCost", 0)), int(map_info.get("grainPerStep", 0))] if unlocked else "尚未解锁"
 		KWUI.label(row, map_rule, Rect2(21, 36, 230, 16), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER).mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if unlocked:
-			row.pressed.connect(_depart)
+			row.pressed.connect(_depart.bind(str(map_info.get("mapId", ""))))
 		else:
 			var lock := KWUI.texture(row, "res://assets/camp/ui/expedition/icon_expedition_lock.png", Rect2(254.5, 15, 14, 14))
 			lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -774,8 +772,8 @@ func _open_map_selection() -> void:
 	var back := _camp_button(modal, "返回", Rect2(116, 716, 132, 44), false, 14)
 	back.pressed.connect(_open_expedition)
 
-func _depart() -> void:
-	var result := Game.start_expedition(expedition_draft)
+func _depart(map_id: String) -> void:
+	var result := Game.start_expedition(expedition_draft, map_id)
 	if result.get("ok", false): get_tree().change_scene_to_file("res://scenes/map.tscn")
 	else: _show_feedback(result.get("message", "当前无法入山"), 2)
 

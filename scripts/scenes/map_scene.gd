@@ -75,8 +75,10 @@ func _build_scene() -> void:
 	add_child(map_scroll)
 	map_canvas = Control.new()
 	map_canvas.set_script(load("res://scripts/scenes/map_canvas.gd"))
-	map_canvas.custom_minimum_size = Vector2(720, 720)
-	map_canvas.size = Vector2(720, 720)
+	var active_map := Game.get_map_definition()
+	var logical_tile_size := float(active_map.get("visual", {}).get("logicalTileSize", 48))
+	map_canvas.custom_minimum_size = Vector2(int(active_map.get("activeWidth", 15)) * logical_tile_size, int(active_map.get("activeHeight", 15)) * logical_tile_size)
+	map_canvas.size = map_canvas.custom_minimum_size
 	map_scroll.add_child(map_canvas)
 	map_canvas.cell_clicked.connect(_on_cell_clicked)
 	call_deferred("_center_map")
@@ -182,9 +184,11 @@ func _center_map() -> void:
 	if not is_instance_valid(map_scroll): return
 	var expedition: Dictionary = Game.profile.get("expedition", {})
 	var position: Dictionary = expedition.get("position", {"x": 2, "y": 2})
-	var tile_center_x := (float(position.get("x", 2)) + 0.5) * 48.0
-	var screen_y := int(Game.map_definition.get("activeHeight", 15)) - 1 - int(position.get("y", 2))
-	var tile_center_y := (float(screen_y) + 0.5) * 48.0
+	var active_map := Game.get_map_definition()
+	var logical_tile_size := float(active_map.get("visual", {}).get("logicalTileSize", 48))
+	var tile_center_x := (float(position.get("x", 2)) + 0.5) * logical_tile_size
+	var screen_y := int(active_map.get("activeHeight", 15)) - 1 - int(position.get("y", 2))
+	var tile_center_y := (float(screen_y) + 0.5) * logical_tile_size
 	var max_x := maxi(0, int(map_scroll.get_h_scroll_bar().max_value))
 	var max_y := maxi(0, int(map_scroll.get_v_scroll_bar().max_value))
 	map_scroll.scroll_horizontal = clampi(roundi(tile_center_x - map_scroll.size.x / 2.0), 0, max_x)
@@ -212,14 +216,15 @@ func _move(dx: int, dy: int) -> void:
 		return
 	_refresh()
 	_center_map()
-	var entry := {"x": int(Game.map_definition.get("entryX", 2)), "y": int(Game.map_definition.get("entryY", 2))}
+	var active_map := Game.get_map_definition()
+	var entry := {"x": int(active_map.get("entryX", 2)), "y": int(active_map.get("entryY", 2))}
 	var arrived: Dictionary = result.get("position", {})
 	if arrived == entry and previous != entry:
 		entry_return_overlay.visible = true
 		return
 	var object: Dictionary = result.get("object", {})
 	if not object.is_empty():
-		var object_key := "map_01." + str(object.get("id", ""))
+		var object_key := Game.map_object_key(Game.get_active_map_id(), str(object.get("id", "")))
 		var was_completed := bool(Game.profile.get("completedMapObjects", {}).get(object_key, false))
 		if not was_completed and object.get("kind") == "story_event":
 			Game.resolve_object(object)
@@ -243,14 +248,15 @@ func _refresh() -> void:
 	var position: Dictionary = expedition.get("position", {})
 	var x := int(position.get("x", 0))
 	var y := int(position.get("y", 0))
-	title_position_label.text = "破禁山麓（%d,%d）" % [x, y]
+	var active_map := Game.get_map_definition()
+	title_position_label.text = "%s（%d,%d）" % [Game.text(str(active_map.get("nameKey", "")), str(active_map.get("name", Game.get_active_map_id()))), x, y]
 	var carried: Dictionary = expedition.get("carriedItems", {})
-	var burden := int(expedition.get("remainingGrain", 0)) + int(carried.get("pickaxe", 0)) * 12 + int(carried.get("lens", 0)) * 4
+	var burden := int(expedition.get("remainingGrain", 0)) * Game.item_weight("spiritGrain")
+	for item_id in carried: burden += int(carried[item_id]) * Game.item_weight(str(item_id))
 	var temporary_loot: Dictionary = expedition.get("temporaryLoot", {})
 	for item_id in temporary_loot:
-		var item_weight := 2 if str(item_id) == "beast_meat" else 12 if str(item_id) == "pickaxe" else 4 if str(item_id) == "lens" else 1
-		burden += int(temporary_loot[item_id]) * item_weight
-	var limit := _expedition_burden_limit(Game.party_heroes())
+		burden += int(temporary_loot[item_id]) * Game.item_weight(str(item_id))
+	var limit := Game.expedition_burden_limit(Game.party_heroes())
 	burden_label.text = "负重 %d/%d" % [burden, limit]
 	var grain := int(expedition.get("remainingGrain", 0))
 	var depletion_steps := int(expedition.get("grainDepletionSteps", 0))
@@ -261,10 +267,11 @@ func _refresh() -> void:
 	else:
 		var stages := ["断粮", "气血亏空", "步履维艰", "生机将绝"]
 		var stage_index := clampi(depletion_steps, 0, stages.size() - 1)
+		var step_limit := int(Game.expedition_config.get("field", {}).get("grainDepletionStepLimit", 4))
 		grain_label.text = stages[stage_index]
 		grain_label.add_theme_color_override("font_color", Color("#ed895b"))
 		grain_warning.visible = true
-		grain_warning_label.text = "警告：灵粮已尽，护体灵息仅可支撑 %d 步" % maxi(0, 4 - depletion_steps)
+		grain_warning_label.text = "警告：灵粮已尽，护体灵息仅可支撑 %d 步" % maxi(0, step_limit - depletion_steps)
 	hint_label.text = "归营符 %d · 休整 %d" % [int(Game.profile.get("inventory", {}).get("return_talisman", 0)), int(expedition.get("restUsesRemaining", 0))]
 	var resting := bool(expedition.get("isResting", false))
 	if is_instance_valid(rest_button): KWUI.set_map_button_disabled(rest_button, resting or int(expedition.get("restUsesRemaining", 0)) <= 0)
@@ -286,7 +293,7 @@ func _can_move(dx: int, dy: int) -> bool:
 	var tile := Game.tile_at(int(position.get("x", 0)) + dx, int(position.get("y", 0)) + dy)
 	if not bool(tile.get("walkable", false)): return false
 	if int(expedition.get("remainingGrain", 0)) > 0: return true
-	return int(expedition.get("grainDepletionSteps", 0)) < 4
+	return int(expedition.get("grainDepletionSteps", 0)) < int(Game.expedition_config.get("field", {}).get("grainDepletionStepLimit", 4))
 
 func _map_input_blocked() -> bool:
 	return (is_instance_valid(rest_overlay) and rest_overlay.visible) \
@@ -294,17 +301,10 @@ func _map_input_blocked() -> bool:
 		or (is_instance_valid(entry_return_overlay) and entry_return_overlay.visible) \
 		or (is_instance_valid(event_overlay) and event_overlay.visible)
 
-func _expedition_burden_limit(heroes: Array) -> int:
-	var limit := 60
-	for hero in heroes:
-		var attributes: Dictionary = hero.get("attributes", {})
-		limit += int(attributes.get("strength", 0)) * 2 + int(attributes.get("constitution", 0))
-	return limit
-
 func _show_object(object: Dictionary) -> void:
 	current_object = object
 	event_overlay.visible = true
-	var completed: bool = bool(Game.profile.get("completedMapObjects", {}).get("map_01." + str(object.get("id", "")), false))
+	var completed: bool = bool(Game.profile.get("completedMapObjects", {}).get(Game.map_object_key(Game.get_active_map_id(), str(object.get("id", ""))), false))
 	object_kind_label.text = _event_kind(object)
 	object_title_label.text = str(object.get("title", "地图事件"))
 	object_label.text = str(object.get("description", ""))
@@ -377,6 +377,10 @@ func _small_talk_object() -> void:
 	object_label.text = "%s\n\n%s" % [str(current_object.get("description", "")), str(current_object.get("smallTalkText", "你与对方闲谈片刻，并未获得新的线索。"))]
 
 func _engage() -> void:
+	var result := Game.begin_encounter(current_object)
+	if not result.get("ok", false):
+		_show_feedback(result.get("message", "当前无法进入战斗"), 2)
+		return
 	_close_event()
 	get_tree().change_scene_to_file("res://scenes/combat.tscn")
 

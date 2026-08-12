@@ -25,6 +25,8 @@ func _ready() -> void:
 	progress.add_theme_stylebox_override("fill", KWUI.style_box(KWUI.TEAL, KWUI.TEAL, 4, 0))
 	add_child(progress)
 	await get_tree().create_timer(0.55).timeout
+	status_label.text = "正在同步配置……"
+	await Game.refresh_remote_config()
 	status_label.text = "正在搭建营地……"
 	await get_tree().create_timer(0.55).timeout
 	status_label.text = "已就绪"

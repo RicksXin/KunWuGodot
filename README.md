@@ -121,7 +121,24 @@ user://kunwu_profile.json
 `Library` 默认是隐藏目录。在 Finder 中可以按 `Command + Shift + G`，粘贴上面的目录路径前往。
 也可以直接在游戏的“设置”页面点击“重置新档”。
 
-## 五、项目目录说明
+## 五、后台配置
+
+游戏启动时会优先读取上次完整校验通过的配置缓存；配置了后台地址后，再从配置中心获取当前渠道
+的 manifest 与六个发布模块。全部模块的 schema、字节数和 SHA-256 都通过后才会整批切换；下载失败、
+模块缺失或校验失败时继续使用缓存，首次运行则回退到 `res://data` 内置配置。
+
+本地联调 KunWuAdmin development 渠道：
+
+```bash
+KUNWU_CONFIG_BASE_URL=http://127.0.0.1:3100 \
+KUNWU_CONFIG_CHANNEL=development \
+/Applications/Godot.app/Contents/MacOS/Godot --path "/Users/zhangxiaoen/Desktop/Game/KunWuGodot"
+```
+
+不设置 `KUNWU_CONFIG_BASE_URL` 时不会发起网络请求，单机流程保持可用。生产导出可在项目设置的
+`kunwu/config_base_url` 与 `kunwu/config_channel` 中写入部署环境地址。
+
+## 六、项目目录说明
 
 ```text
 KunWuGodot/
@@ -144,7 +161,7 @@ KunWuGodot/
 `immortalCoin` 显示为“灵石”。项目基准视口为 `375×817`，使用 Compatibility 渲染器和
 nearest 像素过滤。
 
-## 六、常见问题
+## 七、常见问题
 
 ### 打开后图片暂时不显示
 

@@ -18,7 +18,14 @@ boot_splash/show_image=false
 
 [autoload]
 
+ConfigRepository="*res://scripts/autoload/config_repository.gd"
 Game="*res://scripts/autoload/game.gd"
+
+[kunwu]
+
+config_base_url=""
+config_channel="development"
+config_request_timeout_seconds=3.0
 
 [display]
 

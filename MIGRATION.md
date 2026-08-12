@@ -14,6 +14,7 @@
 | `Combat.scene` / Presenter | `scenes/combat.tscn` + `combat.gd` | 固定时间步、技能目标、伤害/治疗、手动/自动、撤离和胜负结算 |
 | Cocos 程序化按钮组件 | `KWUI.camp_button/map_button/combat_button` + `camp_button_visual.gd` | 迁入营地 Inline/Footer 三态、地图与战斗配色及 0.96 按压反馈；营地可见层与至少 48px 触控层分离 |
 | `GameState` / `SaveService` | `scripts/autoload/game.gd` | 资源、营地、修士、远征状态聚合；原子临时文件写入 `user://kunwu_profile.json` |
+| 后台发布配置 | `ConfigRepository` autoload + `Game` 查询接口 | manifest/六模块下载、schema/字节数/SHA-256 校验、`user://kunwu_config_cache` 缓存与 `res://data` 回退；玩家存档仍只由 `Game` 写入 |
 | TS 领域函数 | `scripts/domain/*.gd` 与 `Game` 领域方法 | `KWCombatResolver` 独立处理技能解析；迷雾、四方向移动、生产结算保持源规则 |
 | Cocos Asset Bundle | `assets/` + `data/` | Godot 首次导入后按 `res://` 加载；地图/营地资源目录仍按 bundle 语义分组 |
 | `db://` 脚本导入 | GDScript `preload`/`load` | 不保留 Cocos UUID 引用 |
@@ -61,6 +62,8 @@ Godot 项目基准视口为 `375×817`，Compatibility 渲染器、nearest 像�
   以本地 JSON 存档与资源路径完成同等单机行为。
 - 后续接入完整 TileMapLayer、帧动画、音频或新的页面时，应从现有 `Game` 状态接口和
   `KWUI` 工厂扩展，不要把业务规则重新写回节点表现层。
+- 地图、队伍、遭遇和地图对象通过稳定 ID 传递；出征状态保存 `mapId`、`partyPresetId`、
+  `encounterId`、`mapObjectId`，禁止依赖配置数组顺序或固定 `map_01` 完成键。
 
 ## 有意不迁入运行工程的旧文件
 

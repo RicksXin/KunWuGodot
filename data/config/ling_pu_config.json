@@ -1,8 +1,17 @@
 {
   "ling_pu": {
+    "baseCycleSeconds": 30,
+    "maxOfflineCycles": 960,
     "initialWorkerCount": 6,
     "workersPerRecruit": 5,
     "recruitSpiritGrainCost": 50,
+    "jobs": [
+      {"id": "spiritGrain", "outputPerWorker": 1, "upkeepPerWorker": 0, "shutdownPriority": null},
+      {"id": "spiritWood", "outputPerWorker": 1, "upkeepPerWorker": 2, "shutdownPriority": 3},
+      {"id": "darkIron", "outputPerWorker": 1, "upkeepPerWorker": 3, "shutdownPriority": 2},
+      {"id": "spiritStone", "outputPerWorker": 1, "upkeepPerWorker": 4, "shutdownPriority": 1},
+      {"id": "gengJing", "outputPerWorker": 1, "upkeepPerWorker": 9, "shutdownPriority": 0}
+    ],
     "resources": {
       "spiritGrain": {
         "initialLevel": 1,
