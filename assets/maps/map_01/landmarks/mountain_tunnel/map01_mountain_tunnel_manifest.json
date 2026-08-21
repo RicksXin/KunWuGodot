@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "approved_date": "2026-08-21",
+  "source_master": "res://art/source_archive/map01_landmarks/map01_tunnel_three_state_master_20260821.png",
+  "source_sha256": "a3b98ec88961971b31e2aae0ccbb6bdb6ad101246c13fbec3ff79176bb4608c8",
+  "source_size_px": [
+    1254,
+    1254
+  ],
+  "source_alpha_audit": {
+    "true_transparency": true,
+    "alpha_threshold": 128,
+    "transparent_rgb_hardened_to_black": true
+  },
+  "canvas_px": [
+    72,
+    56
+  ],
+  "subject_px": [
+    64,
+    39
+  ],
+  "subject_position_px": [
+    4,
+    13
+  ],
+  "anchor_px": [
+    36,
+    52
+  ],
+  "visual_footprint_cells": [
+    4,
+    3
+  ],
+  "runtime_display_scale": 3,
+  "map_scene_root_scale": 0.1875,
+  "map_scene_instance_scale": 16,
+  "formal_map_coordinate_frozen": false,
+  "candidate_document_cell": [
+    8,
+    28
+  ],
+  "component_scene": "res://scenes/maps/components/map01_mountain_tunnel.tscn",
+  "state_owner": "external Map01 runtime/save adapter; presentation never writes save data",
+  "foreground_faded_alpha": 0.22,
+  "layer_contract": {
+    "TUNNEL_STAY_BASE": "always visible; owns the invariant left/right shoulder geometry",
+    "TUNNEL_ROOF_FOREGROUND": "visual-only top cap; fades independently and never owns collision",
+    "state_layers": "center-slot visuals only; selected by external tunnel state"
+  },
+  "palette": [
+    "#1f313b",
+    "#213541",
+    "#243642",
+    "#253945",
+    "#283c48",
+    "#2f4451",
+    "#364751",
+    "#384d5a",
+    "#3a4f5c",
+    "#3b515e",
+    "#3f525e",
+    "#405562",
+    "#465964",
+    "#566266",
+    "#b54c32",
+    "#5b6c75",
+    "#5f7078",
+    "#60727a",
+    "#62737b",
+    "#657379",
+    "#64757e",
+    "#6a787f",
+    "#718087",
+    "#7b8587",
+    "#7e898e",
+    "#889195",
+    "#939a9b",
+    "#969c9e",
+    "#989fa0",
+    "#eee0b5"
+  ],
+  "functional_palette": {
+    "discovered_dull_ember": "#b54c32",
+    "cleared_warm_ivory": "#eee0b5"
+  },
+  "silhouette_iou": {
+    "default_discovered": 0.994105,
+    "default_cleared": 0.991987,
+    "discovered_cleared": 0.990385
+  },
+  "minimum_silhouette_iou": 0.990385,
+  "static_collision_rects": [
+    {
+      "id": "left_rock_shoulder",
+      "size_source_px": [
+        20,
+        18
+      ],
+      "center_source_px": [
+        -20,
+        -10
+      ]
+    },
+    {
+      "id": "right_rock_shoulder",
+      "size_source_px": [
+        20,
+        18
+      ],
+      "center_source_px": [
+        20,
+        -10
+      ]
+    }
+  ],
+  "center_barrier_collision": {
+    "size_source_px": [
+      16,
+      18
+    ],
+    "center_source_px": [
+      0,
+      -10
+    ],
+    "enabled_in": [
+      "TUNNEL_DEFAULT",
+      "TUNNEL_DISCOVERED"
+    ],
+    "disabled_in": [
+      "TUNNEL_CLEARED"
+    ]
+  },
+  "layers": {
+    "TUNNEL_STAY_BASE": {
+      "path": "res://assets/maps/map_01/landmarks/mountain_tunnel/tunnel_stay_base.png",
+      "used_rect_px": [
+        7,
+        29,
+        66,
+        52
+      ]
+    },
+    "TUNNEL_ROOF_FOREGROUND": {
+      "path": "res://assets/maps/map_01/landmarks/mountain_tunnel/tunnel_roof_foreground.png",
+      "used_rect_px": [
+        4,
+        13,
+        68,
+        33
+      ]
+    },
+    "TUNNEL_DEFAULT": {
+      "path": "res://assets/maps/map_01/landmarks/mountain_tunnel/tunnel_default_state.png",
+      "used_rect_px": [
+        27,
+        29,
+        45,
+        52
+      ]
+    },
+    "TUNNEL_DISCOVERED": {
+      "path": "res://assets/maps/map_01/landmarks/mountain_tunnel/tunnel_discovered_state.png",
+      "used_rect_px": [
+        27,
+        29,
+        45,
+        52
+      ]
+    },
+    "TUNNEL_CLEARED": {
+      "path": "res://assets/maps/map_01/landmarks/mountain_tunnel/tunnel_cleared_state.png",
+      "used_rect_px": [
+        27,
+        29,
+        45,
+        52
+      ]
+    }
+  },
+  "states": {
+    "TUNNEL_DEFAULT": {
+      "source_bbox": [
+        316,
+        40,
+        930,
+        411
+      ],
+      "passage_walkable": false,
+      "dull_ember_pixels": 0,
+      "warm_ivory_pixels": 0,
+      "composite_used_rect_px": [
+        4,
+        13,
+        68,
+        52
+      ]
+    },
+    "TUNNEL_DISCOVERED": {
+      "source_bbox": [
+        316,
+        440,
+        930,
+        811
+      ],
+      "passage_walkable": false,
+      "dull_ember_pixels": 1,
+      "warm_ivory_pixels": 0,
+      "composite_used_rect_px": [
+        4,
+        13,
+        68,
+        52
+      ]
+    },
+    "TUNNEL_CLEARED": {
+      "source_bbox": [
+        316,
+        833,
+        930,
+        1205
+      ],
+      "passage_walkable": true,
+      "dull_ember_pixels": 0,
+      "warm_ivory_pixels": 1,
+      "composite_used_rect_px": [
+        4,
+        13,
+        68,
+        52
+      ]
+    }
+  }
+}

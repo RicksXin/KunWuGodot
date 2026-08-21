@@ -1,0 +1,35 @@
+{
+  "actual_meowa_credits": 10,
+  "approved_by": "user_visual_gate",
+  "asset_id": "map01_road_gray_ground_dual_transition_approved_20260821",
+  "atlas_layout": {
+    "columns": 5,
+    "order": "row-major masks 0x1 through 0xF",
+    "rows": 3
+  },
+  "atlas_size_px": [
+    1280,
+    768
+  ],
+  "background_mode": "dual_opaque_gray_ground",
+  "background_tile": "assets/compiled/map01_road/dual_background_tile.png",
+  "bit_order": {
+    "ne": 2,
+    "nw": 1,
+    "se": 8,
+    "sw": 4
+  },
+  "empty_mask": 0,
+  "integration": "TileMapDual v5.0.2; draw only complete world tile 0xF at atlas (2,1).",
+  "job_id": "job_4c169e3ca7ea44b398716657361d11a8",
+  "prompt": "Background is gray rocky ground; foreground is an old ochre dirt road.",
+  "provider": "Meowa",
+  "runtime_atlas": "assets/compiled/map01_road/tilemapdual_standard.png",
+  "runtime_tileset": "resources/tilemapdual_map01_road.tres",
+  "schema_version": 2,
+  "source_atlas": "art/source_archive/meowa/map01_road_dual_transition/2026-08-21/Background_is_gray_rocky_ground_foreground_is_an_old_ochre_dirt_road/tileset.png",
+  "source_atlas_sha256": "8515aa007950600835c41973176a4804577757b1ebd29db618362492a8b48afc",
+  "status": "approved",
+  "system": "dual_grid_15piece",
+  "tile_size_px": 256
+}

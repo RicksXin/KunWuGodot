@@ -11,7 +11,7 @@ from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 ANIMATION_ROOT = ROOT / "assets/camp/ui/expedition/animations"
-SOURCE_ROOT = ROOT / "art/source_archive/cobat/utils/allies"
+SOURCE_ROOT = ROOT / "art/source_archive/cultivators"
 FRAME_SIZE = (86, 149)
 GRID_SIZE = (4, 2)
 WORK_SCALE = 4
@@ -213,7 +213,7 @@ def _make_sheet(frames: list[Image.Image]) -> Image.Image:
 
 def _compile_shi_yan() -> None:
     output = ANIMATION_ROOT / "shi_yan/shi_yan_idle_sheet.png"
-    source = SOURCE_ROOT / "shi_yan/shi_yan_idle_sheet.png"
+    source = SOURCE_ROOT / "shi_yan/shi_yan_idle_source_sheet.png"
     body_source = _first_frame(source)
     body = _fit_work(body_source, _content_bounds(body_source))
     frames = []
@@ -226,7 +226,7 @@ def _compile_shi_yan() -> None:
 
 def _compile_lu_qing() -> None:
     output = ANIMATION_ROOT / "lu_qing/lu_qing_idle_sheet.png"
-    source = _first_frame(SOURCE_ROOT / "lu_qing/法修 2.0.png")
+    source = _first_frame(SOURCE_ROOT / "lu_qing/lu_qing_idle_source_sheet.png")
     bounds = _content_bounds(source)
     body, left_disc = _extract_layer(source, _component_mask(source.getchannel("A"), (60, 110)))
     body, right_disc = _extract_layer(body, _component_mask(source.getchannel("A"), (275, 245)))

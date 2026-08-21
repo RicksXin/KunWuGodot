@@ -175,6 +175,7 @@ func _validate_map_files() -> void:
 		if not visual is Dictionary:
 			_fail("map_01 visual object is missing")
 		else:
+			_validate_res_path(str(visual.get("scenePath", "")), "map_01 scenePath")
 			_validate_res_path(str(visual.get("tileSetPath", "")), "map_01 tileSetPath")
 			if int(visual.get("tileSourceSize", 0)) <= 0 or int(visual.get("logicalTileSize", 0)) <= 0:
 				_fail("map_01 tile sizes must be positive")

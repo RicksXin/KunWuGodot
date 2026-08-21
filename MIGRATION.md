@@ -10,7 +10,7 @@
 |---|---|---|
 | `Boot.scene` / `AppRoot` | `scenes/boot.tscn` + `Game` autoload | 启动页、配置加载、场景切换 |
 | `Camp.scene` + Camp Prefab | `scenes/camp.tscn` + `scripts/scenes/camp.gd` | 三层营地 UI；中央 `ScrollContainer` 保持横滑 |
-| `Map.scene` / `TiledMap` | `scenes/map.tscn` + `map_canvas.gd` | 领域数据沿用 `map_01_demo.json`；D0 地图用 Godot 绘制像素灰盒，保留 CC0 TMX/tileset 供后续 TileMapLayer 替换 |
+| `Map.scene` / `TiledMap` | `scenes/map.tscn` + `scenes/maps/map_01.tscn` + `map_canvas.gd` | Map01 地形与坐标以 Godot TileMapLayer/TileMapDual 场景为事实源；`map_01_demo.json` 保存事件、奖励和遭遇语义，CC0 tileset 仅作无场景配置时的兼容回退 |
 | `Combat.scene` / Presenter | `scenes/combat.tscn` + `combat.gd` | 固定时间步、技能目标、伤害/治疗、手动/自动、撤离和胜负结算 |
 | Cocos 程序化按钮组件 | `KWUI.camp_button/map_button/combat_button` + `camp_button_visual.gd` | 迁入营地 Inline/Footer 三态、地图与战斗配色及 0.96 按压反馈；营地可见层与至少 48px 触控层分离 |
 | `GameState` / `SaveService` | `scripts/autoload/game.gd` | 资源、营地、修士、远征状态聚合；原子临时文件写入 `user://kunwu_profile.json` |
@@ -23,14 +23,20 @@
 
 - 完整 `Docs/` 文档快照，包括 1.0 策划、PRD、美术资产、Demo、Figma、API 与技术资料；
   Godot 项目内的代理与人工开发以该快照为文档事实源。
-- `art/source_archive/` 美术源文件、`third_party/` 第三方原始包与许可链，以及
-  `Docs/Artifacts/` 迁移前评审产物；这些目录通过 `.gdignore` 排除在运行时导入之外。
+- 本机 `art/source_archive/` 美术源文件与候选制作区不进入主仓库，也不构成运行依赖；用户确认后的
+  运行素材只从 `assets/` 读取。`third_party/` 第三方原始包与许可链以及 `Docs/Artifacts/`
+  迁移前评审产物继续保留；不参与运行时的目录通过 `.gdignore` 排除导入。
 - 营地背景、七座建筑的开放/锁定图、HUD 图标、灵源院/入山整备面板素材。
 - 四名初始修士肖像与两组帧动画、Ark Pixel 字体及 OFL 许可文件。
 - `default_profile.json`、`expedition_preparation.json`、`ling_pu_config.json`、
   `combat_d0.json`、`map_01_demo.json`、中文本地化、职业/技能/平衡数据。
-- Puny Dungeon CC0 来源快照、TMX、TSX 和 tileset；Godot 版当前以领域数据绘制可读灰盒，
-  不会损坏或改写第三方源文件。
+- Puny Dungeon CC0 来源快照、TMX、TSX 和 tileset；它们保留为兼容回退，不会损坏或改写
+  第三方源文件。当前 Map01 使用已通过视觉 Gate 的灰蓝色荒土地面素材编译出的
+  `resources/tilemapdual_standard.tres` Dual Grid 地面笔刷；枯黄旧路已编译为独立的
+  `resources/tilemapdual_map01_road.tres` 笔刷但尚未绘入地图。灰白山体已编译为
+  `resources/tilemapdual_map01_mountain.tres`，并在 Map01 独立 `Mountain` 图层中按当前 `15×15`
+  灰盒的非 Ground 补集试铺；山体图层不承担碰撞或产品语义。Map01 另有覆盖当前 `15×15`
+  活跃区的纯视觉 `GroundUnderlay`，仅为山体透明边缘补底，逻辑可走性仍只取自 `Ground`。
 - 当前文档入口为 `Docs/README.md`；迁移前执行级技术文档集中在 `Docs/LegacyCocos/`，只作审计。
 - 项目数据结构由 `tools/validate_project_data.gd` 校验；面板按钮由
   `tools/validate_button_styles.gd` 校验；营地建筑布局由
@@ -45,8 +51,9 @@
 
 1. 营地中央全景横向拖动，点击灵源院调度杂役、升级储量、招募杂役；点击议事殿查看岑守一。
 2. 点击传送阵或底部“入山整备”，选择四人队伍和灵粮后进入 map_01。
-3. 地图以 48×48 逻辑格显示，保留 `UNKNOWN → DISCOVERED → VISIBLE` 迷雾、地形成本、
-   四方向移动、宝箱/故事对象和固定残禁石傀。
+3. 地图从 `scenes/maps/map_01.tscn` 读取 48×48 逻辑格布局，保留
+   `UNKNOWN → DISCOVERED → VISIBLE` 迷雾、地形成本、四方向移动、宝箱/故事对象和固定残禁石傀；
+   `Ground` 使用 TileMapDual，`DifficultTerrain` 和 Marker 分别保存难行格与对象坐标。
 4. 战斗按照 `CombatCommand → 结算器 → CombatEvent` 的职责划分执行自动技能，支持技能按钮、
    自动/手动切换、生命条、日志、撤离和胜负结算；胜利奖励写入临时战利品并可归营入库。
 5. 刷新或退出后，从 `user://kunwu_profile.json` 恢复状态；设置页可立即保存或重置新档。
@@ -60,8 +67,8 @@ Godot 项目基准视口为 `375×817`，Compatibility 渲染器、nearest 像�
   不伪造不存在的关卡。
 - 原 Cocos 的 IndexedDB、浏览器 Bundle 预载、Figma/Cocos 编辑器契约没有一一照搬；Godot 版
   以本地 JSON 存档与资源路径完成同等单机行为。
-- 后续接入完整 TileMapLayer、帧动画、音频或新的页面时，应从现有 `Game` 状态接口和
-  `KWUI` 工厂扩展，不要把业务规则重新写回节点表现层。
+- Map01 已接入可编辑 TileMapLayer；后续加入正式墙体、道路、水面、装饰和对象图标时，从现有
+  `Ground`、`DifficultTerrain`、Marker 和运行 Overlay 扩展，不要把业务规则写回表现节点。
 - 地图、队伍、遭遇和地图对象通过稳定 ID 传递；出征状态保存 `mapId`、`partyPresetId`、
   `encounterId`、`mapObjectId`，禁止依赖配置数组顺序或固定 `map_01` 完成键。
 

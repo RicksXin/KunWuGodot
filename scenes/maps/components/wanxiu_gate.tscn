@@ -1,0 +1,74 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/wanxiu_gate.gd" id="1_gate"]
+[ext_resource type="Texture2D" path="res://assets/maps/map_01/landmarks/wanxiu_gate/gate_stay_base.png" id="2_base"]
+[ext_resource type="Texture2D" path="res://assets/maps/map_01/landmarks/wanxiu_gate/gate_locked_seal.png" id="3_state"]
+[ext_resource type="Texture2D" path="res://assets/maps/map_01/landmarks/wanxiu_gate/gate_top_foreground.png" id="4_foreground"]
+[ext_resource type="Texture2D" path="res://assets/maps/map_01/landmarks/wanxiu_gate/gate_title_marks.png" id="5_title"]
+[ext_resource type="FontFile" path="res://assets/fonts/ark-pixel-12px-proportional-zh_cn.ttf" id="6_font"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_foundation"]
+size = Vector2(46, 17)
+
+[sub_resource type="RectangleShape2D" id="Rectangle_center"]
+size = Vector2(28, 14)
+
+[node name="WanxiuGate" type="Node2D"]
+script = ExtResource("1_gate")
+
+[node name="GateStayBase" type="Sprite2D" parent="."]
+position = Vector2(-64, -36)
+centered = false
+texture = ExtResource("2_base")
+
+[node name="GateState" type="Sprite2D" parent="."]
+position = Vector2(-64, -36)
+z_index = 10
+centered = false
+texture = ExtResource("3_state")
+
+[node name="GateTopForeground" type="Sprite2D" parent="."]
+position = Vector2(-64, -36)
+z_index = 15
+centered = false
+texture = ExtResource("4_foreground")
+
+[node name="GateTitleMarks" type="Sprite2D" parent="."]
+position = Vector2(-64, -36)
+z_index = 25
+centered = false
+texture = ExtResource("5_title")
+
+[node name="GateTitle" type="Label" parent="."]
+offset_left = -15.833333
+offset_top = -18.666666
+offset_right = 79.166667
+offset_bottom = 1.333334
+scale = Vector2(0.333333, 0.333333)
+z_index = 26
+theme_override_colors/font_color = Color(0.188, 0.239, 0.275, 1)
+theme_override_fonts/font = ExtResource("6_font")
+theme_override_font_sizes/font_size = 10
+text = "万修之门"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OuterWalls" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="LeftCollision" type="CollisionShape2D" parent="OuterWalls"]
+position = Vector2(-37, -10.5)
+shape = SubResource("Rectangle_foundation")
+
+[node name="RightCollision" type="CollisionShape2D" parent="OuterWalls"]
+position = Vector2(37, -10.5)
+shape = SubResource("Rectangle_foundation")
+
+[node name="CenterBarrier" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CenterBarrier"]
+position = Vector2(0, -9)
+shape = SubResource("Rectangle_center")

@@ -7,6 +7,10 @@ const PROFILE_PATH := "user://kunwu_profile.json"
 const PROFILE_TMP_PATH := "user://kunwu_profile.tmp"
 const DEFAULT_PROFILE_PATH := "res://data/config/default_profile.json"
 const CONFIG_ROOT := "res://data/config/"
+const MapSceneLayout := preload("res://scripts/maps/map_scene_layout.gd")
+const LOCAL_MAP_LAYOUT_SCENES := {
+	"map_01": "res://scenes/maps/map_01.tscn",
+}
 
 var profile: Dictionary = {}
 var localization: Dictionary = {}
@@ -19,6 +23,7 @@ var map_definition: Dictionary = {}
 var asset_definitions: Dictionary = {}
 var loaded_from_save := false
 var suppress_profile_writes := false
+var _map_layout_cache: Dictionary = {}
 
 func _ready() -> void:
 	# Tool scripts and editor scans are validation contexts, never gameplay.
@@ -40,6 +45,7 @@ func _load_json(path: String) -> Variant:
 	return parsed if parsed != null else {}
 
 func _load_json_tables() -> void:
+	_map_layout_cache.clear()
 	localization = ConfigRepository.table("localization").duplicate(true)
 	expedition_config = ConfigRepository.table("expedition").duplicate(true)
 	ling_pu_config = ConfigRepository.table("ling_pu").duplicate(true)
@@ -246,7 +252,11 @@ func get_party_preset(preset_id: String = "") -> Dictionary:
 	var preparation: Dictionary = profile.get("expeditionPreparation", {})
 	var target_id := preset_id
 	if target_id.is_empty():
-		target_id = str(profile.get("expedition", {}).get("partyPresetId", preparation.get("activePresetId", "")))
+		var expedition: Variant = profile.get("expedition")
+		if expedition is Dictionary and not expedition.is_empty():
+			target_id = str(expedition.get("partyPresetId", preparation.get("activePresetId", "")))
+		else:
+			target_id = str(preparation.get("activePresetId", ""))
 	for preset in preparation.get("partyPresets", []):
 		if str(preset.get("presetId", "")) == target_id: return preset
 	return {}
@@ -266,7 +276,43 @@ func party_heroes(preset_id: String = "") -> Array:
 
 func get_map_definition(map_id: String = "") -> Dictionary:
 	var target_id := map_id if not map_id.is_empty() else get_active_map_id()
-	return map_definitions.get(target_id, {})
+	var configured: Dictionary = map_definitions.get(target_id, {})
+	if configured.is_empty():
+		return {}
+	var configured_visual: Variant = configured.get("visual")
+	var visual: Dictionary = configured_visual.duplicate(true) if configured_visual is Dictionary else {}
+	var scene_path := str(visual.get("scenePath", LOCAL_MAP_LAYOUT_SCENES.get(target_id, "")))
+	var resolved := configured.duplicate(true)
+	resolved["visual"] = visual
+	if scene_path.is_empty():
+		return resolved
+	var cache_key := "%s|%s" % [target_id, scene_path]
+	if _map_layout_cache.has(cache_key):
+		return _map_layout_cache[cache_key]
+	var layout: Dictionary = MapSceneLayout.load_layout(scene_path)
+	if layout.is_empty():
+		return resolved
+	visual["scenePath"] = scene_path
+	resolved["visual"] = visual
+	var merged := resolved
+	for key in ["activeWidth", "activeHeight", "entryX", "entryY", "terrainRows"]:
+		merged[key] = layout[key]
+	var object_positions: Dictionary = layout.get("objectPositions", {})
+	var merged_objects: Array = []
+	for configured_object in configured.get("objects", []):
+		var object: Dictionary = configured_object.duplicate(true)
+		var object_id := str(object.get("id", ""))
+		if object_positions.has(object_id):
+			var placement: Dictionary = object_positions[object_id]
+			object["x"] = int(placement.get("x", object.get("x", 0)))
+			object["y"] = int(placement.get("y", object.get("y", 0)))
+			if str(object.get("kind", "")).is_empty():
+				object["kind"] = str(placement.get("kind", ""))
+		merged_objects.append(object)
+	merged["objects"] = merged_objects
+	merged["layoutSource"] = "godot_scene"
+	_map_layout_cache[cache_key] = merged
+	return merged
 
 func get_expedition_map_rule(map_id: String = "") -> Dictionary:
 	var target_id := map_id if not map_id.is_empty() else get_active_map_id()

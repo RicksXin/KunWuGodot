@@ -1,0 +1,121 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map01_gate_demo.gd" id="1_demo"]
+[ext_resource type="FontFile" path="res://assets/fonts/ark-pixel-12px-proportional-zh_cn.ttf" id="2_font"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/wanxiu_gate.tscn" id="3_gate"]
+
+[sub_resource type="CircleShape2D" id="Circle_player"]
+radius = 10.0
+
+[node name="Map01GateDemo" type="Node2D"]
+script = ExtResource("1_demo")
+
+[node name="WanxiuGate" parent="." instance=ExtResource("3_gate")]
+position = Vector2(187.5, 410)
+scale = Vector2(3, 3)
+z_index = 5
+
+[node name="BossMarker" type="Polygon2D" parent="."]
+position = Vector2(187.5, 492)
+z_index = 40
+polygon = PackedVector2Array(-18, -8, -10, -17, 10, -17, 18, -8, 14, 12, 0, 18, -14, 12)
+color = Color(0.549, 0.267, 0.357, 1)
+
+[node name="Core" type="Polygon2D" parent="BossMarker"]
+polygon = PackedVector2Array(-4, -10, 4, -10, 2, 9, -2, 9)
+color = Color(0.933, 0.91, 0.855, 1)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(187.5, 626)
+z_index = 10
+collision_layer = 2
+collision_mask = 1
+
+[node name="Body" type="Polygon2D" parent="Player"]
+polygon = PackedVector2Array(-13, 0, 0, -17, 13, 0, 0, 17)
+color = Color(0.71, 0.28, 0.27, 1)
+
+[node name="Marker" type="Polygon2D" parent="Player"]
+z_index = 40
+polygon = PackedVector2Array(-6, -2, 0, -9, 6, -2, 0, 5)
+color = Color(0.933, 0.91, 0.855, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("Circle_player")
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="Title" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 355.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.933, 0.91, 0.855, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 21
+text = "万修之门 · 三状态验收"
+horizontal_alignment = 1
+
+[node name="StateLabel" type="Label" parent="UI"]
+offset_left = 12.0
+offset_top = 57.0
+offset_right = 363.0
+offset_bottom = 88.0
+theme_override_colors/font_color = Color(0.773, 0.639, 0.357, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+
+[node name="Help" type="Label" parent="UI"]
+offset_left = 10.0
+offset_top = 94.0
+offset_right = 365.0
+offset_bottom = 121.0
+theme_override_colors/font_color = Color(0.69, 0.714, 0.745, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 11
+text = "WASD移动 · Q/E切状态 · Space自动 · R重置"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="UI"]
+offset_left = 10.0
+offset_top = 692.0
+offset_right = 365.0
+offset_bottom = 736.0
+theme_override_colors/font_color = Color(0.933, 0.91, 0.855, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+
+[node name="PreviousButton" type="Button" parent="UI"]
+offset_left = 10.0
+offset_top = 752.0
+offset_right = 85.0
+offset_bottom = 800.0
+theme_override_fonts/font = ExtResource("2_font")
+text = "上一态"
+
+[node name="AutoButton" type="Button" parent="UI"]
+offset_left = 92.0
+offset_top = 752.0
+offset_right = 176.0
+offset_bottom = 800.0
+theme_override_fonts/font = ExtResource("2_font")
+text = "自动：开"
+
+[node name="ResetButton" type="Button" parent="UI"]
+offset_left = 183.0
+offset_top = 752.0
+offset_right = 267.0
+offset_bottom = 800.0
+theme_override_fonts/font = ExtResource("2_font")
+text = "重置"
+
+[node name="NextButton" type="Button" parent="UI"]
+offset_left = 274.0
+offset_top = 752.0
+offset_right = 365.0
+offset_bottom = 800.0
+theme_override_fonts/font = ExtResource("2_font")
+text = "下一态"

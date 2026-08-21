@@ -18,8 +18,10 @@ D0/D1 Demo 的范围、进度和验收独立读取 [`Demo/`](Demo/README.md)，�
 | 美术基准与像素纪律 | [`02_美术设计规范.md`](02_美术设计规范.md) |
 | 动画与视觉特效 | [`04_动画制作规范.md`](04_动画制作规范.md)、[`03_视觉特效方案.md`](03_视觉特效方案.md) |
 | 地图与 TileMap/Dual Grid | [`05_地图与关卡编辑方案.md`](05_地图与关卡编辑方案.md) |
+| 地图生成式美术与 ChatGPT/Meowa 分工 | [`ArtAssets/18_地图生成式美术生产与模型分工规范.md`](ArtAssets/18_地图生成式美术生产与模型分工规范.md) |
 | Godot 编辑器操作 | [`09_编辑器操作清单.md`](09_编辑器操作清单.md) |
 | 数值表与运行时边界 | [`13_数值设计方案.md`](13_数值设计方案.md) |
+| Meowa API 积分、授权与产物门禁 | [`Tech/Meowa_API调用规范.md`](Tech/Meowa_API调用规范.md) |
 | Figma 到 Godot 资源映射 | [`Figma/README.md`](Figma/README.md) |
 | 正式美术素材清单 | [`ArtAssets/README.md`](ArtAssets/README.md) |
 | 当前迁移状态 | [`../MIGRATION.md`](../MIGRATION.md) |

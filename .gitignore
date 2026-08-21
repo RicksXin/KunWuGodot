@@ -6,3 +6,12 @@ export/
 .mono/
 *.tmp
 user://
+.env
+
+# Local Python tool caches.
+__pycache__/
+*.py[cod]
+
+# Local-only art production workspace. Approved runtime assets belong in assets/.
+/art/**
+!/art/README.md

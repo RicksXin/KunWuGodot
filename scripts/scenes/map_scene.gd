@@ -243,7 +243,7 @@ func _on_cell_clicked(x: int, y: int) -> void:
 
 func _refresh() -> void:
 	if not is_instance_valid(map_canvas): return
-	map_canvas.queue_redraw()
+	map_canvas.call("refresh")
 	var expedition: Dictionary = Game.profile.get("expedition", {})
 	var position: Dictionary = expedition.get("position", {})
 	var x := int(position.get("x", 0))

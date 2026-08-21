@@ -218,7 +218,8 @@ func _adapt_maps(module: Dictionary, assets: Dictionary, reward_packs: Dictionar
 			"activeWidth": int(row.get("activeWidth", 0)), "activeHeight": int(row.get("activeHeight", 0)),
 			"entryX": int(row.get("entryX", 0)), "entryY": int(row.get("entryY", 0)),
 			"terrainRows": terrain.get("rows", []), "objects": objects,
-			"visual": row.get("visualConfig", {}), "expeditionRule": row.get("expeditionRule", {}),
+			"visual": row.get("visualConfig", {}).duplicate(true) if row.get("visualConfig") is Dictionary else {},
+			"expeditionRule": row.get("expeditionRule", {}),
 			"unlockCondition": row.get("unlockCondition", null),
 		}
 	return result

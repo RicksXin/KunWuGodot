@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "approved_date": "2026-08-20",
+  "source_master": "res://art/source_archive/map01_landmarks/map01_stele_three_state_master_20260820.png",
+  "source_sha256": "ac444400eccc60e00ed07ccf3de741c9b76bb71e4e4062870feceb4dfb23c7c3",
+  "source_size_px": [
+    1254,
+    1254
+  ],
+  "canvas_px": [
+    56,
+    56
+  ],
+  "subject_max_px": [
+    48,
+    48
+  ],
+  "normalized_subject_px": [
+    43,
+    48
+  ],
+  "anchor_px": [
+    28,
+    52
+  ],
+  "visual_footprint_cells": [
+    3,
+    3
+  ],
+  "collision_size_source_px": [
+    32,
+    20
+  ],
+  "collision_center_source_px": [
+    0,
+    -10
+  ],
+  "runtime_display_scale": 3,
+  "map_scene_root_scale": 0.1875,
+  "map_scene_instance_scale": 16,
+  "component_scene": "res://scenes/maps/components/map01_wanxiu_stele.tscn",
+  "formal_map_coordinate_frozen": false,
+  "state_source_contract": "external product state; never inferred from artwork or collision",
+  "collision_contract": "all three states share the same independent 32x20 collision shape",
+  "silhouette_contract": "all runtime states use the exact STELE_DEFAULT outer silhouette and base geometry",
+  "cleanup_treatment": "generated cross, readable-glyph risk and cyan screen were removed; only deterministic disconnected marks remain",
+  "c07_boundary": "reserved replacement face only; no future writing, portal, character or time-river content",
+  "palette": [
+    "#18262c",
+    "#1b2a30",
+    "#1b2a31",
+    "#1d2c33",
+    "#203037",
+    "#27373d",
+    "#2b3a3f",
+    "#313f44",
+    "#3a474a",
+    "#3d4d50",
+    "#415053",
+    "#495453",
+    "#465658",
+    "#4d5a59",
+    "#565c56",
+    "#5e645d",
+    "#6b6c61",
+    "#7b735e",
+    "#837c68",
+    "#977e52",
+    "#8b836d",
+    "#94876c",
+    "#9c8d6f",
+    "#b89e71",
+    "#c5a35b",
+    "#9bb3bd",
+    "#cbe1e2",
+    "#eee0b5"
+  ],
+  "states": {
+    "STELE_DEFAULT": {
+      "asset_id": "wanxiu_stele_default",
+      "path": "res://assets/maps/map_01/landmarks/wanxiu_stele/wanxiu_stele_default.png",
+      "source_reference_bbox": [
+        468,
+        67,
+        760,
+        387
+      ],
+      "runtime_geometry_source": "STELE_DEFAULT"
+    },
+    "STELE_INTERACTED": {
+      "asset_id": "wanxiu_stele_interacted",
+      "path": "res://assets/maps/map_01/landmarks/wanxiu_stele/wanxiu_stele_interacted.png",
+      "source_reference_bbox": [
+        468,
+        474,
+        760,
+        792
+      ],
+      "runtime_geometry_source": "STELE_DEFAULT"
+    },
+    "STELE_C07_RESERVED": {
+      "asset_id": "wanxiu_stele_c07_reserved",
+      "path": "res://assets/maps/map_01/landmarks/wanxiu_stele/wanxiu_stele_c07_reserved.png",
+      "source_reference_bbox": [
+        468,
+        879,
+        760,
+        1195
+      ],
+      "runtime_geometry_source": "STELE_DEFAULT"
+    }
+  }
+}

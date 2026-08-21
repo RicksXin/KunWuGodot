@@ -1,0 +1,111 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map01_d1_landmark_preview.gd" id="1_preview"]
+[ext_resource type="PackedScene" path="res://scenes/maps/map_01_d1_environment.tscn" id="1_environment"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/wanxiu_gate.tscn" id="2_gate"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/map01_array_lamp.tscn" id="3_lamp"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/map01_wanxiu_stele.tscn" id="4_stele"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/map01_derelict_camp.tscn" id="5_camp"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/map01_mountain_tunnel.tscn" id="6_tunnel"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/map01_east_wall_stairs.tscn" id="8_stairs"]
+
+[node name="Map01D1LandmarkPreview" type="Node2D"]
+script = ExtResource("1_preview")
+
+[node name="Environment" parent="." instance=ExtResource("1_environment")]
+
+[node name="CandidateLandmarks" type="Node2D" parent="."]
+scale = Vector2(0.1875, 0.1875)
+
+[node name="WanxiuGate" parent="CandidateLandmarks" instance=ExtResource("2_gate")]
+position = Vector2(6272, 1280)
+scale = Vector2(16, 16)
+z_index = 3
+
+[node name="Lamp03" parent="CandidateLandmarks" instance=ExtResource("3_lamp")]
+position = Vector2(3968, 5376)
+scale = Vector2(16, 16)
+
+[node name="TunnelCandidate" parent="CandidateLandmarks" instance=ExtResource("6_tunnel")]
+position = Vector2(2176, 7424)
+scale = Vector2(16, 16)
+
+[node name="StairsCandidate" parent="CandidateLandmarks" instance=ExtResource("8_stairs")]
+position = Vector2(10112, 8192)
+scale = Vector2(16, 16)
+
+[node name="Lamp02" parent="CandidateLandmarks" instance=ExtResource("3_lamp")]
+position = Vector2(9856, 10240)
+scale = Vector2(16, 16)
+
+[node name="WanxiuStele" parent="CandidateLandmarks" instance=ExtResource("4_stele")]
+position = Vector2(6272, 11008)
+scale = Vector2(16, 16)
+
+[node name="DerelictCamp" parent="CandidateLandmarks" instance=ExtResource("5_camp")]
+position = Vector2(8064, 12800)
+scale = Vector2(16, 16)
+
+[node name="Lamp01" parent="CandidateLandmarks" instance=ExtResource("3_lamp")]
+position = Vector2(5504, 13568)
+scale = Vector2(16, 16)
+lamp_state = 1
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(1152, 1536)
+zoom = Vector2(0.15, 0.15)
+enabled = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="Title" type="Label" parent="UI"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 363.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.933, 0.91, 0.855, 1)
+theme_override_font_sizes/font_size = 17
+text = "Map01 · D1 地标构图预览"
+horizontal_alignment = 1
+
+[node name="ModeLabel" type="Label" parent="UI"]
+offset_left = 8.0
+offset_top = 42.0
+offset_right = 367.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(0.773, 0.639, 0.357, 1)
+theme_override_font_sizes/font_size = 12
+text = "1 / 6　全图总览 · 候选地标构图"
+horizontal_alignment = 1
+
+[node name="Help" type="Label" parent="UI"]
+offset_left = 8.0
+offset_top = 746.0
+offset_right = 367.0
+offset_bottom = 774.0
+theme_override_colors/font_color = Color(0.69, 0.714, 0.745, 1)
+theme_override_font_sizes/font_size = 9
+text = "Q/E/Space 区域 · 数字1–6直达 · T暗道 · R阶梯"
+horizontal_alignment = 1
+
+[node name="PreviousButton" type="Button" parent="UI"]
+offset_left = 10.0
+offset_top = 775.0
+offset_right = 116.0
+offset_bottom = 807.0
+text = "上一区域"
+
+[node name="StairsButton" type="Button" parent="UI"]
+offset_left = 124.0
+offset_top = 775.0
+offset_right = 251.0
+offset_bottom = 807.0
+text = "阶梯：关"
+
+[node name="NextButton" type="Button" parent="UI"]
+offset_left = 259.0
+offset_top = 775.0
+offset_right = 365.0
+offset_bottom = 807.0
+text = "下一区域"

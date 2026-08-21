@@ -3,22 +3,46 @@ extends Control
 signal cell_clicked(x: int, y: int)
 
 var tile_size := 48.0
-var tile_source_size := 16
-var tileset: Texture2D
+var terrain_instance: Node2D
+var overlay: Control
 
 func _ready() -> void:
 	var active_map := Game.get_map_definition()
 	var visual: Dictionary = active_map.get("visual", {})
 	tile_size = float(visual.get("logicalTileSize", 48))
-	tile_source_size = int(visual.get("tileSourceSize", 16))
-	var tileset_path := str(visual.get("tileSetPath", "res://assets/maps/map_01/puny_dungeon/punyworld-dungeon-tileset.png"))
-	if not tileset_path.is_empty() and ResourceLoader.exists(tileset_path): tileset = load(tileset_path)
-	custom_minimum_size = Vector2(int(active_map.get("activeWidth", 15)) * tile_size, int(active_map.get("activeHeight", 15)) * tile_size)
+	var width := int(active_map.get("activeWidth", 15))
+	var height := int(active_map.get("activeHeight", 15))
+	custom_minimum_size = Vector2(width * tile_size, height * tile_size)
+	size = custom_minimum_size
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	queue_redraw()
+	var scene_terrain_active := _instantiate_terrain(str(visual.get("scenePath", "")))
+	overlay = Control.new()
+	overlay.name = "RuntimeOverlay"
+	overlay.set_script(load("res://scripts/scenes/map_overlay.gd"))
+	overlay.position = Vector2.ZERO
+	overlay.size = custom_minimum_size
+	overlay.z_index = 100
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(overlay)
+	overlay.call("setup", scene_terrain_active)
+
+func _instantiate_terrain(scene_path: String) -> bool:
+	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+		return false
+	var packed := load(scene_path) as PackedScene
+	if packed == null:
+		return false
+	terrain_instance = packed.instantiate() as Node2D
+	if terrain_instance == null:
+		return false
+	terrain_instance.name = "Terrain"
+	add_child(terrain_instance)
+	move_child(terrain_instance, 0)
+	return true
 
 func refresh() -> void:
-	queue_redraw()
+	if is_instance_valid(overlay):
+		overlay.call("refresh")
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -27,64 +51,3 @@ func _gui_input(event: InputEvent) -> void:
 		var cell_y := int(Game.get_map_definition().get("activeHeight", 15)) - 1 - screen_y
 		if Game.is_visible(cell_x, cell_y):
 			emit_signal("cell_clicked", cell_x, cell_y)
-
-func _draw() -> void:
-	var active_map := Game.get_map_definition()
-	var width := int(active_map.get("activeWidth", 15))
-	var height := int(active_map.get("activeHeight", 15))
-	var expedition: Variant = Game.profile.get("expedition")
-	if expedition == null: return
-	var position: Dictionary = expedition.get("position", {"x": 2, "y": 2})
-	for y in range(height):
-		for x in range(width):
-			var screen_y := height - 1 - y
-			var rect := Rect2(x * tile_size, screen_y * tile_size, tile_size, tile_size)
-			var tile: Dictionary = Game.tile_at(x, y)
-			var symbol := str(tile.get("symbol", "#"))
-			var color := Color("#2b3436") if symbol == "#" else Color("#596052")
-			if symbol == "~": color = Color("#6e5f48")
-			if symbol == "E": color = Color("#176c6a")
-			if Game.is_revealed(x, y):
-				draw_rect(rect, color)
-				if tileset: draw_texture_rect_region(tileset, rect, _tile_region(symbol))
-			else:
-				draw_rect(rect, Color("#03070a"))
-			draw_rect(rect, Color("#172426"), false, 1.0)
-			if not Game.is_visible(x, y) and Game.is_revealed(x, y):
-				draw_rect(rect, Color(0.02, 0.04, 0.05, 0.48))
-			if Game.is_visible(x, y) and symbol == "#":
-				draw_rect(Rect2(rect.position + Vector2(7, 7), rect.size - Vector2(14, 14)), Color("#394549"))
-			elif Game.is_visible(x, y) and symbol == "~":
-				for stripe in range(3):
-					draw_line(rect.position + Vector2(8, 15 + stripe * 9), rect.position + Vector2(40, 7 + stripe * 9), Color("#9d885d"), 2.0)
-	# Entry marker.
-	var entry_x := int(active_map.get("entryX", 2))
-	var entry_y := int(active_map.get("entryY", 2))
-	_draw_diamond(Vector2((entry_x + 0.5) * tile_size, (height - entry_y - 0.5) * tile_size), tile_size * 0.29, Color("#4dd5c0"))
-	for object in active_map.get("objects", []):
-		var ox := int(object.get("x", 0))
-		var oy := int(object.get("y", 0))
-		if not Game.is_revealed(ox, oy): continue
-		if Game.profile.get("completedMapObjects", {}).get(Game.map_object_key(Game.get_active_map_id(), str(object.get("id", ""))), false): continue
-		if object.get("kind") == "enemy_group" and not Game.is_visible(ox, oy): continue
-		var marker := Vector2((ox + 0.5) * tile_size, (height - oy - 0.5) * tile_size)
-		if object.get("kind") == "enemy_group": _draw_diamond(marker, tile_size * 0.31, Color("#e45e54"))
-		elif object.get("kind") == "treasure_chest":
-			draw_rect(Rect2(marker - Vector2(14, 8), Vector2(28, 18)), Color("#d6a344"))
-			draw_line(marker - Vector2(14, -1), marker + Vector2(14, -1), Color("#ffe09a"), 2.0)
-		else: _draw_diamond(marker, tile_size * 0.27, Color("#ae69d6"))
-	# Player marker.
-	var player := Vector2((int(position.get("x", 2)) + 0.5) * tile_size, (height - int(position.get("y", 2)) - 0.5) * tile_size)
-	draw_circle(player, 14.0, Color("#5dc1eb"))
-	draw_arc(player, 14.0, 0, TAU, 24, Color("#e1f5ee"), 2.0)
-
-func _draw_diamond(center: Vector2, radius: float, color: Color) -> void:
-	var points := PackedVector2Array([center + Vector2(0, -radius), center + Vector2(radius, 0), center + Vector2(0, radius), center + Vector2(-radius, 0)])
-	draw_colored_polygon(points, color)
-
-func _tile_region(symbol: String) -> Rect2:
-	# 与冻结源 TMX 相同的三个 tile GID：墙 27、地面 5、碎石/水迹 79。
-	var gid := 27 if symbol == "#" else 79 if symbol == "~" else 5
-	var index := gid - 1
-	var columns := maxi(1, floori(float(tileset.get_width()) / float(tile_source_size))) if tileset else 1
-	return Rect2((index % columns) * tile_source_size, floori(float(index) / float(columns)) * tile_source_size, tile_source_size, tile_source_size)

@@ -150,7 +150,7 @@ KunWuGodot/
 ├── resources/           TileSet 等 Godot Resource 文件
 ├── addons/              TileMapDual v5.0.2 插件
 ├── tools/               数据、场景和 Dual Grid 无界面校验工具
-├── art/                 运行美术母版与不导入的迁移源文件归档
+├── art/                 本地美术制作、候选与来源归档（除说明外不提交）
 ├── third_party/         第三方原始包和许可证归档，不进入运行时导入
 ├── Docs/                Godot 文档事实源、历史审计与评审产物
 ├── MIGRATION.md         Cocos 到 Godot 的技术迁移映射
@@ -160,6 +160,9 @@ KunWuGodot/
 内部字段和资源 ID 保持源项目兼容。例如 `spiritStone` 的显示名仍为“灵晶”，
 `immortalCoin` 显示为“灵石”。项目基准视口为 `375×817`，使用 Compatibility 渲染器和
 nearest 像素过滤。
+
+`art/` 是本地制作工作区，不是运行时依赖。用户视觉确认后的正式素材晋升到 `assets/` 才进入主仓库；
+制作原图、候选、联系表和评审截图应另行备份，不随主仓库推送。
 
 ## 七、常见问题
 
@@ -181,3 +184,80 @@ Godot 的“文件系统”面板中右键 `assets`，选择“重新扫描”�
 
 在营地点击“设置”→“重置新档”。也可以关闭游戏后删除
 `kunwu_profile.json`，下次启动时会自动建立新档。
+
+## 八、Codex Godot MCP
+
+本机已为 Codex 注册 `godot-mcp`（`@coding-solo/godot-mcp@0.1.1`）。它通过 MCP 让 AI
+读取项目结构、获取 Godot 版本、启动编辑器、运行项目和读取调试输出；它不是放在
+`addons/` 中的游戏运行插件。
+
+配置使用本机 Godot 4.7.1：
+
+```text
+GODOT_PATH=/Applications/Godot.app/Contents/MacOS/Godot
+工作目录=/Users/zhangxiaoen/Desktop/Game/KunWuGodot
+```
+
+配置文件位于 `~/.codex/config.toml`。重新启动 Codex 后，在 MCP 工具列表中应看到
+`godot`。调用工具时项目路径使用：
+
+```text
+/Users/zhangxiaoen/Desktop/Game/KunWuGodot
+```
+
+如果需要移除或重新注册：
+
+```bash
+/Applications/ChatGPT.app/Contents/Resources/codex mcp remove godot
+/Applications/ChatGPT.app/Contents/Resources/codex mcp add godot \
+  --env GODOT_PATH=/Applications/Godot.app/Contents/MacOS/Godot \
+  --env DEBUG=true \
+  -- npx -y @coding-solo/godot-mcp@0.1.1
+```
+
+本机还安装了专门处理 Godot TileMapLayer 的 `godot-tilemap-mcp 2.0.0`。它可以读取隐藏在
+`.tscn` 中的 `tile_map_data`、识别 TileSet、渲染图层预览，并通过可审查事务修改地图。项目语义
+配置位于 `.godot-tilemap-mcp.json`；重新启动 Codex 后，MCP 工具列表中应同时看到
+`godot` 和 `godot-tilemap`。
+
+地图写入固定使用“检查 → 生成预览 → 检查差异 → 应用”的流程。不要启用
+`--legacy-direct-writes`。TileMapDual 的最终半格拼接由 Godot 插件在编辑器和运行时生成，MCP 的
+静态图片只能辅助检查，不能代替 Godot 中的接缝确认。
+
+## 九、在 Godot 中编辑 Map01
+
+Map01 已经是可直接编辑的 Godot 场景：
+
+```text
+res://scenes/maps/map_01.tscn
+```
+
+第一次绘制地面：
+
+1. 在左下角“文件系统”面板依次展开 `scenes` → `maps`，双击 `map_01.tscn`。
+2. 切换到编辑器上方的“2D”视图。
+3. 在左上角“场景”树选中 `Ground` 节点。
+4. 打开编辑器底部的 `TileMap` 面板，再选择 `Tiles` 标签。普通 `Terrains` 标签为空是正常的，
+   本项目使用 TileMapDual，不从该标签绘制。
+5. 在 4×4 图集中选择完整地面块 `0xF`，它位于图集坐标 `(2,1)`，然后在 2D 视图左键绘制。
+   右键可擦除。`Ground` 中只能使用这个完整块，边角由 TileMapDual 自动计算。
+6. 选中 `DifficultTerrain` 可以绘制会消耗更多灵粮的难行格；难行格必须同时存在于
+   `Ground` 中。
+7. 按 `Command + S` 保存，再用 `F5` 从完整启动流程测试移动、迷雾和事件。不要用 `F6` 把
+   `map_01.tscn` 当成完整游戏页面运行，它只是地图布局场景。
+
+入口、敌人、剧情点和宝箱位于 `Markers` 节点下。选中具体 Marker 后，在右侧“检查器”修改
+`domain_cell`；这里使用游戏领域坐标，X 向右增大，Y 向上增大。不要直接拖动 Marker 的
+`position`，脚本会根据领域坐标自动换算屏幕位置。事件文案、奖励和遭遇 ID 仍在
+`data/maps/map_01_demo.json` 中配置。
+
+当前地面使用已通过视觉 Gate 的灰蓝色荒土地面素材，已经规范化为 1024×1024 透明风车母图，
+并编译为可自动衔接的 Dual Grid 笔刷用于 Map01；仍需在 Godot 编辑器中完成最终地图尺度的视觉验收。
+枯黄旧路已经作为独立的 `resources/tilemapdual_map01_road.tres` Dual Grid 笔刷完成编译和验证，
+演示入口是 `scenes/tilemapdual_road_demo.tscn`；它尚未绘入 Map01，灰盒仍是正式道路结构的事实源。
+灰白山体已经作为 `resources/tilemapdual_map01_mountain.tres` Dual Grid 笔刷接入 Map01 的独立
+`Mountain` 图层；94 个山体格严格取自当前 `15×15` 灰盒中 `Ground` 的补集，不改变碰撞或产品数据。
+`GroundUnderlay` 是覆盖当前 `15×15` 活跃区的纯视觉地面底衬，位于山体下方用于消除透明边缘黑缝；
+它不参与可行走格、碰撞、寻路或事件判定，地图逻辑仍只读取 `Ground`。
+正式还缺水面/难行地形表现、地面装饰、树木岩石废墟，以及入口、宝箱、敌人、剧情点的地图图标。
+补齐这些素材后可以继续增加专用图层和组件，不需要推翻现有地图逻辑。

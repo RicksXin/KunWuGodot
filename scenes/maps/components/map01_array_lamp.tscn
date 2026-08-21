@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map01_array_lamp.gd" id="1_lamp"]
+[ext_resource type="Texture2D" path="res://assets/maps/map_01/landmarks/array_lamp/array_lamp_broken.png" id="2_broken"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_lamp"]
+size = Vector2(24, 18)
+
+[node name="Map01ArrayLamp" type="Node2D"]
+script = ExtResource("1_lamp")
+
+[node name="StateSprite" type="Sprite2D" parent="."]
+position = Vector2(-20, -36)
+z_index = 5
+centered = false
+texture = ExtResource("2_broken")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(0, -9)
+shape = SubResource("Rectangle_lamp")

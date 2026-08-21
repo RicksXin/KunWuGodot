@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Ekaitzsegurola/godot-tilemap-mcp/main/schemas/project-profile.schema.json",
+  "version": 1,
+  "layer_roles": {
+    "walkable_ground": ["*/Ground"],
+    "difficult_terrain": ["*/DifficultTerrain"]
+  },
+  "protected_layers": [],
+  "tilesets": {
+    "res://resources/tilemapdual_standard.tres": {
+      "aliases": {
+        "map01_walkable_ground_0xf": {
+          "source_id": 0,
+          "atlas_x": 2,
+          "atlas_y": 1,
+          "alternative_id": 0
+        }
+      },
+      "brushes": {}
+    }
+  },
+  "analysis": {
+    "walkability_layer_role": "walkable_ground"
+  },
+  "limits": {
+    "max_cells_per_edit": 5000,
+    "max_render_pixels": 16777216
+  },
+  "extensions": {
+    "kunwu_map01": {
+      "scene": "res://scenes/maps/map_01.tscn",
+      "domain_y_axis": "up",
+      "screen_y_axis": "down",
+      "ground_requires_complete_mask": "0xF",
+      "forbid_ground_operations": ["terrain_connect", "terrain_path"],
+      "transaction_order": ["preview", "review", "apply"]
+    }
+  }
+}

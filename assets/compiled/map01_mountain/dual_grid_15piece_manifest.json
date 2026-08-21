@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "system": "dual_grid_15piece",
+  "master_source": "art/candidates/map01_mountain_windmill/compiled_v2/map01_mountain_windmill_normalized_v2c_bedrock_interior.png",
+  "master_size_px": [
+    1024,
+    1024
+  ],
+  "tile_size_px": 256,
+  "background_mode": "transparent",
+  "atlas_size_px": [
+    1280,
+    768
+  ],
+  "atlas_layout": {
+    "columns": 5,
+    "rows": 3,
+    "order": "row-major masks 0x1 through 0xF"
+  },
+  "bit_order": {
+    "nw": 1,
+    "ne": 2,
+    "sw": 4,
+    "se": 8
+  },
+  "empty_mask": 0,
+  "logic_grid_rows_top_to_bottom": [
+    [
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ]
+  ],
+  "sampled_masks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "synthesized_diagonal_masks": [
+    6,
+    9
+  ],
+  "integration": "TileMapDual: draw the fully-filled world tile; its display layer selects these 15 masks automatically.",
+  "acceptance_required": [
+    "Godot runtime placement screenshot",
+    "edge seam inspection",
+    "0x6 and 0x9 remain disconnected"
+  ]
+}

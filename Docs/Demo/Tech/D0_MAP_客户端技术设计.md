@@ -15,10 +15,14 @@
 |---|---|
 | 地图场景 | `res://scenes/map.tscn` |
 | 页面与事务编排 | `res://scripts/scenes/map_scene.gd` |
-| 地图绘制与点击 | `res://scripts/scenes/map_canvas.gd` |
+| 可编辑 Map01 布局 | `res://scenes/maps/map_01.tscn` |
+| 地图布局读取 | `res://scripts/maps/map_scene_layout.gd` |
+| 地图承载与点击 | `res://scripts/scenes/map_canvas.gd` |
+| 迷雾与运行标记 | `res://scripts/scenes/map_overlay.gd` |
 | 地图数据 | `res://data/maps/map_01_demo.json` |
 | 地图清单 | `res://data/maps/map_01_manifest.json` |
-| D0 tileset | `res://assets/maps/map_01/puny_dungeon/` |
+| Dual Grid TileSet | `res://resources/tilemapdual_standard.tres` |
+| D0 兼容 tileset | `res://assets/maps/map_01/puny_dungeon/` |
 
 ## 3. 进入流程
 
@@ -44,7 +48,9 @@
 
 ## 5. 移动、迷雾与画布
 
-- `map_canvas.gd` 以 `48×48` 逻辑格绘制当前活动区。
+- `map_canvas.gd` 以 `48×48` 逻辑格承载当前活动区并处理格子点击，`map_overlay.gd` 绘制迷雾和运行标记。
+- `map_01.tscn` 的 `Ground` 保存可走格，`DifficultTerrain` 保存难行格，Marker 保存入口和对象坐标。
+- `Game.get_map_definition()` 缓存场景布局并与 JSON 产品配置合并，移动时不会反复实例化场景。
 - 域坐标 Y 向上，屏幕 Y 向下；翻转只在画布层处理。
 - 移动前检查越界、曼哈顿距离和阻挡。
 - 移动成功后更新位置、灵粮、迷雾和存档，再检查当前格对象。
@@ -64,3 +70,4 @@
 - [ ] 战斗返回不重生已击败敌人。
 - [ ] 正常归营与战败结算不重复发放战利品。
 - [ ] D0 灰盒不被误标为 `map_01` 正式美术。
+- [ ] `Ground` 只使用完整块 `0xF`，难行格和所有 Marker 都落在可走格。
