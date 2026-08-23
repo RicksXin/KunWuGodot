@@ -32,8 +32,9 @@
   `combat_d0.json`、`map_01_demo.json`、中文本地化、职业/技能/平衡数据。
 - Puny Dungeon CC0 来源快照、TMX、TSX 和 tileset；它们保留为兼容回退，不会损坏或改写
   第三方源文件。当前 Map01 使用已通过视觉 Gate 的灰蓝色荒土地面素材编译出的
-  `resources/tilemapdual_standard.tres` Dual Grid 地面笔刷；枯黄旧路已编译为独立的
-  `resources/tilemapdual_map01_road.tres` 笔刷但尚未绘入地图。灰白山体已编译为
+  `resources/tilemapdual_standard.tres` Dual Grid 地面笔刷；枯黄旧路已使用用户确认的灰地双材质
+  过渡图集编译为 `resources/tilemapdual_map01_road.tres`，D1 无物件环境场景的 `378` 个道路格直接
+  复用该笔刷，当前 `15×15` D0 Map01 仍未新增道路格。灰白山体已编译为
   `resources/tilemapdual_map01_mountain.tres`，并在 Map01 独立 `Mountain` 图层中按当前 `15×15`
   灰盒的非 Ground 补集试铺；山体图层不承担碰撞或产品语义。Map01 另有覆盖当前 `15×15`
   活跃区的纯视觉 `GroundUnderlay`，仅为山体透明边缘补底，逻辑可走性仍只取自 `Ground`。

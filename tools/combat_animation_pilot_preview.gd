@@ -17,10 +17,13 @@ const LOOP_HOLD := 0.8
 const CANDIDATE_RELATIVE_PATH := "art/candidates/combat_animation_pilot_shi_yan/compiled/shi_yan_cast_a_sheet.png"
 const CRISP_FALLBACK_RELATIVE_PATH := "art/candidates/combat_animation_pilot_shi_yan/compiled/shi_yan_cast_a_crisp_fallback_sheet.png"
 const HIGH_DETAIL_RELATIVE_PATH := "art/candidates/combat_animation_pilot_shi_yan/compiled/shi_yan_cast_a_high_detail_sheet.png"
+const HD2X_CRISP_RELATIVE_PATH := "art/candidates/combat_animation_pilot_shi_yan/cast_a_hd2x/compiled_crisp/shi_yan_cast_a_hd2x_crisp_sheet_688x820.png"
 
 var actor_frame: TextureRect
 var actor_texture: Texture2D
 var source_relative_path := CANDIDATE_RELATIVE_PATH
+var texture_frame_size := FRAME_SIZE
+var actor_texture_filter := CanvasItem.TEXTURE_FILTER_NEAREST
 var show_palm_vfx := true
 var light_vfx_layer: Control
 var light_ring: Line2D
@@ -34,6 +37,7 @@ var hit_clock := -1.0
 var target_shake := 0.0
 var capture_path := ""
 var frozen := false
+var validate_cycle := false
 
 func _ready() -> void:
 	custom_minimum_size = VIEW_SIZE
@@ -47,6 +51,8 @@ func _ready() -> void:
 	queue_redraw()
 	if not capture_path.is_empty():
 		call_deferred("_capture_preview")
+	elif validate_cycle:
+		call_deferred("_validate_one_shot_cycle")
 
 func _load_candidate() -> void:
 	var path := ProjectSettings.globalize_path("res://" + source_relative_path)
@@ -54,7 +60,8 @@ func _load_candidate() -> void:
 	if image == null or image.is_empty():
 		push_error("Could not load candidate animation: %s" % path)
 		return
-	if image.get_size() != Vector2i(344, 410):
+	var expected_sheet_size := texture_frame_size * Vector2i(4, 2)
+	if image.get_size() != expected_sheet_size:
 		push_error("Candidate sheet size mismatch: %s" % image.get_size())
 		return
 	image.convert(Image.FORMAT_RGBA8)
@@ -67,7 +74,7 @@ func _build_actor() -> void:
 	actor_frame.size = Vector2(FRAME_SIZE)
 	actor_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	actor_frame.stretch_mode = TextureRect.STRETCH_SCALE
-	actor_frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	actor_frame.texture_filter = actor_texture_filter
 	actor_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	actor_frame.z_index = 1
 	add_child(actor_frame)
@@ -109,7 +116,7 @@ func _set_actor_frame(index: int) -> void:
 		return
 	var frame := AtlasTexture.new()
 	frame.atlas = actor_texture
-	frame.region = Rect2(Vector2(index % 4, floori(index / 4)) * Vector2(FRAME_SIZE), Vector2(FRAME_SIZE))
+	frame.region = Rect2(Vector2(index % 4, floori(index / 4)) * Vector2(texture_frame_size), Vector2(texture_frame_size))
 	actor_frame.texture = frame
 
 func _parse_preview_args() -> void:
@@ -118,6 +125,10 @@ func _parse_preview_args() -> void:
 			source_relative_path = CRISP_FALLBACK_RELATIVE_PATH
 		if argument == "--pilot-source=high-detail":
 			source_relative_path = HIGH_DETAIL_RELATIVE_PATH
+		if argument == "--pilot-source=hd2x-crisp":
+			source_relative_path = HD2X_CRISP_RELATIVE_PATH
+			texture_frame_size = Vector2i(172, 410)
+			actor_texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		if argument == "--pilot-vfx=off":
 			show_palm_vfx = false
 		if argument.begins_with("--pilot-frame="):
@@ -130,6 +141,8 @@ func _parse_preview_args() -> void:
 				hit_clock = 0.0
 		if argument.begins_with("--pilot-capture="):
 			capture_path = argument.trim_prefix("--pilot-capture=")
+		if argument == "--pilot-validate-cycle":
+			validate_cycle = true
 	_update_light_vfx()
 
 func _process(delta: float) -> void:
@@ -139,7 +152,8 @@ func _process(delta: float) -> void:
 			frame_clock -= 1.0 / FPS
 			_advance_frame()
 	if hit_clock >= 0.0:
-		hit_clock += delta
+		if not frozen:
+			hit_clock += delta
 		if hit_clock > HIT_DURATION:
 			hit_clock = -1.0
 			target_shake = 0.0
@@ -290,6 +304,8 @@ func _draw_footer() -> void:
 
 func _capture_preview() -> void:
 	await get_tree().process_frame
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
 	if image == null or image.is_empty():
 		push_error("Pilot preview capture returned an empty image")
@@ -301,4 +317,14 @@ func _capture_preview() -> void:
 		get_tree().quit(1)
 		return
 	print("COMBAT_ANIMATION_PILOT_CAPTURE=%s" % capture_path)
+	get_tree().quit(0)
+
+func _validate_one_shot_cycle() -> void:
+	# Frame 7 is reached after 0.7 seconds and then held before the review loop restarts.
+	await get_tree().create_timer(1.0).timeout
+	if actor_texture == null or frame_index != 7:
+		push_error("Cast A one-shot validation failed: frame=%d texture=%s" % [frame_index, actor_texture])
+		get_tree().quit(1)
+		return
+	print("COMBAT_ANIMATION_PILOT_CYCLE_OK source=%s texture_frame=%s fps=%.1f hit_frame=%d" % [source_relative_path, texture_frame_size, FPS, HIT_FRAME])
 	get_tree().quit(0)

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Prepare a compact, transparent Meowa input for Shi Yan's Cast A pilot.
+"""Prepare a crisp, transparent Meowa input for Shi Yan's Cast A pilot.
 
 This is a deterministic candidate-input step. It does not call Meowa and does not
-write into the runtime assets directory. The existing Shi Yan punch sheet already
+write into the runtime assets directory. The existing Shi Yan cast sheet already
 contains an action-ready first frame, so use that frame as the animation source
-instead of sending the large整备立绘 directly to the animation service.
+without shrinking it to the runtime slot before sending it to the service.
 """
 
 from __future__ import annotations
@@ -18,19 +18,22 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "art/source_archive/cultivators/shi_yan/shi_yan_cast_a_source_sheet.png"
 OUTPUT = ROOT / (
     "art/candidates/combat_animation_pilot_shi_yan/input/"
-    "shi_yan_cast_a_start_86x205.png"
-)
-PADDED_OUTPUT = ROOT / (
-    "art/candidates/combat_animation_pilot_shi_yan/input/"
-    "shi_yan_cast_a_start_128x256.png"
+    "shi_yan_cast_a_start_128x256_crisp.png"
 )
 
-CANVAS = (86, 205)
+CANVAS = (128, 256)
 CELL_X = (0, 154, 307, 461, 615)
 CELL_Y = (0, 231, 462)
-TARGET_CONTENT_HEIGHT = 145
 SAFE_MARGIN_X = 4
 TOP_OFFSET = 4
+
+
+def _harden_alpha(image: Image.Image, threshold: int = 128) -> Image.Image:
+    """Remove semi-transparent edge pixels from the pixel-art source."""
+    image = image.convert("RGBA")
+    alpha = image.getchannel("A").point(lambda value: 255 if value >= threshold else 0)
+    image.putalpha(alpha)
+    return image
 
 
 def main() -> None:
@@ -44,22 +47,19 @@ def main() -> None:
     # The source is a fixed 4×2 candidate sheet with a one-pixel rounding
     # distribution across columns. Frame 0 is an action-ready palm stance and
     # contains no large impact effect.
-    frame = sheet.crop((CELL_X[0], CELL_Y[0], CELL_X[1], CELL_Y[1]))
+    frame = _harden_alpha(sheet.crop((CELL_X[0], CELL_Y[0], CELL_X[1], CELL_Y[1])))
     bounds = frame.getchannel("A").getbbox()
     if bounds is None:
         raise SystemExit("frame 0 has no visible alpha")
     subject = frame.crop(bounds)
 
     safe_width = CANVAS[0] - SAFE_MARGIN_X * 2
-    scale = min(safe_width / subject.width, TARGET_CONTENT_HEIGHT / subject.height)
-    target_size = (
-        max(1, round(subject.width * scale)),
-        max(1, round(subject.height * scale)),
-    )
-    # This is a prepared high-resolution identity input, not a runtime sprite.
-    # Keep the source's anti-aliased edges for Meowa's animation model; runtime
-    # nearest filtering is applied only after a candidate is approved and compiled.
-    subject = subject.resize(target_size, Image.Resampling.LANCZOS)
+    safe_height = CANVAS[1] - TOP_OFFSET
+    if subject.width > safe_width or subject.height > safe_height:
+        raise SystemExit(
+            "native subject does not fit the service canvas; choose a larger "
+            "approved canvas instead of applying a smoothing resize"
+        )
 
     output = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
     x = (CANVAS[0] - subject.width) // 2
@@ -68,16 +68,8 @@ def main() -> None:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     output.save(OUTPUT, optimize=True)
 
-    # Keep the Godot-sized source intact, but also prepare a padded pixel-mode
-    # candidate for services that require a minimum short edge. No resampling
-    # occurs in this step; the visible 86px subject is copied byte-for-byte.
-    padded = Image.new("RGBA", (128, 256), (0, 0, 0, 0))
-    padded.alpha_composite(output, ((128 - CANVAS[0]) // 2, 4))
-    padded.save(PADDED_OUTPUT, optimize=True)
-
     print(f"prepared={OUTPUT}")
-    print(f"prepared_padded={PADDED_OUTPUT}")
-    print(f"source_frame={frame.size} subject={bounds} output={output.size}")
+    print(f"source_frame={frame.size} subject_bbox={bounds} subject_size={subject.size} output={output.size}")
 
 
 if __name__ == "__main__":

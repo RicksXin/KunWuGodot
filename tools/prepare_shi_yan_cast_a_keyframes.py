@@ -2,9 +2,10 @@
 """Prepare fixed-canvas keyframes for the approved Shi Yan Cast A retry.
 
 This is a local deterministic step. It does not call Meowa. The existing
-high-detail punch sheet supplies frame 0 (ready), frame 4 (impact reference),
+high-detail cast sheet supplies frame 0 (ready), frame 4 (impact reference),
 and frame 7 (recovery/return). All three outputs share one crop, scale, and
 anchor on a 128×256 transparent canvas so keyframes-run can constrain timing.
+Any size reduction uses nearest-neighbor to preserve hard pixel clusters.
 """
 
 from __future__ import annotations
@@ -22,9 +23,18 @@ SOURCE = ROOT / "art/source_archive/cultivators/shi_yan/shi_yan_cast_a_source_sh
 OUTPUT_DIR = ROOT / "art/candidates/combat_animation_pilot_shi_yan/keyframes"
 MANIFEST = OUTPUT_DIR / "manifest.json"
 OUTPUT_SIZE = (128, 256)
+RESAMPLING = Image.Resampling.NEAREST
 CELL_X = (0, 154, 307, 461, 615)
 CELL_Y = (0, 231, 462)
 KEYFRAMES = (0, 4, 7)
+
+
+def _harden_alpha(image: Image.Image, threshold: int = 128) -> Image.Image:
+    """Remove semi-transparent edge pixels from the pixel-art source."""
+    image = image.convert("RGBA")
+    alpha = image.getchannel("A").point(lambda value: 255 if value >= threshold else 0)
+    image.putalpha(alpha)
+    return image
 
 
 def _sha256(path: Path) -> str:
@@ -38,7 +48,7 @@ def _sha256(path: Path) -> str:
 def main() -> None:
     if not SOURCE.is_file():
         raise SystemExit(f"missing source punch sheet: {SOURCE}")
-    source = Image.open(SOURCE).convert("RGBA")
+    source = _harden_alpha(Image.open(SOURCE).convert("RGBA"))
     if source.size != (615, 462):
         raise SystemExit(f"unexpected source size: {source.size}")
 
@@ -67,10 +77,10 @@ def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     outputs: dict[str, dict[str, object]] = {}
     for index in KEYFRAMES:
-        crop = frames[index].crop(shared).resize(scaled_size, Image.Resampling.LANCZOS)
+        crop = frames[index].crop(shared).resize(scaled_size, RESAMPLING)
         canvas = Image.new("RGBA", OUTPUT_SIZE, (0, 0, 0, 0))
         canvas.alpha_composite(crop, ((OUTPUT_SIZE[0] - scaled_size[0]) // 2, 4))
-        output = OUTPUT_DIR / f"shi_yan_cast_a_keyframe_{index}_128x256.png"
+        output = OUTPUT_DIR / f"shi_yan_cast_a_keyframe_{index}_128x256_crisp.png"
         canvas.save(output, optimize=True)
         outputs[str(index)] = {
             "path": str(output.relative_to(ROOT)),
@@ -88,6 +98,8 @@ def main() -> None:
         "keyframe_indices": list(KEYFRAMES),
         "shared_source_bounds": list(shared),
         "shared_scaled_size": list(scaled_size),
+        "resampling": "nearest",
+        "alpha": "hard_threshold_128",
         "canvas": list(OUTPUT_SIZE),
         "contains_historical_palm_light_in_frame_4_reference": True,
         "runtime_approved": False,

@@ -253,8 +253,10 @@ res://scenes/maps/map_01.tscn
 
 当前地面使用已通过视觉 Gate 的灰蓝色荒土地面素材，已经规范化为 1024×1024 透明风车母图，
 并编译为可自动衔接的 Dual Grid 笔刷用于 Map01；仍需在 Godot 编辑器中完成最终地图尺度的视觉验收。
-枯黄旧路已经作为独立的 `resources/tilemapdual_map01_road.tres` Dual Grid 笔刷完成编译和验证，
-演示入口是 `scenes/tilemapdual_road_demo.tscn`；它尚未绘入 Map01，灰盒仍是正式道路结构的事实源。
+枯黄旧路已使用用户确认的“灰蓝岩地 × 枯黄旧路”双材质过渡图集，编译为独立的
+`resources/tilemapdual_map01_road.tres` Dual Grid 笔刷；`0x1–0xF`、单格洞和两种对角均已验证，
+演示入口是 `scenes/tilemapdual_road_demo.tscn`。D1 无物件环境场景已按灰盒的 `378` 个道路格使用该
+笔刷；当前 `15×15` D0 Map01 尚未新增道路格，灰盒仍是正式道路结构的事实源。
 灰白山体已经作为 `resources/tilemapdual_map01_mountain.tres` Dual Grid 笔刷接入 Map01 的独立
 `Mountain` 图层；94 个山体格严格取自当前 `15×15` 灰盒中 `Ground` 的补集，不改变碰撞或产品数据。
 `GroundUnderlay` 是覆盖当前 `15×15` 活跃区的纯视觉地面底衬，位于山体下方用于消除透明边缘黑缝；

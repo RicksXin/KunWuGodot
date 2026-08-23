@@ -36,12 +36,20 @@ func _run() -> void:
 	var difficult_visual := instance.get_node_or_null("DifficultVisual") as TileMapLayer
 	var rock := instance.get_node_or_null("RockBase") as Sprite2D
 	var foreground := instance.get_node_or_null("ForegroundVisual") as Sprite2D
+	var mountain_body := instance.get_node_or_null("MountainBody") as TileMapLayer
+	var mountain_ridge := instance.get_node_or_null("MountainRidge") as Sprite2D
 	_check(ground != null, "Ground layer is missing")
 	_check(road != null, "RoadVisual layer is missing")
 	_check(difficult != null, "DifficultTerrain layer is missing")
 	_check(difficult_visual != null, "DifficultVisual layer is missing")
 	_check(rock != null, "RockBase visual is missing")
 	_check(foreground != null, "ForegroundVisual is missing")
+	_check(mountain_body != null, "MountainBody fallback layer is missing")
+	_check(mountain_body == null or not mountain_body.visible, "MountainBody fallback layer must be hidden when ridge texture is active")
+	_check(mountain_ridge != null, "MountainRidge texture layer is missing")
+	if mountain_ridge != null and mountain_ridge.texture != null:
+		_check(mountain_ridge.texture.get_size() == Vector2(768.0, 1024.0), "MountainRidge source must be 768x1024")
+		_check(mountain_ridge.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST, "MountainRidge does not use nearest filtering")
 	if ground == null or road == null or difficult == null or difficult_visual == null:
 		instance.free()
 		_finish()

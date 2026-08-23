@@ -1,5 +1,19 @@
 extends Control
 
+const SHI_YAN_IDLE_HD2X_SHEET_SIZE := Vector2i(688, 1640)
+const SHI_YAN_IDLE_STANDARD_FPS := 8.0
+const SHI_YAN_CAST_A_SHEET_PATH := "res://assets/camp/ui/expedition/animations/shi_yan/shi_yan_punch_sheet.png"
+const SHI_YAN_CAST_A_SHEET_SIZE := Vector2i(688, 820)
+const SHI_YAN_CAST_A_WIDE_SHEET_SIZE := Vector2i(960, 820)
+const SHI_YAN_HD_TEXTURE_SCALE := 2.0
+const SHI_YAN_CAST_A_WIDE_PRESENTATION_SCALE := 0.98
+const SHI_YAN_CAST_A_WIDE_VERTICAL_OFFSET := 0.0
+const SHI_YAN_CAST_A_FPS := 10.0
+const SHI_YAN_CAST_A_HIT_FRAME := 4
+const SHI_YAN_CAST_A_MODE := "shi_yan_cast_a"
+const PORTRAIT_IDLE_MODE := "idle"
+const TARGET_HIT_VFX_DURATION := 0.22
+
 var units: Array = []
 var log_lines: Array[String] = []
 var log_label: Label
@@ -20,6 +34,8 @@ var loot_reward_labels: Array[Label] = []
 var loot_take_all_button: Button
 var escape_button: Button
 var animated_portraits: Array[Dictionary] = []
+var active_target_hit_vfx: Dictionary = {}
+var shi_yan_cast_a_hit_count := 0
 var current_encounter: Dictionary = {}
 
 func _ready() -> void:
@@ -108,22 +124,46 @@ func _build_scene() -> void:
 	for index in 4:
 		var x := 15.5 + index * 86
 		var host := KWUI.panel(self, Rect2(x, 541, 86, 205), Color("#2a3a41eb"), Color("#537a7d"))
+		# 人物可使用更宽的攻击运动画布，但最终画面必须由自己的修士框裁切。
+		host.clip_contents = true
 		unit_hosts[index + 1] = host
 		var portrait_path: String = str(["shi_yan", "lu_qing", "bai_ling", "mo_yan"][index])
-		var portrait := KWUI.texture(host, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_path, Rect2(0, 0, 86, 205))
+		var portrait_mask := Control.new()
+		portrait_mask.name = "PortraitMask"
+		portrait_mask.position = Vector2(1, 1)
+		portrait_mask.size = Vector2(84, 203)
+		portrait_mask.clip_contents = true
+		portrait_mask.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		host.add_child(portrait_mask)
+		var portrait := KWUI.texture(portrait_mask, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_path, Rect2(-1, -1, 86, 205))
 		var idle_sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [portrait_path, portrait_path]
 		var idle_sheet: Texture2D = load(idle_sheet_path) if ResourceLoader.exists(idle_sheet_path) else null
 		if idle_sheet:
-			var frames := _sheet_frames(idle_sheet, 4, 2)
+			var use_hd2x_idle := portrait_path == "shi_yan" and Vector2i(idle_sheet.get_width(), idle_sheet.get_height()) == SHI_YAN_IDLE_HD2X_SHEET_SIZE
+			var idle_rows := 4 if use_hd2x_idle else 2
+			var frames := _sheet_frames(idle_sheet, 4, idle_rows)
 			portrait.texture = frames[0]
-			portrait.size = Vector2(86, 149)
-			animated_portraits.append({
+			portrait.size = Vector2(86, 205) if use_hd2x_idle else Vector2(86, 149)
+			if use_hd2x_idle:
+				portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+			var portrait_animation := {
 				"node": portrait,
+				"unit_id": index + 1,
 				"frames": frames,
-				"frame_duration": 1.0 / 6.0,
+				"idle_frames": frames,
+				"idle_frame_duration": 1.0 / SHI_YAN_IDLE_STANDARD_FPS if use_hd2x_idle else 1.0 / 6.0,
+				"frame_duration": 1.0 / SHI_YAN_IDLE_STANDARD_FPS if use_hd2x_idle else 1.0 / 6.0,
 				"elapsed": 0.0,
-				"frame_index": 0
-			})
+				"frame_index": 0,
+				"loop": true,
+				"mode": PORTRAIT_IDLE_MODE,
+			}
+			if portrait_path == "shi_yan" and ResourceLoader.exists(SHI_YAN_CAST_A_SHEET_PATH):
+				var cast_a_sheet := load(SHI_YAN_CAST_A_SHEET_PATH) as Texture2D
+				var cast_a_sheet_size := Vector2i(cast_a_sheet.get_width(), cast_a_sheet.get_height()) if cast_a_sheet != null else Vector2i.ZERO
+				if cast_a_sheet != null and cast_a_sheet_size in [SHI_YAN_CAST_A_SHEET_SIZE, SHI_YAN_CAST_A_WIDE_SHEET_SIZE]:
+					portrait_animation["cast_a_frames"] = _sheet_frames(cast_a_sheet, 4, 2)
+			animated_portraits.append(portrait_animation)
 		portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		KWUI.panel(host, Rect2(1, 149, 84, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -144,6 +184,16 @@ func _build_scene() -> void:
 		KWUI.label(host, "", Rect2(18, 167, 62, 10), 7, Color("#f5efd8"), HORIZONTAL_ALIGNMENT_CENTER).name = "HpValue"
 		_combat_progress(host, "Action", Vector2(18, 179), Color("#0c1113"), Color("#4bccd0"), Vector2(62, 5))
 		KWUI.label(host, "", Rect2(4, 186, 78, 14), 8, Color("#dbc482"), HORIZONTAL_ALIGNMENT_CENTER).name = "Status"
+		# Panel 自身的边框绘制在子节点之后不可控，因此再叠一层透明前景边框，
+		# 确保人物像素永远位于修士框边线之下。
+		var frame_overlay := Panel.new()
+		frame_overlay.name = "FrameOverlay"
+		frame_overlay.position = Vector2.ZERO
+		frame_overlay.size = Vector2(86, 205)
+		frame_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		frame_overlay.z_index = 100
+		frame_overlay.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, Color("#537a7d"), 6, 1))
+		host.add_child(frame_overlay)
 	var skill_card := KWUI.panel(self, Rect2(54, 424.5, 267, 78), Color("#0a0f12eb"), Color("#657762"))
 	skill_card.mouse_filter = Control.MOUSE_FILTER_STOP
 	KWUI.label(skill_card, "行动就绪 · 请选择技能", Rect2(13.5, 4, 240, 18), 10, Color("#abb8a6"), HORIZONTAL_ALIGNMENT_CENTER)
@@ -224,7 +274,22 @@ func _update_animated_portraits(delta: float) -> void:
 		var frame_index := int(animation.get("frame_index", 0))
 		while elapsed >= frame_duration:
 			elapsed -= frame_duration
-			frame_index = (frame_index + 1) % frames.size()
+			if frame_index + 1 < frames.size():
+				frame_index += 1
+				if str(animation.get("mode", PORTRAIT_IDLE_MODE)) == SHI_YAN_CAST_A_MODE \
+						and frame_index == int(animation.get("hit_frame", SHI_YAN_CAST_A_HIT_FRAME)) \
+						and not bool(animation.get("hit_fired", false)):
+					animation["hit_fired"] = true
+					_spawn_target_hit_vfx(int(animation.get("target_unit_id", -1)))
+			elif bool(animation.get("loop", true)):
+				frame_index = 0
+			else:
+				animation = _restore_portrait_idle(animation)
+				frames = animation.get("frames", [])
+				frame_duration = float(animation.get("frame_duration", 1.0 / 6.0))
+				frame_index = int(animation.get("frame_index", 0))
+				elapsed = float(animation.get("elapsed", 0.0))
+				break
 		portrait.texture = frames[frame_index]
 		animation["elapsed"] = elapsed
 		animation["frame_index"] = frame_index
@@ -338,7 +403,161 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 	var damage := KWCombatResolver.physical_damage(actor, target, skill, int(Game.combat_config.get("defenseLevelConstant", 100)))
 	_apply_damage(target, damage)
 	_apply_skill_status(actor, target, skill)
+	# 战斗数值已经结算；Cast A 和命中特效只消费这次结果，不参与判伤或重算。
+	_play_shi_yan_cast_a(actor, target)
 	_show_log("%s 使用 %s，对 %s 造成 %d 点伤害" % [actor["name"], Game.text(skill.get("nameKey", skill_id)), target["name"], damage])
+
+func _play_shi_yan_cast_a(actor: Dictionary, target: Dictionary) -> void:
+	var hero: Dictionary = actor.get("hero", {})
+	if str(hero.get("definitionId", "")) != "hero_wu_xiu_01":
+		return
+	for index in animated_portraits.size():
+		var animation: Dictionary = animated_portraits[index]
+		if int(animation.get("unit_id", -1)) != int(actor.get("unit_id", -1)):
+			continue
+		var cast_a_frames: Array = animation.get("cast_a_frames", [])
+		var portrait := animation.get("node") as TextureRect
+		if portrait == null or cast_a_frames.size() != 8:
+			return
+		animation["frames"] = cast_a_frames
+		animation["frame_duration"] = 1.0 / SHI_YAN_CAST_A_FPS
+		animation["elapsed"] = 0.0
+		animation["frame_index"] = 0
+		animation["loop"] = false
+		animation["mode"] = SHI_YAN_CAST_A_MODE
+		animation["target_unit_id"] = int(target.get("unit_id", -1))
+		animation["hit_frame"] = SHI_YAN_CAST_A_HIT_FRAME
+		animation["hit_fired"] = false
+		animation["idle_display_position"] = portrait.position
+		animation["idle_display_size"] = portrait.size
+		var cast_texture_size: Vector2 = cast_a_frames[0].get_size()
+		var cast_presentation_scale := SHI_YAN_CAST_A_WIDE_PRESENTATION_SCALE if cast_texture_size.x > 172.0 else 1.0
+		var cast_display_size := cast_texture_size / SHI_YAN_HD_TEXTURE_SCALE * cast_presentation_scale
+		var portrait_mask := portrait.get_parent() as Control
+		var mask_origin := portrait_mask.position if portrait_mask != null else Vector2.ZERO
+		var vertical_offset := SHI_YAN_CAST_A_WIDE_VERTICAL_OFFSET if cast_texture_size.x > 172.0 else 0.0
+		portrait.position = Vector2((86.0 - cast_display_size.x) * 0.5, vertical_offset) - mask_origin
+		portrait.size = cast_display_size
+		portrait.texture = cast_a_frames[0]
+		portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		animated_portraits[index] = animation
+		return
+
+func _restore_portrait_idle(animation: Dictionary) -> Dictionary:
+	var idle_frames: Array = animation.get("idle_frames", [])
+	if idle_frames.is_empty():
+		return animation
+	animation["frames"] = idle_frames
+	animation["frame_duration"] = float(animation.get("idle_frame_duration", 1.0 / 6.0))
+	animation["elapsed"] = 0.0
+	animation["frame_index"] = 0
+	animation["loop"] = true
+	animation["mode"] = PORTRAIT_IDLE_MODE
+	var portrait := animation.get("node") as TextureRect
+	if portrait != null:
+		portrait.position = animation.get("idle_display_position", portrait.position)
+		portrait.size = animation.get("idle_display_size", portrait.size)
+	animation.erase("idle_display_position")
+	animation.erase("idle_display_size")
+	animation.erase("target_unit_id")
+	animation.erase("hit_frame")
+	animation.erase("hit_fired")
+	return animation
+
+func _spawn_target_hit_vfx(target_unit_id: int) -> void:
+	var host := unit_hosts.get(target_unit_id) as Control
+	if host == null or not is_instance_valid(host):
+		return
+	_clear_target_hit_vfx(target_unit_id)
+	var base_position := host.position
+	var layer := Control.new()
+	layer.name = "CastAHitVfx"
+	layer.position = Vector2.ZERO
+	layer.size = host.size
+	layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.z_index = 50
+	host.add_child(layer)
+
+	# 受击白闪只覆盖敌人剪影，不改血条、名字或战斗状态节点的颜色。
+	var flash_body := ColorRect.new()
+	flash_body.position = Vector2(12, 41.5)
+	flash_body.size = Vector2(62, 84)
+	flash_body.color = Color(1.0, 0.98, 0.84, 0.82)
+	flash_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(flash_body)
+	var flash_head := Polygon2D.new()
+	var head_points := PackedVector2Array()
+	for point_index in 16:
+		var angle := TAU * float(point_index) / 16.0
+		head_points.append(Vector2(43, 31.5) + Vector2(cos(angle), sin(angle)) * 22.0)
+	flash_head.polygon = head_points
+	flash_head.color = Color(1.0, 0.98, 0.84, 0.9)
+	layer.add_child(flash_head)
+
+	var burst := Node2D.new()
+	burst.position = Vector2(43, 68)
+	burst.scale = Vector2(0.68, 0.68)
+	layer.add_child(burst)
+	var diamond_fill := Polygon2D.new()
+	diamond_fill.polygon = PackedVector2Array([
+		Vector2(0, -18), Vector2(18, 0), Vector2(0, 18), Vector2(-18, 0),
+	])
+	diamond_fill.color = Color(1.0, 0.72, 0.22, 0.3)
+	burst.add_child(diamond_fill)
+	var diamond_line := Line2D.new()
+	diamond_line.width = 2.0
+	diamond_line.default_color = Color("#ffe295")
+	diamond_line.closed = true
+	diamond_line.joint_mode = Line2D.LINE_JOINT_SHARP
+	diamond_line.points = PackedVector2Array([
+		Vector2(0, -18), Vector2(18, 0), Vector2(0, 18), Vector2(-18, 0),
+	])
+	burst.add_child(diamond_line)
+	for ray_index in 8:
+		var angle := TAU * float(ray_index) / 8.0
+		var ray := Line2D.new()
+		ray.width = 2.0
+		ray.default_color = Color("#f3bd4d")
+		ray.points = PackedVector2Array([
+			Vector2(cos(angle), sin(angle)) * 24.0,
+			Vector2(cos(angle), sin(angle)) * 37.0,
+		])
+		burst.add_child(ray)
+
+	active_target_hit_vfx[target_unit_id] = {
+		"node": layer,
+		"host": host,
+		"base_position": base_position,
+	}
+	shi_yan_cast_a_hit_count += 1
+
+	var shake := create_tween()
+	shake.tween_property(host, "position:x", base_position.x + 2.0, 0.03)
+	shake.tween_property(host, "position:x", base_position.x - 2.0, 0.04)
+	shake.tween_property(host, "position:x", base_position.x + 1.0, 0.03)
+	shake.tween_property(host, "position:x", base_position.x, 0.04)
+	var effect_tween := create_tween().set_parallel(true)
+	effect_tween.tween_property(burst, "scale", Vector2(1.22, 1.22), TARGET_HIT_VFX_DURATION)
+	effect_tween.tween_property(layer, "modulate:a", 0.0, TARGET_HIT_VFX_DURATION).set_delay(0.04)
+	effect_tween.finished.connect(_finish_target_hit_vfx.bind(target_unit_id, layer))
+
+func _finish_target_hit_vfx(target_unit_id: int, expected_layer: Control) -> void:
+	var active: Dictionary = active_target_hit_vfx.get(target_unit_id, {})
+	if active.get("node") != expected_layer:
+		return
+	_clear_target_hit_vfx(target_unit_id)
+
+func _clear_target_hit_vfx(target_unit_id: int) -> void:
+	var active: Dictionary = active_target_hit_vfx.get(target_unit_id, {})
+	if active.is_empty():
+		return
+	var host := active.get("host") as Control
+	if host != null and is_instance_valid(host):
+		host.position = active.get("base_position", host.position)
+	var layer := active.get("node") as Control
+	if layer != null and is_instance_valid(layer):
+		layer.queue_free()
+	active_target_hit_vfx.erase(target_unit_id)
 
 func _apply_skill_status(actor: Dictionary, target: Dictionary, skill: Dictionary) -> void:
 	var status_definition: Dictionary = skill.get("appliesStatus", {})
