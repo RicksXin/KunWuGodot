@@ -86,6 +86,10 @@ Godot 4，不需要下载 .NET/C# 版本。
 
 ### 地图
 
+- 按住地图区域拖动，可以查看当前位置之外的区域；拖动不会误触背后的地图格。
+- 使用双指捏合或触控板捏合缩放地图；桌面端也可按住 `Command/Ctrl` 滚动鼠标滚轮。
+- 界面右下角的“缩放”滑轨可以在 `50%–150%` 之间精确调整。每次缩放都会尽量以玩家位置重新居中，
+  玩家靠近地图边缘时按边界夹紧，但不会离开视野。拖动和缩放是正式地图的共用功能。
 - 点击界面下方的 `↑ ↓ ← →` 按钮逐格移动。
 - 键盘也可以使用方向键或 `W/A/S/D`。
 - 只能上下左右移动，不能斜走，也不能穿过墙壁。
@@ -146,8 +150,8 @@ KunWuGodot/
 ├── scenes/              启动、营地、地图、战斗场景
 ├── scripts/             GDScript 游戏逻辑和界面代码
 ├── data/                角色、职业、地图、战斗和本地化 JSON
-├── assets/              图片、字体、地图 tileset 和许可证
-├── resources/           TileSet 等 Godot Resource 文件
+├── assets/              图片、字体、正式地图背景和许可证
+├── resources/           其他 Godot Resource 文件
 ├── addons/              TileMapDual v5.0.2 插件
 ├── tools/               数据、场景和 Dual Grid 无界面校验工具
 ├── art/                 本地美术制作、候选与来源归档（除说明外不提交）
@@ -158,8 +162,8 @@ KunWuGodot/
 ```
 
 内部字段和资源 ID 保持源项目兼容。例如 `spiritStone` 的显示名仍为“灵晶”，
-`immortalCoin` 显示为“灵石”。项目基准视口为 `375×817`，使用 Compatibility 渲染器和
-nearest 像素过滤。
+`immortalCoin` 显示为“灵石”。项目基准视口为 `375×817`，使用 Compatibility 渲染器；
+像素角色和 UI 使用 nearest，Map01 高清背景在场景节点上明确使用 linear filtering。
 
 `art/` 是本地制作工作区，不是运行时依赖。用户视觉确认后的正式素材晋升到 `assets/` 才进入主仓库；
 制作原图、候选、联系表和评审截图应另行备份，不随主仓库推送。
@@ -215,14 +219,8 @@ GODOT_PATH=/Applications/Godot.app/Contents/MacOS/Godot
   -- npx -y @coding-solo/godot-mcp@0.1.1
 ```
 
-本机还安装了专门处理 Godot TileMapLayer 的 `godot-tilemap-mcp 2.0.0`。它可以读取隐藏在
-`.tscn` 中的 `tile_map_data`、识别 TileSet、渲染图层预览，并通过可审查事务修改地图。项目语义
-配置位于 `.godot-tilemap-mcp.json`；重新启动 Codex 后，MCP 工具列表中应同时看到
-`godot` 和 `godot-tilemap`。
-
-地图写入固定使用“检查 → 生成预览 → 检查差异 → 应用”的流程。不要启用
-`--legacy-direct-writes`。TileMapDual 的最终半格拼接由 Godot 插件在编辑器和运行时生成，MCP 的
-静态图片只能辅助检查，不能代替 Godot 中的接缝确认。
+本机可以安装 TileMap 编辑辅助工具，但当前正式 Map01 不使用 TileMapLayer 或 TileSet。Map01 的
+移动与阻挡直接编辑 `data/maps/map_01_formal.json`，不得通过旧 TileMap 配置回写。
 
 ## 九、在 Godot 中编辑 Map01
 
@@ -232,34 +230,21 @@ Map01 已经是可直接编辑的 Godot 场景：
 res://scenes/maps/map_01.tscn
 ```
 
-第一次绘制地面：
+当前运行中的 Map01 是唯一的 `28×64` 正式版本：
 
 1. 在左下角“文件系统”面板依次展开 `scenes` → `maps`，双击 `map_01.tscn`。
 2. 切换到编辑器上方的“2D”视图。
-3. 在左上角“场景”树选中 `Ground` 节点。
-4. 打开编辑器底部的 `TileMap` 面板，再选择 `Tiles` 标签。普通 `Terrains` 标签为空是正常的，
-   本项目使用 TileMapDual，不从该标签绘制。
-5. 在 4×4 图集中选择完整地面块 `0xF`，它位于图集坐标 `(2,1)`，然后在 2D 视图左键绘制。
-   右键可擦除。`Ground` 中只能使用这个完整块，边角由 TileMapDual 自动计算。
-6. 选中 `DifficultTerrain` 可以绘制会消耗更多灵粮的难行格；难行格必须同时存在于
-   `Ground` 中。
-7. 按 `Command + S` 保存，再用 `F5` 从完整启动流程测试移动、迷雾和事件。不要用 `F6` 把
+3. 场景中的 `HDBackground` 是 `1344×3072` 高清视觉背景，不保存碰撞或对象坐标。
+4. 可走、困难、阻挡和入口在 `data/maps/map_01_formal.json` 的 `terrainRows` 中编辑；状态阻挡在
+   `dynamicBlockers` 中编辑；31 个对象坐标在 `objects` 中编辑。
+5. 逻辑格或对象坐标变化时，必须同时检查高清背景构图是否仍与玩法一致。不得从背景像素反推碰撞。
+6. 按 `Command + S` 保存，再用 `F5` 从完整启动流程测试移动、迷雾和事件。不要用 `F6` 把
    `map_01.tscn` 当成完整游戏页面运行，它只是地图布局场景。
 
-入口、敌人、剧情点和宝箱位于 `Markers` 节点下。选中具体 Marker 后，在右侧“检查器”修改
-`domain_cell`；这里使用游戏领域坐标，X 向右增大，Y 向上增大。不要直接拖动 Marker 的
-`position`，脚本会根据领域坐标自动换算屏幕位置。事件文案、奖励和遭遇 ID 仍在
-`data/maps/map_01_demo.json` 中配置。
+坐标使用游戏领域坐标：X 向右增大、Y 向上增大；JSON 行则从屏幕顶部向下排列，换算为
+`row_index = 63 - y`。正式对象文案、奖励和事件语义位于 `data/maps/map_01_formal.json`，遭遇定义位于
+`data/config/combat_map01_formal.json`；不要把业务内容复制进背景或纯表现节点。
 
-当前地面使用已通过视觉 Gate 的灰蓝色荒土地面素材，已经规范化为 1024×1024 透明风车母图，
-并编译为可自动衔接的 Dual Grid 笔刷用于 Map01；仍需在 Godot 编辑器中完成最终地图尺度的视觉验收。
-枯黄旧路已使用用户确认的“灰蓝岩地 × 枯黄旧路”双材质过渡图集，编译为独立的
-`resources/tilemapdual_map01_road.tres` Dual Grid 笔刷；`0x1–0xF`、单格洞和两种对角均已验证，
-演示入口是 `scenes/tilemapdual_road_demo.tscn`。D1 无物件环境场景已按灰盒的 `378` 个道路格使用该
-笔刷；当前 `15×15` D0 Map01 尚未新增道路格，灰盒仍是正式道路结构的事实源。
-灰白山体已经作为 `resources/tilemapdual_map01_mountain.tres` Dual Grid 笔刷接入 Map01 的独立
-`Mountain` 图层；94 个山体格严格取自当前 `15×15` 灰盒中 `Ground` 的补集，不改变碰撞或产品数据。
-`GroundUnderlay` 是覆盖当前 `15×15` 活跃区的纯视觉地面底衬，位于山体下方用于消除透明边缘黑缝；
-它不参与可行走格、碰撞、寻路或事件判定，地图逻辑仍只读取 `Ground`。
-正式还缺水面/难行地形表现、地面装饰、树木岩石废墟，以及入口、宝箱、敌人、剧情点的地图图标。
-补齐这些素材后可以继续增加专用图层和组件，不需要推翻现有地图逻辑。
+Map01 包含 `834` 个基础可走格、`958` 个阻挡格、31 个正式对象、13 个地图战斗 Marker、14 个遭遇和
+7 个动态阻挡；入口为 `(13,6)`。三灯、暗道、双向阶梯、Boss 门禁和出口继续由 JSON 状态与运行时
+Overlay 表达。项目内没有第二套 Map01、候选场景、Demo 或 Preview。

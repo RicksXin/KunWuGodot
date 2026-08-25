@@ -1,11 +1,17 @@
 {
+  "schemaVersion": 3,
   "mapId": "map_01",
-  "schemaVersion": 2,
-  "status": "d0_demo",
+  "status": "formal",
   "scenePath": "res://scenes/map.tscn",
   "layoutScenePath": "res://scenes/maps/map_01.tscn",
-  "mapDataPath": "res://data/maps/map_01_demo.json",
-  "tileSetPath": "res://resources/tilemapdual_standard.tres",
-  "fallbackTileSetPath": "res://assets/maps/map_01/puny_dungeon/punyworld-dungeon-tileset.png",
-  "artStatus": "technical_dual_grid_placeholder"
+  "mapDataPath": "res://data/maps/map_01_formal.json",
+  "combatDataPath": "res://data/config/combat_map01_formal.json",
+  "backgroundPath": "res://assets/maps/map_01/map01_background.png",
+  "backgroundSha256": "9a7979e2bdd8beecbfc10705955ee4b5b96c4f7646e296c4d10ccd92c8ae0618",
+  "renderMode": "hd_background_json_grid",
+  "artStatus": "approved",
+  "width": 28,
+  "height": 64,
+  "logicalTileSize": 48,
+  "embeddedVersion": "map01-formal"
 }

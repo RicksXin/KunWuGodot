@@ -1,10 +1,31 @@
 extends Control
 
+const MAP_VIEW_RECT := Rect2(0, 156, 375, 519)
+const MAP_ZOOM_MIN := 0.5
+const MAP_ZOOM_MAX := 1.5
+const MAP_ZOOM_STEP := 0.05
+const MAP_DRAG_THRESHOLD := 5.0
+
 var map_canvas: Control
 var map_scroll: ScrollContainer
+var map_content: Control
+var map_base_size := Vector2.ZERO
+var map_zoom := 1.0
+var zoom_slider: HSlider
+var zoom_value_label: Label
+var map_dragging := false
+var map_drag_moved := false
+var map_drag_start := Vector2.ZERO
+var map_drag_scroll_start := Vector2.ZERO
+var map_touch_positions: Dictionary = {}
+var map_touch_pan_index := -1
+var map_touch_pan_start := Vector2.ZERO
+var map_touch_scroll_start := Vector2.ZERO
+var map_pinch_distance := 0.0
 var title_position_label: Label
 var burden_label: Label
 var grain_label: Label
+var objective_label: Label
 var hint_label: Label
 var rest_button: Button
 var return_button: Button
@@ -27,6 +48,8 @@ var object_kind_label: Label
 var object_title_label: Label
 var object_label: Label
 var event_buttons: Dictionary = {}
+var choice_buttons: Array[Button] = []
+var current_action_choices: Array = []
 var current_object: Dictionary = {}
 var toast_panel: Panel
 var toast_label: Label
@@ -43,6 +66,7 @@ func _go_camp() -> void:
 	get_tree().change_scene_to_file("res://scenes/camp.tscn")
 
 func _build_scene() -> void:
+	var active_map := Game.get_map_definition()
 	var bg := ColorRect.new()
 	bg.color = Color("#081217")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -50,7 +74,8 @@ func _build_scene() -> void:
 	# Godot 正式 375×817 布局：顶部 156、世界 519、底部 142。
 	var top := KWUI.panel(self, Rect2(0, 0, 375, 156), Color("#141b22f8"), Color("#607770"))
 	var info := KWUI.panel(top, Rect2(8, 3, 157, 102), Color("#1c242afa"), Color("#607770"))
-	title_position_label = KWUI.label(info, "破禁山麓（--,--）", Rect2(8, 10, 141, 28), 15, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	var map_name := Game.text(str(active_map.get("nameKey", "")), str(active_map.get("name", Game.get_active_map_id())))
+	title_position_label = KWUI.label(info, "%s（--,--）" % map_name, Rect2(8, 10, 141, 28), 15, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
 	burden_label = KWUI.label(info, "负重 --/--", Rect2(8, 39, 141, 24), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	grain_label = KWUI.label(info, "灵粮：---", Rect2(8, 66, 141, 24), 13, Color("#dbcb84"), HORIZONTAL_ALIGNMENT_CENTER)
 	var actions := KWUI.panel(top, Rect2(174.5, 3, 192, 102), Color("#1c242afa"), Color("#607770"))
@@ -65,24 +90,39 @@ func _build_scene() -> void:
 	var settings := KWUI.map_button(actions, "设置", Rect2(99, 55, 54, 48), 12)
 	settings.pressed.connect(_show_feedback.bind("地图设置尚未开放", 1))
 	var task := KWUI.panel(top, Rect2(10, 113, 355, 40), Color("#1c242afa"), Color("#607770"))
-	KWUI.label(task, "主线：探索东北残禁，击败石傀", Rect2(10, 5, 335, 30), 13, Color("#e8e0be"))
+	objective_label = KWUI.label(task, _objective_text(active_map), Rect2(10, 5, 335, 30), 13, Color("#e8e0be"))
 	KWUI.panel(self, Rect2(0, 156, 375, 519), Color("#111e22"), Color("#4c6e65"))
 	map_scroll = ScrollContainer.new()
 	map_scroll.position = Vector2(0, 156)
 	map_scroll.size = Vector2(375, 519)
 	map_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	map_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	# Runtime owns panning so mouse drag, single-touch drag and pinch can share one
+	# deterministic scroll path instead of competing with ScrollContainer's touch drag.
+	map_scroll.scroll_deadzone = 1000000
 	add_child(map_scroll)
+	map_content = Control.new()
+	map_content.name = "MapContent"
+	map_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	map_scroll.add_child(map_content)
 	map_canvas = Control.new()
+	map_canvas.name = "MapCanvas"
 	map_canvas.set_script(load("res://scripts/scenes/map_canvas.gd"))
-	var active_map := Game.get_map_definition()
 	var logical_tile_size := float(active_map.get("visual", {}).get("logicalTileSize", 48))
-	map_canvas.custom_minimum_size = Vector2(int(active_map.get("activeWidth", 15)) * logical_tile_size, int(active_map.get("activeHeight", 15)) * logical_tile_size)
-	map_canvas.size = map_canvas.custom_minimum_size
-	map_scroll.add_child(map_canvas)
+	map_base_size = Vector2(int(active_map.get("activeWidth", 15)) * logical_tile_size, int(active_map.get("activeHeight", 15)) * logical_tile_size)
+	# Keep a stable maximum-size scroll extent. Runtime panning is clamped to the
+	# current scaled map bounds, so the unused extent can never be dragged into
+	# view, while zooming no longer waits for a container layout refresh.
+	var maximum_content_size := map_base_size * MAP_ZOOM_MAX
+	map_content.custom_minimum_size = maximum_content_size
+	map_content.size = maximum_content_size
+	map_canvas.custom_minimum_size = map_base_size
+	map_canvas.size = map_base_size
+	map_content.add_child(map_canvas)
 	map_canvas.cell_clicked.connect(_on_cell_clicked)
 	call_deferred("_center_map")
 	grain_warning = KWUI.panel(self, Rect2(15, 162.5, 345, 40), Color("#5b271ff5"), Color("#cf764aff"))
+	grain_warning.z_index = 150
 	grain_warning.visible = false
 	grain_warning_label = KWUI.label(grain_warning, "", Rect2(10, 5, 325, 30), 13, Color("#ffdca4"), HORIZONTAL_ALIGNMENT_CENTER)
 	var bottom := KWUI.panel(self, Rect2(0, 675, 375, 142), Color("#05090ceb"), Color("#607770"))
@@ -98,12 +138,27 @@ func _build_scene() -> void:
 	var right := KWUI.map_button(bottom, "→", Rect2(102.5, 60, 48, 48), 16)
 	right.pressed.connect(_move.bind(1, 0))
 	movement_buttons["1:0"] = right
-	hint_label = KWUI.label(bottom, "归营符 0 · 休整 1", Rect2(192.5, 43.5, 174, 55), 13, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
+	zoom_value_label = KWUI.label(bottom, "缩放 100%", Rect2(184, 5, 76, 38), 11, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
+	zoom_slider = HSlider.new()
+	zoom_slider.name = "MapZoomSlider"
+	zoom_slider.position = Vector2(258, 4)
+	zoom_slider.size = Vector2(108, 40)
+	zoom_slider.min_value = MAP_ZOOM_MIN
+	zoom_slider.max_value = MAP_ZOOM_MAX
+	zoom_slider.step = MAP_ZOOM_STEP
+	zoom_slider.value = map_zoom
+	zoom_slider.focus_mode = Control.FOCUS_NONE
+	zoom_slider.mouse_default_cursor_shape = Control.CURSOR_HSIZE
+	zoom_slider.add_theme_stylebox_override("slider", _zoom_track_style())
+	bottom.add_child(zoom_slider)
+	zoom_slider.value_changed.connect(_on_zoom_slider_changed)
+	hint_label = KWUI.label(bottom, "归营符 0 · 休整 1", Rect2(192.5, 48, 174, 55), 13, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
 	_build_rest_overlay()
 	_build_backpack_overlay()
 	_build_entry_return_overlay()
 	_build_event_overlay()
 	toast_panel = KWUI.panel(self, Rect2(35, 612, 305, 52), Color("#182c31ee"), KWUI.TEAL)
+	toast_panel.z_index = 300
 	toast_panel.visible = false
 	toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	toast_label = KWUI.label(toast_panel, "", Rect2(8, 3, 289, 46), 12, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
@@ -111,6 +166,7 @@ func _build_scene() -> void:
 func _make_overlay() -> Control:
 	var overlay := Control.new()
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.z_index = 200
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	overlay.visible = false
 	add_child(overlay)
@@ -179,20 +235,188 @@ func _build_event_overlay() -> void:
 		button.visible = false
 		button.pressed.connect(definition[2])
 		event_buttons[str(definition[0])] = button
+	for index in 6:
+		var choice_button := KWUI.map_button(object_panel, "选择", Rect2(0, 280, 144, 46), 12)
+		choice_button.visible = false
+		choice_button.pressed.connect(_choose_object_action.bind(index))
+		choice_buttons.append(choice_button)
 
 func _center_map() -> void:
-	if not is_instance_valid(map_scroll): return
+	if not is_instance_valid(map_scroll):
+		return
+	_set_map_scroll(_player_map_center() - map_scroll.size / 2.0)
+
+func _player_map_center() -> Vector2:
 	var expedition: Dictionary = Game.profile.get("expedition", {})
 	var position: Dictionary = expedition.get("position", {"x": 2, "y": 2})
 	var active_map := Game.get_map_definition()
 	var logical_tile_size := float(active_map.get("visual", {}).get("logicalTileSize", 48))
-	var tile_center_x := (float(position.get("x", 2)) + 0.5) * logical_tile_size
+	var tile_center_x := (float(position.get("x", 2)) + 0.5) * logical_tile_size * map_zoom
 	var screen_y := int(active_map.get("activeHeight", 15)) - 1 - int(position.get("y", 2))
-	var tile_center_y := (float(screen_y) + 0.5) * logical_tile_size
-	var max_x := maxi(0, int(map_scroll.get_h_scroll_bar().max_value))
-	var max_y := maxi(0, int(map_scroll.get_v_scroll_bar().max_value))
-	map_scroll.scroll_horizontal = clampi(roundi(tile_center_x - map_scroll.size.x / 2.0), 0, max_x)
-	map_scroll.scroll_vertical = clampi(roundi(tile_center_y - map_scroll.size.y / 2.0), 0, max_y)
+	var tile_center_y := (float(screen_y) + 0.5) * logical_tile_size * map_zoom
+	return Vector2(tile_center_x, tile_center_y)
+
+func _input(event: InputEvent) -> void:
+	if _map_input_blocked():
+		_cancel_map_gesture()
+		return
+	if event is InputEventMagnifyGesture:
+		if _map_view_has_point(event.position):
+			_set_map_zoom(map_zoom * event.factor, _map_view_local(event.position))
+			_cancel_canvas_click()
+			get_viewport().set_input_as_handled()
+		return
+	if event is InputEventPanGesture:
+		if _map_view_has_point(event.position):
+			_set_map_scroll(_current_map_scroll() + event.delta * 32.0)
+			_cancel_canvas_click()
+			get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and _map_view_has_point(event.position):
+			if event.ctrl_pressed or event.meta_pressed:
+				var factor := 1.1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.1
+				_set_map_zoom(map_zoom * factor, _map_view_local(event.position))
+			else:
+				var wheel_direction := -1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0
+				_set_map_scroll(_current_map_scroll() + Vector2(0, wheel_direction * 96.0))
+			_cancel_canvas_click()
+			get_viewport().set_input_as_handled()
+			return
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed and _map_view_has_point(event.position):
+				map_dragging = true
+				map_drag_moved = false
+				map_drag_start = event.position
+				map_drag_scroll_start = _current_map_scroll()
+			elif not event.pressed:
+				map_dragging = false
+			return
+	if event is InputEventMouseMotion and map_dragging:
+		var drag_delta: Vector2 = event.position - map_drag_start
+		if drag_delta.length() >= MAP_DRAG_THRESHOLD:
+			map_drag_moved = true
+		if map_drag_moved:
+			_set_map_scroll(map_drag_scroll_start - drag_delta)
+		return
+	if event is InputEventScreenTouch:
+		_handle_map_touch(event)
+		return
+	if event is InputEventScreenDrag:
+		_handle_map_touch_drag(event)
+
+func _handle_map_touch(event: InputEventScreenTouch) -> void:
+	if event.pressed:
+		if not _map_view_has_point(event.position):
+			return
+		map_touch_positions[event.index] = event.position
+		if map_touch_positions.size() == 1:
+			_start_touch_pan(event.index, event.position)
+		elif map_touch_positions.size() == 2:
+			map_touch_pan_index = -1
+			map_pinch_distance = _touch_pair_distance()
+			_cancel_canvas_click()
+		return
+	map_touch_positions.erase(event.index)
+	if map_touch_positions.size() == 1:
+		var remaining_index := int(map_touch_positions.keys()[0])
+		_start_touch_pan(remaining_index, map_touch_positions[remaining_index])
+	else:
+		map_touch_pan_index = -1
+		map_pinch_distance = 0.0
+
+func _handle_map_touch_drag(event: InputEventScreenDrag) -> void:
+	if not map_touch_positions.has(event.index):
+		return
+	map_touch_positions[event.index] = event.position
+	if map_touch_positions.size() >= 2:
+		var distance := _touch_pair_distance()
+		if map_pinch_distance > 0.0 and distance > 0.0:
+			_set_map_zoom(map_zoom * distance / map_pinch_distance, _map_view_local(_touch_pair_center()))
+		map_pinch_distance = distance
+		_cancel_canvas_click()
+		return
+	if event.index == map_touch_pan_index:
+		var drag_delta: Vector2 = event.position - map_touch_pan_start
+		if drag_delta.length() >= MAP_DRAG_THRESHOLD:
+			_set_map_scroll(map_touch_scroll_start - drag_delta)
+
+func _start_touch_pan(index: int, position: Vector2) -> void:
+	map_touch_pan_index = index
+	map_touch_pan_start = position
+	map_touch_scroll_start = _current_map_scroll()
+	map_pinch_distance = 0.0
+
+func _touch_pair_distance() -> float:
+	var keys := map_touch_positions.keys()
+	if keys.size() < 2:
+		return 0.0
+	return (map_touch_positions[keys[0]] as Vector2).distance_to(map_touch_positions[keys[1]] as Vector2)
+
+func _touch_pair_center() -> Vector2:
+	var keys := map_touch_positions.keys()
+	if keys.size() < 2:
+		return MAP_VIEW_RECT.get_center()
+	return ((map_touch_positions[keys[0]] as Vector2) + (map_touch_positions[keys[1]] as Vector2)) * 0.5
+
+func _on_zoom_slider_changed(value: float) -> void:
+	_set_map_zoom(value, map_scroll.size * 0.5 if is_instance_valid(map_scroll) else Vector2.ZERO)
+
+func _set_map_zoom(value: float, _focus_in_view: Vector2) -> void:
+	if not is_instance_valid(map_canvas) or not is_instance_valid(map_content):
+		return
+	var next_zoom := clampf(snappedf(value, MAP_ZOOM_STEP), MAP_ZOOM_MIN, MAP_ZOOM_MAX)
+	map_zoom = next_zoom
+	map_canvas.scale = Vector2.ONE * map_zoom
+	if is_instance_valid(zoom_slider):
+		zoom_slider.set_value_no_signal(map_zoom)
+	if is_instance_valid(zoom_value_label):
+		zoom_value_label.text = "缩放 %d%%" % roundi(map_zoom * 100.0)
+	# Zoom always follows the party rather than the cursor or slider. At map
+	# edges ScrollContainer clamps the target, keeping the player visible while
+	# centering as closely as the available content allows.
+	_set_map_scroll(_player_map_center() - map_scroll.size / 2.0)
+
+func _set_map_scroll(value: Vector2) -> void:
+	if not is_instance_valid(map_scroll):
+		return
+	var scaled_map_size := map_base_size * map_zoom
+	var max_x := maxi(0, ceili(scaled_map_size.x - map_scroll.size.x))
+	var max_y := maxi(0, ceili(scaled_map_size.y - map_scroll.size.y))
+	map_scroll.scroll_horizontal = clampi(roundi(value.x), 0, max_x)
+	map_scroll.scroll_vertical = clampi(roundi(value.y), 0, max_y)
+
+func _current_map_scroll() -> Vector2:
+	if not is_instance_valid(map_scroll):
+		return Vector2.ZERO
+	return Vector2(map_scroll.scroll_horizontal, map_scroll.scroll_vertical)
+
+func _map_view_has_point(position: Vector2) -> bool:
+	return MAP_VIEW_RECT.has_point(position)
+
+func _map_view_local(position: Vector2) -> Vector2:
+	return position - MAP_VIEW_RECT.position
+
+func _cancel_canvas_click() -> void:
+	if is_instance_valid(map_canvas) and map_canvas.has_method("cancel_pending_click"):
+		map_canvas.call("cancel_pending_click")
+
+func _cancel_map_gesture() -> void:
+	map_dragging = false
+	map_touch_positions.clear()
+	map_touch_pan_index = -1
+	map_pinch_distance = 0.0
+	_cancel_canvas_click()
+
+func _zoom_track_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#263832")
+	style.border_color = Color("#84977e")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.content_margin_top = 3
+	style.content_margin_bottom = 3
+	return style
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _map_input_blocked(): return
@@ -226,7 +450,7 @@ func _move(dx: int, dy: int) -> void:
 	if not object.is_empty():
 		var object_key := Game.map_object_key(Game.get_active_map_id(), str(object.get("id", "")))
 		var was_completed := bool(Game.profile.get("completedMapObjects", {}).get(object_key, false))
-		if not was_completed and object.get("kind") == "story_event":
+		if not was_completed and object.get("kind") == "story_event" and object.get("choices", []).is_empty():
 			Game.resolve_object(object)
 		if not was_completed: _show_object(object)
 
@@ -308,9 +532,35 @@ func _show_object(object: Dictionary) -> void:
 	object_kind_label.text = _event_kind(object)
 	object_title_label.text = str(object.get("title", "地图事件"))
 	object_label.text = str(object.get("description", ""))
+	for choice_button in choice_buttons:
+		choice_button.visible = false
+		KWUI.set_map_button_disabled(choice_button, false)
+	current_action_choices = []
+	if not object.get("choices", []).is_empty() and not completed:
+		for key in event_buttons:
+			event_buttons[key].visible = false
+		current_action_choices = Game.available_map_object_actions(object)
+		var unavailable_notes: Array[String] = []
+		var displayed_count := mini(current_action_choices.size(), choice_buttons.size() - 1)
+		for index in displayed_count:
+			var action: Dictionary = current_action_choices[index]
+			var button: Button = choice_buttons[index]
+			button.visible = true
+			button.text = str(action.get("label", action.get("id", "行动")))
+			KWUI.set_map_button_disabled(button, not bool(action.get("enabled", true)))
+			if not bool(action.get("enabled", true)):
+				unavailable_notes.append("%s：%s" % [button.text, str(action.get("unavailableText", "条件尚未满足"))])
+		var leave_index := displayed_count
+		choice_buttons[leave_index].visible = true
+		choice_buttons[leave_index].text = "离开"
+		current_action_choices.insert(leave_index, {"id": "__leave__", "enabled": true})
+		_layout_action_buttons(choice_buttons.filter(func(button): return button.visible))
+		if not unavailable_notes.is_empty():
+			object_label.text = "%s\n\n%s" % [object_label.text, "\n".join(unavailable_notes)]
+		return
 	var actions: Array = object.get("eventActions", [])
 	if actions.is_empty():
-		if object.get("kind") == "enemy_group": actions = ["engage", "inspect", "leave"]
+		if _is_combat_kind(str(object.get("kind", ""))): actions = ["engage", "inspect", "leave"]
 		elif object.get("kind") == "treasure_chest": actions = ["operate", "leave"]
 		else: actions = ["leave"]
 	if completed: actions = ["leave"]
@@ -331,24 +581,83 @@ func _show_object(object: Dictionary) -> void:
 		elif key == "talk": event_button.text = "交谈"
 		elif key == "small_talk": event_button.text = "闲谈"
 		elif key == "leave": event_button.text = "离开"
-	for index in visible_buttons.size():
-		var row := floori(index / 3.0)
-		var count := mini(3, visible_buttons.size() - row * 3)
-		var column := index - row * 3
-		var x := 171.5 + (column - (count - 1) / 2.0) * 103.0 - 46.0
+	_layout_action_buttons(visible_buttons)
+
+func _layout_action_buttons(buttons: Array) -> void:
+	var widest_button := 0.0
+	for button: Button in buttons:
+		widest_button = maxf(widest_button, button.size.x)
+	var columns_per_row := 2 if widest_button > 100.0 else 3
+	for index in buttons.size():
+		var button: Button = buttons[index]
+		var row := floori(index / float(columns_per_row))
+		var count := mini(columns_per_row, buttons.size() - row * columns_per_row)
+		var column := index - row * columns_per_row
+		var spacing := 103.0 if button.size.x <= 100.0 else 151.0
+		var x := 171.5 + (column - (count - 1) / 2.0) * spacing - button.size.x * 0.5
 		var y := 280.0 if row == 0 else 335.0
-		visible_buttons[index].position = Vector2(x, y)
+		button.position = Vector2(x, y)
+
+func _choose_object_action(index: int) -> void:
+	if index < 0 or index >= current_action_choices.size():
+		return
+	var action: Dictionary = current_action_choices[index]
+	if str(action.get("id", "")) == "__leave__":
+		var leave_action: Variant = current_object.get("leaveAction", {})
+		if leave_action is Dictionary and not leave_action.is_empty():
+			var result := Game.resolve_map_object_action(current_object, str(leave_action.get("id", "")))
+			_show_feedback(str(result.get("message", "")), 0 if bool(result.get("ok", false)) else 2)
+			if not bool(result.get("ok", false)):
+				return
+			_refresh()
+		_close_event()
+		return
+	if not bool(action.get("enabled", true)):
+		_show_feedback(str(action.get("unavailableText", "条件尚未满足")), 1)
+		return
+	var result := Game.resolve_map_object_action(current_object, str(action.get("id", "")))
+	_show_feedback(str(result.get("message", "")), 0 if bool(result.get("ok", false)) else 2)
+	if not bool(result.get("ok", false)):
+		return
+	if bool(result.get("startEncounter", false)):
+		_close_event()
+		get_tree().change_scene_to_file("res://scenes/combat.tscn")
+		return
+	_refresh()
+	if bool(result.get("positionChanged", false)):
+		_center_map()
+	if bool(result.get("completed", false)) or bool(action.get("closeAfter", false)):
+		_close_event()
+	else:
+		_show_object(current_object)
 
 func _event_kind(object: Dictionary) -> String:
 	var kind := str(object.get("kind", ""))
-	if kind == "enemy_group" or kind.begins_with("boss_"): return "敌情"
-	if kind == "treasure_chest": return "遗物"
-	if kind == "npc": return "人物"
-	if kind == "resource_node": return "资源点"
-	return "奇遇"
+	match kind:
+		"enemy_group": return "敌情"
+		"elite_enemy": return "精英敌情"
+		"boss": return "首领敌情"
+		"treasure_chest": return "遗物"
+		"npc": return "人物"
+		"resource", "resource_node": return "资源点"
+		"landmark_event": return "地标事件"
+		"story_event": return "剧情事件"
+		"dungeon": return "局部副本"
+		"shortcut": return "捷径"
+		"map_exit": return "地图出口"
+		_: return "奇遇"
+
+func _is_combat_kind(kind: String) -> bool:
+	return kind in ["enemy_group", "elite_enemy", "boss"] or kind.begins_with("boss_")
+
+func _objective_text(active_map: Dictionary) -> String:
+	var fallback := str(active_map.get("objectiveText", "探索地图并完成当前目标"))
+	var objective := Game.text(str(active_map.get("objectiveTextKey", "")), fallback)
+	return objective if objective.begins_with("主线：") else "主线：%s" % objective
 
 func _close_event() -> void:
 	if is_instance_valid(event_overlay): event_overlay.visible = false
+	current_action_choices = []
 	current_object = {}
 
 func _resolve_object() -> void:

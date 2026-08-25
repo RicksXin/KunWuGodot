@@ -44,11 +44,9 @@
 - 固定使用 TileMapDual `v5.0.2`；插件目录为 `addons/TileMapDual`。
 - Dual Grid 是四角掩码 `0x1–0xF`，不是 47-piece Blob Autotile。不要把 1024×1024 风车母图
   当成可直接绘制的最终图集。
-- 当前已批准笔刷的远端运行事实源为 `assets/compiled/` 与对应 TileSet；本地生产母图为
-  `art/windmill_master.png`（`art/` 不提交），TileSet 在 `resources/tilemapdual_standard.tres`，
-  演示场景在 `scenes/tilemapdual_demo.tscn`。
-- 在编辑器中选中 `TileMapDual` 节点，从 TileMap 面板的 `Tiles` 标签选择完整块 `0xF` 绘制。
-  普通 `Terrains` 标签为空不代表插件失效。
+- TileMapDual 插件仅作为后续地图可能使用的通用工具保留；当前正式 Map01 不使用 TileMap、
+  Dual Grid、15-piece、风车母图或 `resources/tilemapdual_*.tres`，也不存在 Map01 Dual Grid Demo。
+- 不得把已归档的 Map01 TileSet、笔刷、组件或预览场景恢复为运行事实源。
 
 ## 地图生成式美术工作流
 
@@ -58,8 +56,9 @@
   Meowa 升级 → 用户视觉批准”。ChatGPT 是默认生成供应方；Meowa 不是默认供应方。
 - ChatGPT 初稿和一次针对性修正仍无法解决严格俯视、状态对齐或高价值大型地标结构问题时，才可提出
   Meowa 方案；提出方案不等于获得扣分授权，仍须遵守下方 Meowa 积分红线。
-- 生成模型只产出候选母图，不直接生成或覆盖最终运行地图、Dual Grid 15-piece、碰撞、对象坐标、
-  迷雾、Godot 场景或正式 `assets/`。最终地图必须由灰盒、Tile、独立组件和运行时 Overlay 组装。
+- 生成模型只产出候选母图，不直接生成碰撞、对象坐标、迷雾或 Godot 场景。当前 Map01 经用户视觉
+  批准后采用一张高清整图作为纯视觉背景；可走格、阻挡、对象坐标和互动仍必须由正式 JSON 与运行时
+  Overlay 独立表达，不得从背景像素反推。
 - Alpha、裁切、硬边、最近邻缩放、有限色盘、分层、Tile 编译、联系表、Godot 组件和自动验证由本地
   确定性流程完成，不消耗 Meowa 积分。任何候选只有在用户视觉确认后才能晋升为 Approved 运行素材。
 

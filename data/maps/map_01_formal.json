@@ -1,0 +1,1468 @@
+{
+  "schemaVersion": 1,
+  "status": "formal",
+  "mapId": "map_01",
+  "name": "破禁山麓·万修之门",
+  "objectiveText": "修复三盏阵灯，击败守门石灵并开启万修之门",
+  "width": 28,
+  "height": 64,
+  "activeWidth": 28,
+  "activeHeight": 64,
+  "entryX": 13,
+  "entryY": 6,
+  "terrainRows": [
+    "############################",
+    "############################",
+    "############################",
+    "############################",
+    "############################",
+    "###########..#..############",
+    "##########......############",
+    "##########......############",
+    "###########.........########",
+    "###########..........#######",
+    "###########......##..#######",
+    "######...........##..#######",
+    "###....###............######",
+    "###....###............######",
+    "###.....###...........######",
+    "####....#..............#####",
+    "####....................####",
+    "####....................####",
+    "####....................####",
+    "####....................####",
+    "####...........#........####",
+    "####..................######",
+    "####.....###.........#######",
+    "####....#####............###",
+    "####....#####.....##.....###",
+    "##......#####......##....###",
+    "##......######..........####",
+    "###.....#######.........####",
+    "###....########.........####",
+    "###....########.........####",
+    "###....########..........###",
+    "###....########..........###",
+    "###.....#######..........###",
+    "####.....######..........###",
+    "#####....####............###",
+    "#####...#####............###",
+    "#####...####.............###",
+    "#####..#####.............###",
+    "#####..#####........##...###",
+    "#####..#####.##....###...###",
+    "####...####..##..........###",
+    "####..###....#....###....###",
+    "########..........###....###",
+    "########.................###",
+    "########.................###",
+    "########........#........###",
+    "########.......###.......###",
+    "######..........#####....###",
+    "#######.........###......###",
+    "#######..................###",
+    "#######........##........###",
+    "######.........##........###",
+    "######.........##.......####",
+    "######.................#####",
+    "######................######",
+    "######..............########",
+    "######..............########",
+    "######.......E.....#########",
+    "#######.................####",
+    "#######.................####",
+    "########..............######",
+    "#########...........########",
+    "############################",
+    "############################"
+  ],
+  "dynamicBlockers": [
+    {
+      "id": "m1_tunnel_center_barrier",
+      "x": 12,
+      "y": 25,
+      "stateKey": "map_01.events.m1_dungeon_tunnel.resolved",
+      "passValue": true
+    },
+    {
+      "id": "m1_gate_barrier_10",
+      "x": 10,
+      "y": 57,
+      "stateKey": "map_01.encounters.m1_boss_gate_spirit.defeated",
+      "passValue": true
+    },
+    {
+      "id": "m1_gate_barrier_11",
+      "x": 11,
+      "y": 57,
+      "stateKey": "map_01.encounters.m1_boss_gate_spirit.defeated",
+      "passValue": true
+    },
+    {
+      "id": "m1_gate_barrier_12",
+      "x": 12,
+      "y": 57,
+      "stateKey": "map_01.encounters.m1_boss_gate_spirit.defeated",
+      "passValue": true
+    },
+    {
+      "id": "m1_gate_barrier_13",
+      "x": 13,
+      "y": 57,
+      "stateKey": "map_01.encounters.m1_boss_gate_spirit.defeated",
+      "passValue": true
+    },
+    {
+      "id": "m1_gate_barrier_14",
+      "x": 14,
+      "y": 57,
+      "stateKey": "map_01.encounters.m1_boss_gate_spirit.defeated",
+      "passValue": true
+    },
+    {
+      "id": "m1_gate_barrier_15",
+      "x": 15,
+      "y": 57,
+      "stateKey": "map_01.encounters.m1_boss_gate_spirit.defeated",
+      "passValue": true
+    }
+  ],
+  "encounterVictoryRules": [
+    {
+      "id": "m1_tunnel_rescue_deadline",
+      "objectId": "m1_dungeon_tunnel",
+      "deadlineStateKey": "map_01.events.m1_dungeon_tunnel.rescueDeadlineVictoryCount",
+      "onceStateKey": "map_01.events.m1_dungeon_tunnel.deadlineExpired",
+      "requirements": {
+        "mapStateEquals": {
+          "map_01.events.m1_dungeon_tunnel.delayStarted": true,
+          "map_01.events.m1_dungeon_tunnel.resolved": false
+        }
+      },
+      "message": "两场战斗过去，暗道内的敲击声停了。顾南炉只留下阵器拓图与遗物。",
+      "effects": {
+        "mapStatePatch": {
+          "map_01.events.m1_dungeon_tunnel.resolved": true,
+          "map_01.events.m1_dungeon_tunnel.savedGuNanlu": false
+        },
+        "storyFlagPatch": {
+          "saved_gu_nanlu": false
+        },
+        "incrementStoryFlags": {
+          "ye_evidence": 1
+        },
+        "campBuildingLevels": {
+          "lian_qi_fang": 1
+        },
+        "rewards": [
+          {
+            "itemId": "recipe_fu_xin_pei",
+            "amount": 1
+          }
+        ],
+        "completeObject": true
+      }
+    }
+  ],
+  "objects": [
+    {
+      "id": "m1_g01",
+      "kind": "enemy_group",
+      "x": 13,
+      "y": 10,
+      "title": "噬灵鼠群",
+      "description": "两只噬灵鼠伏在旧路旁，正盯着队伍中气血最弱的人。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g01",
+      "refreshType": "per_expedition",
+      "inspectionText": "两只炼气初期噬灵鼠；会追击低生命目标，并可能施加短暂迟缓。"
+    },
+    {
+      "id": "m1_g02",
+      "kind": "enemy_group",
+      "x": 18,
+      "y": 9,
+      "title": "崩石间的灵光",
+      "description": "碎岩灵从崩裂山石间聚起，灵壳会周期性重结。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g02",
+      "refreshType": "per_expedition",
+      "inspectionText": "两只碎岩灵；每 60 tick 获得 120 点护盾，适合集中破盾。"
+    },
+    {
+      "id": "m1_g03",
+      "kind": "enemy_group",
+      "x": 22,
+      "y": 13,
+      "title": "废营尸兵",
+      "description": "两名叶家尸兵在废营外游荡，锈刃上残留尸毒。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g03",
+      "refreshType": "per_expedition",
+      "inspectionText": "两名游荡尸兵；尸爪会造成持续 60 tick 的尸毒。"
+    },
+    {
+      "id": "m1_g04",
+      "kind": "enemy_group",
+      "x": 11,
+      "y": 17,
+      "title": "反阵骚动",
+      "description": "噬灵鼠被残阵灵光驱赶着扑来，灵光正在准备封灵。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g04",
+      "refreshType": "per_expedition",
+      "inspectionText": "噬灵鼠两只、残阵灵光一团；优先击散灵光可减少沉默干扰。"
+    },
+    {
+      "id": "m1_g05",
+      "kind": "enemy_group",
+      "x": 23,
+      "y": 30,
+      "title": "东壁石卫",
+      "description": "石甲守卫挡住东壁开阔路，碎岩灵在其后不断聚盾。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g05",
+      "refreshType": "per_expedition",
+      "inspectionText": "石甲守卫一名、碎岩灵一只；法术更适合处理高护体目标。"
+    },
+    {
+      "id": "m1_g06",
+      "kind": "enemy_group",
+      "x": 13,
+      "y": 27,
+      "title": "暗道尸群",
+      "description": "三名尸兵挤在难行碎石上，连续交战会积累尸毒损耗。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g06",
+      "refreshType": "per_expedition",
+      "inspectionText": "游荡尸兵三名；缺少恢复时应避免带毒连战。"
+    },
+    {
+      "id": "m1_g07",
+      "kind": "enemy_group",
+      "x": 18,
+      "y": 37,
+      "title": "残阵灵光群",
+      "description": "两团阵灵光彼此呼应，一只噬灵鼠在光隙中游走。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g07",
+      "refreshType": "per_expedition",
+      "inspectionText": "残阵灵光两团、噬灵鼠一只；沉默单位应优先处理。"
+    },
+    {
+      "id": "m1_g08",
+      "kind": "enemy_group",
+      "x": 9,
+      "y": 42,
+      "title": "北坡尸卫",
+      "description": "石甲守卫与两名尸兵守在坡口，物理硬打会拖长战斗。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g08",
+      "refreshType": "per_expedition",
+      "inspectionText": "石甲守卫一名、尸兵两名；先减员，再处理高护体石卫。"
+    },
+    {
+      "id": "m1_g09",
+      "kind": "enemy_group",
+      "x": 19,
+      "y": 47,
+      "title": "双石甲关口",
+      "description": "两名石甲守卫并肩封住旧路，重拳落点沉重。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g09",
+      "refreshType": "per_expedition",
+      "inspectionText": "石甲守卫两名；生命低于一半时会再次结盾。"
+    },
+    {
+      "id": "m1_g10",
+      "kind": "enemy_group",
+      "x": 19,
+      "y": 52,
+      "title": "门前残阵",
+      "description": "尸兵与残阵灵光守在万修门前，这是 Boss 前最后一场高压普通战。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_g10",
+      "refreshType": "per_expedition",
+      "inspectionText": "尸兵两名、残阵灵光一团；优先击散灵光，避免治疗者被封灵。"
+    },
+    {
+      "id": "m1_e01",
+      "kind": "elite_enemy",
+      "x": 22,
+      "y": 34,
+      "title": "精英：裂甲石卫",
+      "description": "龟裂甲片下亮着三道石纹；连续物理直击会引发反震。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_e01",
+      "refreshType": "per_expedition",
+      "inspectionText": "累计承受 3 次物理直击后反震；法术直击可清除反震计数。"
+    },
+    {
+      "id": "m1_e02",
+      "kind": "elite_enemy",
+      "x": 11,
+      "y": 50,
+      "title": "精英：尸煞执旗者",
+      "description": "尸旗与两名尸兵脚下的煞纹相连，旗手正持续强化同伴。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_e02",
+      "refreshType": "per_expedition",
+      "inspectionText": "执旗者存活时同伴伤害提高 15%；先杀旗手可解除增益。"
+    },
+    {
+      "id": "m1_res_wood_01",
+      "kind": "resource",
+      "x": 9,
+      "y": 5,
+      "title": "入口灵木",
+      "description": "山风折断的灵木仍有可用木心。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "gather",
+          "label": "采集灵木",
+          "claimKey": "map_01.resources.m1_res_wood_01.firstClaimed",
+          "completeObject": true,
+          "resultText": "取得灵木。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritWood",
+                "firstAmount": 18,
+                "repeatAmount": 9
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_wood_02",
+      "kind": "resource",
+      "x": 23,
+      "y": 23,
+      "title": "东壁灵木",
+      "description": "一丛贴壁生长的灵木避开了山风。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "gather",
+          "label": "采集灵木",
+          "claimKey": "map_01.resources.m1_res_wood_02.firstClaimed",
+          "completeObject": true,
+          "resultText": "取得灵木。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritWood",
+                "firstAmount": 22,
+                "repeatAmount": 11
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_wood_03",
+      "kind": "resource",
+      "x": 12,
+      "y": 20,
+      "title": "山脊灵木",
+      "description": "灰白山脊外缘露出一段坚韧木根。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "gather",
+          "label": "采集灵木",
+          "claimKey": "map_01.resources.m1_res_wood_03.firstClaimed",
+          "completeObject": true,
+          "resultText": "取得灵木。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritWood",
+                "firstAmount": 26,
+                "repeatAmount": 13
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_iron_01",
+      "kind": "resource",
+      "x": 21,
+      "y": 38,
+      "title": "露天玄铁",
+      "description": "玄铁矿脉从东壁裂缝中露出，需要开山镐才能安全剥离。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "mine",
+          "label": "开采玄铁",
+          "claimKey": "map_01.resources.m1_res_iron_01.firstClaimed",
+          "completeObject": true,
+          "requirements": {
+            "minCarriedItems": {
+              "pickaxe": 1
+            },
+            "failureText": "本次入山未启用开山镐"
+          },
+          "resultText": "取得玄铁。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "darkIron",
+                "firstAmount": 12,
+                "repeatAmount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_iron_02",
+      "kind": "resource",
+      "x": 15,
+      "y": 29,
+      "title": "暗道玄铁",
+      "description": "暗道裂层里嵌着一束纯度更高的玄铁。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "mine",
+          "label": "开采玄铁",
+          "claimKey": "map_01.resources.m1_res_iron_02.firstClaimed",
+          "completeObject": true,
+          "requirements": {
+            "minCarriedItems": {
+              "pickaxe": 1
+            },
+            "failureText": "本次入山未启用开山镐"
+          },
+          "resultText": "取得玄铁。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "darkIron",
+                "firstAmount": 18,
+                "repeatAmount": 9
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_grain_01",
+      "kind": "resource",
+      "x": 9,
+      "y": 11,
+      "title": "废营粮袋",
+      "description": "封口尚完整的粮袋可以带回外营。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "collect",
+          "label": "收取灵粮",
+          "claimKey": "map_01.resources.m1_res_grain_01.firstClaimed",
+          "completeObject": true,
+          "resultText": "收起可用灵粮。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritGrain",
+                "firstAmount": 16,
+                "repeatAmount": 8
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_grain_02",
+      "kind": "resource",
+      "x": 19,
+      "y": 44,
+      "title": "北坡粮仓",
+      "description": "半塌石仓内还剩一批防潮灵粮。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "collect",
+          "label": "收取灵粮",
+          "claimKey": "map_01.resources.m1_res_grain_02.firstClaimed",
+          "completeObject": true,
+          "resultText": "收起可用灵粮。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritGrain",
+                "firstAmount": 20,
+                "repeatAmount": 10
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_res_crystal_01",
+      "kind": "resource",
+      "x": 5,
+      "y": 46,
+      "title": "西北灵晶",
+      "description": "险路尽头的晶簇蕴含高浓度灵气。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "refreshType": "per_expedition",
+      "choices": [
+        {
+          "id": "gather",
+          "label": "采集灵晶",
+          "claimKey": "map_01.resources.m1_res_crystal_01.firstClaimed",
+          "completeObject": true,
+          "resultText": "取得灵晶。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritStone",
+                "firstAmount": 6,
+                "repeatAmount": 3
+              }
+            ]
+          }
+        },
+        {
+          "id": "inspect_gather",
+          "label": "探灵后采集",
+          "claimKey": "map_01.resources.m1_res_crystal_01.firstClaimed",
+          "completeObject": true,
+          "requirements": {
+            "minCarriedItems": {
+              "lens": 1
+            },
+            "failureText": "本次入山未携带探灵镜"
+          },
+          "resultText": "辨明晶脉后多取得两枚灵晶。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "spiritStone",
+                "firstAmount": 8,
+                "repeatAmount": 4
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_event_lamp_01",
+      "kind": "landmark_event",
+      "x": 13,
+      "y": 13,
+      "title": "第一盏阵灯",
+      "description": "灯芯完整，阵纹却反向把山外灵力送入山中。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "correct",
+          "label": "陆清校正",
+          "completeObject": true,
+          "requirements": {
+            "partyMaxAttributes": {
+              "magic": 18
+            },
+            "failureText": "队伍最高法力未达到 18"
+          },
+          "resultText": "反向阵纹被校正，第一盏灯转为暖白。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+              "map_01.events.m1_event_lamp_01.traceRecorded": true
+            },
+            "incrementStoryFlags": {
+              "seal_integrity": 1,
+              "ye_evidence": 1
+            }
+          }
+        },
+        {
+          "id": "open_shell",
+          "label": "开镐拆壳",
+          "completeObject": true,
+          "requirements": {
+            "minCarriedItems": {
+              "pickaxe": 1
+            },
+            "failureText": "本次入山未启用开山镐"
+          },
+          "resultText": "外壳被拆开，阵灯完成修复，并取出三块玄铁。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+              "map_01.events.m1_event_lamp_01.traceRecorded": true
+            },
+            "incrementStoryFlags": {
+              "seal_integrity": 1,
+              "ye_evidence": 1
+            },
+            "rewards": [
+              {
+                "itemId": "darkIron",
+                "amount": 3
+              }
+            ]
+          }
+        },
+        {
+          "id": "preserve_trace",
+          "label": "先保留反阵",
+          "closeAfter": true,
+          "hideWhenUnavailable": true,
+          "requirements": {
+            "mapStateNotEquals": {
+              "map_01.events.m1_event_lamp_01.traceRecorded": true
+            }
+          },
+          "resultText": "反向灵流被记录；主目标仍要求返回修灯。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_lamp_01.traceRecorded": true
+            },
+            "incrementStoryFlags": {
+              "ye_evidence": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_event_lamp_02",
+      "kind": "landmark_event",
+      "x": 23,
+      "y": 26,
+      "title": "第二盏阵灯",
+      "description": "东壁灯台被石屑压住，清开灯座即可恢复阵路。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "repair",
+          "label": "修复阵灯",
+          "completeObject": true,
+          "resultText": "第二盏阵灯亮起，东壁雾色稍退。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.landmarks.m1_event_lamp_02.state": "LAMP_REPAIRED"
+            },
+            "incrementStoryFlags": {
+              "seal_integrity": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_event_lamp_03",
+      "kind": "landmark_event",
+      "x": 14,
+      "y": 43,
+      "title": "第三盏阵灯",
+      "description": "北坡残阵仍在抽取灯芯，修复后万修门才会回应。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "repair",
+          "label": "修复阵灯",
+          "completeObject": true,
+          "resultText": "第三盏阵灯亮起，三灯光路在门前汇合。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.landmarks.m1_event_lamp_03.state": "LAMP_REPAIRED"
+            },
+            "incrementStoryFlags": {
+              "seal_integrity": 1
+            }
+          }
+        }
+      ],
+      "activationCells": [
+        [
+          15,
+          44
+        ],
+        [
+          14,
+          43
+        ],
+        [
+          16,
+          43
+        ],
+        [
+          15,
+          42
+        ]
+      ]
+    },
+    {
+      "id": "m1_event_corpses",
+      "kind": "story_event",
+      "x": 18,
+      "y": 14,
+      "title": "两份开山令",
+      "description": "尸首胸口没有石灵伤，袖中两份命令却盖着相同真印。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "take_orders",
+          "label": "带走双令",
+          "hideWhenUnavailable": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_corpses.orderHandled": false
+            }
+          },
+          "resultText": "两份矛盾命令已作为证据收存。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_corpses.orderHandled": true
+            },
+            "incrementStoryFlags": {
+              "ye_evidence": 1
+            }
+          }
+        },
+        {
+          "id": "copy_orders",
+          "label": "拓印后放回",
+          "hideWhenUnavailable": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_corpses.orderHandled": false
+            },
+            "partyMaxAttributes": {
+              "technique": 14
+            },
+            "failureText": "队伍最高神识不足"
+          },
+          "resultText": "双令拓印完成，原件仍留在尸首袖中。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_corpses.orderHandled": true
+            },
+            "incrementStoryFlags": {
+              "ye_evidence": 1
+            }
+          }
+        },
+        {
+          "id": "bury",
+          "label": "就地安葬",
+          "hideWhenUnavailable": true,
+          "completeObject": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_corpses.orderHandled": true,
+              "map_01.events.m1_event_corpses.bodyHandled": false
+            }
+          },
+          "resultText": "先遣队遗体被就地安葬，全队稍作调息。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_corpses.bodyHandled": true,
+              "map_01.landmarks.m1_event_corpses.state": "CAMP_CORPSES_PROCESSED"
+            },
+            "healPartyPercent": 10
+          }
+        },
+        {
+          "id": "return_bodies",
+          "label": "带回遗体",
+          "hideWhenUnavailable": true,
+          "completeObject": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_corpses.orderHandled": true,
+              "map_01.events.m1_event_corpses.bodyHandled": false
+            }
+          },
+          "resultText": "遗体被收入负重袋，归营后可请乌婆引魂。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_corpses.bodyHandled": true,
+              "map_01.landmarks.m1_event_corpses.state": "CAMP_CORPSES_PROCESSED"
+            },
+            "rewards": [
+              {
+                "itemId": "ye_vanguard_remains",
+                "amount": 1
+              }
+            ],
+            "storyFlagPatch": {
+              "wupo_unlock_pending": true
+            }
+          }
+        },
+        {
+          "id": "search_gear",
+          "label": "搜取遗物",
+          "hideWhenUnavailable": true,
+          "completeObject": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_corpses.orderHandled": true,
+              "map_01.events.m1_event_corpses.bodyHandled": false
+            }
+          },
+          "resultText": "取走玄铁与灵石，尸首现场已处理。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_corpses.bodyHandled": true,
+              "map_01.landmarks.m1_event_corpses.state": "CAMP_CORPSES_PROCESSED"
+            },
+            "rewards": [
+              {
+                "itemId": "darkIron",
+                "amount": 8
+              },
+              {
+                "itemId": "immortalCoin",
+                "amount": 60
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_event_ledger",
+      "kind": "story_event",
+      "x": 8,
+      "y": 16,
+      "title": "废营粮册",
+      "description": "粮册最后一页写着四十六人入山、三十三人回营，死亡栏却一片空白。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "take_ledger",
+          "label": "带走整本",
+          "completeObject": true,
+          "resultText": "旧粮册已收存，岑守一很难再否认缺失的十三人。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_ledger.handled": true
+            },
+            "storyFlagPatch": {
+              "side_cen_old_ledger": "ACTIVE",
+              "ledger_method": "taken"
+            }
+          }
+        },
+        {
+          "id": "copy_last_page",
+          "label": "拓印末页",
+          "completeObject": true,
+          "resultText": "最后一页被完整拓下，原册仍留在废营。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_ledger.handled": true
+            },
+            "storyFlagPatch": {
+              "side_cen_old_ledger": "ACTIVE",
+              "ledger_method": "copied"
+            }
+          }
+        },
+        {
+          "id": "keep_secret",
+          "label": "暂不告知岑守一",
+          "completeObject": true,
+          "resultText": "线索被秘密记录，等待之后找到晶化阵钥。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_ledger.handled": true
+            },
+            "storyFlagPatch": {
+              "side_cen_old_ledger": "ACTIVE",
+              "cen_secretive": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_event_stele",
+      "kind": "story_event",
+      "x": 14,
+      "y": 22,
+      "title": "万修之门残碑",
+      "description": "残碑回应外营总印：阵录十三，持外印者归位。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "record_identity",
+          "label": "记录阵录十三",
+          "closeAfter": true,
+          "hideWhenUnavailable": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_stele.recorded": false
+            }
+          },
+          "resultText": "身份档案新增“阵录十三”；退回安全格后，碑背出现无名种药人。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_stele.recorded": true,
+              "map_01.events.m1_event_stele.timelessSeedAvailable": true
+            },
+            "storyFlagPatch": {
+              "identity_clues": 2,
+              "side_hanli_time_gardener": "AVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "take_seed",
+          "label": "接过灰白种子",
+          "completeObject": true,
+          "hideWhenUnavailable": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_stele.timelessSeedAvailable": true,
+              "map_01.events.m1_event_stele.timelessSeedClaimed": false
+            }
+          },
+          "resultText": "灰白种子成为受保护任务物，归营后可种入灵源院。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_event_stele.timelessSeedClaimed": true
+            },
+            "storyFlagPatch": {
+              "side_hanli_time_gardener": "ACTIVE",
+              "timeless_tree_state": "seed_carried"
+            },
+            "rewards": [
+              {
+                "itemId": "timeless_seed",
+                "amount": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "defer_seed",
+          "label": "暂不接受",
+          "closeAfter": true,
+          "hideWhenUnavailable": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_stele.timelessSeedAvailable": true,
+              "map_01.events.m1_event_stele.timelessSeedClaimed": false
+            }
+          },
+          "resultText": "种子仍留在残碑旁，之后可以回来补取。",
+          "effects": {}
+        }
+      ],
+      "activationCells": [
+        [
+          14,
+          22
+        ],
+        [
+          13,
+          21
+        ]
+      ]
+    },
+    {
+      "id": "m1_event_chest",
+      "kind": "treasure_chest",
+      "x": 18,
+      "y": 30,
+      "title": "暗道宝匣",
+      "description": "匣盖禁纹已弱，里面封着一件上品制式装备和归营符。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "open",
+          "label": "开启宝匣",
+          "completeObject": true,
+          "resultText": "取得上品制式装备与归营符。",
+          "effects": {
+            "rewards": [
+              {
+                "itemId": "map01_superior_gear",
+                "amount": 1
+              },
+              {
+                "itemId": "return_talisman",
+                "amount": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_dungeon_tunnel",
+      "kind": "dungeon",
+      "x": 12,
+      "y": 24,
+      "title": "山腹暗道：顾南炉",
+      "description": "塌口深处传来敲击声。顾南炉警告，再乱动整片岩层都会坍塌。",
+      "eventActions": [
+        "operate",
+        "talk",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "pickaxe_rescue",
+          "label": "按指示破岩",
+          "startEncounterId": "m1_dungeon_rockfall",
+          "requirements": {
+            "minCarriedItems": {
+              "pickaxe": 1
+            },
+            "failureText": "本次入山未启用开山镐"
+          },
+          "resultText": "塌口被稳住，但落石甬道中的碎岩灵已经惊醒。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_dungeon_tunnel.discovered": true,
+              "map_01.events.m1_dungeon_tunnel.rescueMethod": "pickaxe"
+            }
+          }
+        },
+        {
+          "id": "strength_rescue",
+          "label": "石岩强行抬开",
+          "startEncounterId": "m1_dungeon_rockfall",
+          "requirements": {
+            "partySumAttributes": {
+              "strength": 55
+            },
+            "failureText": "队伍合计力道未达到 55"
+          },
+          "resultText": "石岩抬开落石，惊动的碎岩灵正从甬道两侧聚起。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_dungeon_tunnel.discovered": true,
+              "map_01.events.m1_dungeon_tunnel.rescueMethod": "strength"
+            }
+          }
+        },
+        {
+          "id": "verify_identity",
+          "label": "先核对旧炉编号",
+          "claimKey": "map_01.events.m1_dungeon_tunnel.identityVerified",
+          "startEncounterId": "m1_dungeon_rockfall",
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.events.m1_event_ledger.handled": true
+            },
+            "failureText": "尚未读过废营粮册，无法核对旧炉编号"
+          },
+          "resultText": "旧炉编号核对无误；循安全支撑线深入时，碎岩灵封住了甬道。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_dungeon_tunnel.discovered": true,
+              "map_01.events.m1_dungeon_tunnel.rescueMethod": "verify_identity"
+            }
+          },
+          "firstClaimEffects": {
+            "incrementStoryFlags": {
+              "cen_trust": 1
+            }
+          }
+        }
+      ],
+      "leaveAction": {
+        "id": "delay_rescue",
+        "claimKey": "map_01.events.m1_dungeon_tunnel.deadlineArmed",
+        "resultText": "队伍暂时离开；顾南炉最多只能再撑过两场战斗。",
+        "firstClaimEffects": {
+          "mapStatePatch": {
+            "map_01.events.m1_dungeon_tunnel.discovered": true,
+            "map_01.events.m1_dungeon_tunnel.delayStarted": true
+          },
+          "captureEncounterVictoryDeadlines": [
+            {
+              "stateKey": "map_01.events.m1_dungeon_tunnel.rescueDeadlineVictoryCount",
+              "victoriesUntil": 2
+            }
+          ]
+        },
+        "repeatEffects": {}
+      }
+    },
+    {
+      "id": "m1_shortcut_stairs",
+      "kind": "shortcut",
+      "x": 24,
+      "y": 31,
+      "title": "东壁回程阶梯",
+      "description": "阶梯机关与裂甲石卫的核心相连；击败精英后可永久开启。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "unlock",
+          "label": "开启阶梯",
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.encounters.m1_e01.firstClearClaimed": true
+            },
+            "mapStateNotEquals": {
+              "map_01.shortcuts.m1_shortcut_stairs.unlocked": true
+            },
+            "expeditionPositionEquals": {
+              "x": 24,
+              "y": 31
+            },
+            "failureText": "需要在东壁上层击败裂甲石卫后启动机关"
+          },
+          "resultText": "东壁阶梯永久开启，上层与废营落脚点已经连通。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.shortcuts.m1_shortcut_stairs.unlocked": true
+            }
+          }
+        },
+        {
+          "id": "travel_down",
+          "label": "下行至废营",
+          "hideWhenUnavailable": true,
+          "closeAfter": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.shortcuts.m1_shortcut_stairs.unlocked": true
+            },
+            "expeditionPositionEquals": {
+              "x": 24,
+              "y": 31
+            },
+            "failureText": "阶梯尚未开启或队伍不在上层落脚点"
+          },
+          "resultText": "队伍沿新开的石阶快速返回废营东侧。",
+          "effects": {
+            "expeditionPosition": {
+              "x": 23,
+              "y": 14
+            }
+          }
+        },
+        {
+          "id": "travel_up",
+          "label": "上行至东壁",
+          "hideWhenUnavailable": true,
+          "closeAfter": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.shortcuts.m1_shortcut_stairs.unlocked": true
+            },
+            "expeditionPositionEquals": {
+              "x": 23,
+              "y": 14
+            },
+            "failureText": "阶梯尚未开启或队伍不在废营落脚点"
+          },
+          "resultText": "队伍沿石阶返回东壁高台。",
+          "effects": {
+            "expeditionPosition": {
+              "x": 24,
+              "y": 31
+            }
+          }
+        }
+      ],
+      "activationCells": [
+        [
+          24,
+          31
+        ],
+        [
+          23,
+          14
+        ]
+      ],
+      "additionalMarkerCells": [
+        [
+          23,
+          14
+        ]
+      ]
+    },
+    {
+      "id": "m1_boss_gate_spirit",
+      "kind": "boss",
+      "x": 14,
+      "y": 55,
+      "title": "首领：守门石灵",
+      "description": "石灵核心执行的不是守门令，而是“清除外来见证者”。",
+      "eventActions": [
+        "engage",
+        "inspect",
+        "leave"
+      ],
+      "encounterId": "m1_boss_gate_spirit",
+      "refreshType": "permanent",
+      "inspectionText": "6500 生命；75% 与 35% 两次金身；三次物理直击触发反震，法术直击清层；生命降至 70% 后可逃生。",
+      "requirements": {
+        "mapStateEquals": {
+          "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+          "map_01.landmarks.m1_event_lamp_02.state": "LAMP_REPAIRED",
+          "map_01.landmarks.m1_event_lamp_03.state": "LAMP_REPAIRED"
+        },
+        "failureText": "三盏阵灯尚未全部修复"
+      },
+      "choices": [
+        {
+          "id": "show_orders",
+          "label": "出示两份命令",
+          "startEncounterId": "m1_boss_gate_spirit",
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_02.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_03.state": "LAMP_REPAIRED",
+              "map_01.events.m1_event_corpses.orderHandled": true
+            },
+            "failureText": "需要修复三灯并取得双令证据"
+          },
+          "resultText": "叶观衡称其中一令为伪造，石灵开始执行清除命令。",
+          "effects": {
+            "storyFlagPatch": {
+              "boss_opening_method": "show_orders"
+            }
+          }
+        },
+        {
+          "id": "demand_presence",
+          "label": "要求叶观衡现身",
+          "startEncounterId": "m1_boss_gate_spirit",
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_02.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_03.state": "LAMP_REPAIRED"
+            },
+            "failureText": "三盏阵灯尚未全部修复"
+          },
+          "resultText": "叶观衡拒绝现身，石灵的第一道反震纹暂时黯淡。",
+          "effects": {
+            "storyFlagPatch": {
+              "boss_opening_method": "demand_presence"
+            }
+          }
+        },
+        {
+          "id": "prepare",
+          "label": "不争，准备战斗",
+          "startEncounterId": "m1_boss_gate_spirit",
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_02.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_03.state": "LAMP_REPAIRED"
+            },
+            "failureText": "三盏阵灯尚未全部修复"
+          },
+          "resultText": "队伍稳住命灯，正面迎战守门石灵。",
+          "effects": {
+            "storyFlagPatch": {
+              "boss_opening_method": "prepare"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "m1_exit",
+      "kind": "map_exit",
+      "x": 12,
+      "y": 58,
+      "title": "万修之门出口",
+      "description": "门后通往白玉广场。三灯与石灵核心必须同时回应，门扉才会开启。",
+      "eventActions": [
+        "operate",
+        "leave"
+      ],
+      "choices": [
+        {
+          "id": "open_gate",
+          "label": "开启万修之门",
+          "completeObject": true,
+          "requirements": {
+            "mapStateEquals": {
+              "map_01.landmarks.m1_event_lamp_01.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_02.state": "LAMP_REPAIRED",
+              "map_01.landmarks.m1_event_lamp_03.state": "LAMP_REPAIRED",
+              "map_01.encounters.m1_boss_gate_spirit.defeated": true,
+              "map_01.encounters.m1_boss_gate_spirit.coreAcquired": true
+            },
+            "failureText": "三灯或石灵核心尚未齐备"
+          },
+          "resultText": "敌对红纹转为中性白纹，地图 2“白玉广场”已经解锁。",
+          "effects": {
+            "mapStatePatch": {
+              "map_01.events.m1_exit.unlocked": true
+            },
+            "storyFlagPatch": {
+              "map_02_unlocked": true
+            }
+          }
+        }
+      ],
+      "activationCells": [
+        [
+          12,
+          58
+        ],
+        [
+          14,
+          58
+        ],
+        [
+          13,
+          57
+        ]
+      ]
+    }
+  ],
+  "visual": {
+    "scenePath": "res://scenes/maps/map_01.tscn",
+    "logicalTileSize": 48,
+    "gridStyle": "subtle_corners",
+    "markerTextures": {
+      "party": "res://assets/maps/map_01/markers/marker_explore_party.png",
+      "spawn": "res://assets/maps/map_01/markers/marker_explore_spawn.png",
+      "enemy_group": "res://assets/maps/map_01/markers/marker_explore_enemy.png",
+      "resource": "res://assets/maps/map_01/markers/marker_explore_resource.png",
+      "dungeon": "res://assets/maps/map_01/markers/marker_explore_dungeon.png",
+      "boss": "res://assets/maps/map_01/markers/marker_explore_boss.png",
+      "map_exit": "res://assets/maps/map_01/markers/marker_explore_map_exit.png"
+    },
+    "markerLogicalSizes": {
+      "party": 54,
+      "spawn": 50,
+      "enemy_group": 38,
+      "resource": 36,
+      "dungeon": 40,
+      "boss": 46,
+      "map_exit": 52
+    },
+    "backgroundPath": "res://assets/maps/map_01/map01_background.png",
+    "renderMode": "hd_background_json_grid"
+  },
+  "id": "map_01",
+  "nameKey": "map.map_01"
+}

@@ -182,8 +182,10 @@ func _add_building(parent: Control, info: Dictionary) -> void:
 	parent.add_child(host)
 	var id: String = info["id"]
 	var level := 1 if id == "portal" else int(Game.profile.get("camp", {}).get("buildingLevels", {}).get(id, 0))
+	var has_dead_hero := id == "huan_hun_tan" and not Game.dead_heroes().is_empty()
+	var visually_available := level > 0 or id == "portal" or has_dead_hero
 	var texture_path := "res://assets/camp/buildings/env_camp_%s.png" % ("portal" if id == "portal" else "building_" + id)
-	if level <= 0 and id != "portal":
+	if not visually_available:
 		var locked_path := texture_path.trim_suffix(".png") + "_locked.png"
 		if ResourceLoader.exists(locked_path): texture_path = locked_path
 	var image := KWUI.texture(host, texture_path, Rect2(0, 0, info["w"], info["h"]))
@@ -199,29 +201,23 @@ func _add_building(parent: Control, info: Dictionary) -> void:
 	button.pressed.connect(_on_building_pressed.bind(id, level))
 	var name_center := Vector2(float(info["w"]) / 2.0, float(info["h"]) / 2.0) + Vector2(info["name_offset"])
 	var plate_size := Vector2(84, 20) if id == "portal" else Vector2(58, 20)
-	var plate := KWUI.panel(host, Rect2(name_center - plate_size / 2.0, plate_size), Color("#202a27f5") if id == "portal" else (Color("#202a2799") if level <= 0 else Color("#241d18eb")), Color("#6f8f85") if id == "portal" else (Color("#5e6a66b3") if level <= 0 else Color("#80623af2")))
+	var plate := KWUI.panel(host, Rect2(name_center - plate_size / 2.0, plate_size), Color("#202a27f5") if id == "portal" else (Color("#202a2799") if not visually_available else Color("#241d18eb")), Color("#6f8f85") if id == "portal" else (Color("#5e6a66b3") if not visually_available else Color("#80623af2")))
 	plate.name = "NamePlate"
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var title := KWUI.label(host, info["name"], Rect2(name_center - plate_size / 2.0, plate_size), 10 if id != "portal" else 11, Color("#abb2ab") if level <= 0 and id != "portal" else Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	var title := KWUI.label(host, info["name"], Rect2(name_center - plate_size / 2.0, plate_size), 10 if id != "portal" else 11, Color("#abb2ab") if not visually_available else Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
 	title.name = "NameLabel"
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if level <= 0:
+	if not visually_available:
 		var badge_center := Vector2(float(info["w"]) / 2.0, float(info["h"]) / 2.0) + Vector2(info["badge_offset"])
 		# 锁定标记在 375×817 逻辑画布上固定显示为 12×12。
 		var badge_size := Vector2(12, 12)
 		var badge := KWUI.texture(host, "res://assets/camp/ui/common/icon_camp_building_lock.png", Rect2(badge_center - badge_size / 2.0, badge_size))
 		badge.modulate = Color(1, 1, 1, 0.76)
 		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	elif id == "huan_hun_tan":
-		var has_dead_hero := false
-		for hero in Game.profile.get("roster", []):
-			if bool(hero.get("isDead", false)):
-				has_dead_hero = true
-				break
-		if has_dead_hero:
-			var badge_center := Vector2(float(info["w"]) / 2.0, float(info["h"]) / 2.0) + Vector2(info["badge_offset"])
-			var badge := KWUI.texture(host, "res://assets/camp/ui/common/icon_camp_building_attention.png", Rect2(badge_center - Vector2(12, 12), Vector2(24, 24)))
-			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	elif has_dead_hero:
+		var badge_center := Vector2(float(info["w"]) / 2.0, float(info["h"]) / 2.0) + Vector2(info["badge_offset"])
+		var badge := KWUI.texture(host, "res://assets/camp/ui/common/icon_camp_building_attention.png", Rect2(badge_center - Vector2(12, 12), Vector2(24, 24)))
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _build_bottom_hud() -> void:
 	# 图标型底部快捷入口，没有大底板、文字标签或额外“入山”按钮。
@@ -269,12 +265,80 @@ func _on_building_pressed(id: String, level: int) -> void:
 		"ling_pu": _open_ling_pu()
 		"portal": _open_expedition()
 		"yi_shi_dian": _open_council()
+		"huan_hun_tan":
+			if level > 0 or not Game.dead_heroes().is_empty(): _open_revive_hall()
+			else: _show_feedback("还魂殿尚未开放", 2)
 		_:
 			_show_feedback("%s尚未开放" % Game.text("building." + id, id), 1 if level > 0 else 2)
 
 func _on_system_pressed(id: String) -> void:
 	if id == "settings": _open_settings()
 	else: _show_feedback("该功能尚未开放", 1)
+
+func _open_revive_hall(status_message: String = "", status_success := true) -> void:
+	var body := _make_modal("还魂殿")
+	body.name = "ReviveHallBody"
+	var dead: Array = Game.dead_heroes()
+	var soul_crystal := Game.wallet_value("soulCrystal")
+	KWUI.label(body, "持有魂晶  %d" % soul_crystal, Rect2(24, 76, 311, 24), 13, Color("#d8c078"), HORIZONTAL_ALIGNMENT_CENTER)
+	if not status_message.is_empty():
+		KWUI.label(body, status_message, Rect2(24, 100, 311, 26), 11, Color("#8bc5aa") if status_success else Color("#e58b72"), HORIZONTAL_ALIGNMENT_CENTER)
+	if dead.is_empty():
+		KWUI.label(body, "当前无人待还魂", Rect2(30, 176, 299, 36), 19, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+		KWUI.label(body, "修士状态已经恢复，\n可以重新进入入山整备。", Rect2(50, 232, 259, 58), 13, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		var prepare := _camp_button(body, "前往入山整备", Rect2(62, 410, 235, 50), true, 15)
+		prepare.name = "PrepareAfterReviveButton"
+		prepare.pressed.connect(_open_expedition)
+		var empty_close := _camp_button(body, "返回营地", Rect2(113.5, 520, 132, 44), false, 14)
+		empty_close.pressed.connect(_close_modal)
+		return
+	var all_ids: Array[String] = []
+	var total_cost := 0
+	var minimum_cost := 2147483647
+	var emergency_id := ""
+	for index in dead.size():
+		var hero: Dictionary = dead[index]
+		var hero_id := str(hero.get("instanceId", ""))
+		var cost := Game.revival_cost(hero)
+		all_ids.append(hero_id)
+		if cost >= 0:
+			total_cost += cost
+			if cost < minimum_cost:
+				minimum_cost = cost
+				emergency_id = hero_id
+		var row := KWUI.panel(body, Rect2(24, 132 + index * 66, 311, 58), Color("#17211fef"), Color("#4e625c"))
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		KWUI.label(row, Game.text(str(hero.get("nameKey", "")), "修士"), Rect2(12, 7, 105, 20), 14, Color("#e8dcbb"))
+		KWUI.label(row, "Lv.%d · 阵亡" % int(hero.get("level", 1)), Rect2(12, 29, 105, 17), 10, Color("#c98072"))
+		var cost_text := "数据异常" if cost < 0 else "魂晶 %d" % cost
+		KWUI.label(row, cost_text, Rect2(118, 18, 82, 20), 11, Color("#d8c078"), HORIZONTAL_ALIGNMENT_CENTER)
+		var revive_one := _camp_button(row, "还魂", Rect2(213, 13, 82, 32), true, 11)
+		revive_one.name = "Revive_%s" % hero_id
+		revive_one.disabled = cost < 0 or soul_crystal < cost
+		revive_one.pressed.connect(_revive_selected.bind([hero_id]))
+	var summary_y := 407.0
+	KWUI.label(body, "%d 名待处理 · 全部需要魂晶 %d" % [dead.size(), total_cost], Rect2(24, summary_y, 311, 24), 12, Color("#d8c8aa"), HORIZONTAL_ALIGNMENT_CENTER)
+	var can_emergency_revive := Game.living_heroes().is_empty() and not emergency_id.is_empty() and soul_crystal < minimum_cost
+	if can_emergency_revive:
+		KWUI.label(body, "无存活修士且魂晶不足，可免费还魂一人防止卡死。", Rect2(32, 438, 295, 38), 10, Color("#e58b72"), HORIZONTAL_ALIGNMENT_CENTER)
+		var emergency := _camp_button(body, "免费还魂一人", Rect2(30, 478, 132, 44), true, 13)
+		emergency.name = "EmergencyReviveButton"
+		emergency.pressed.connect(_emergency_revive.bind(emergency_id))
+	else:
+		var revive_all := _camp_button(body, "全部还魂 · %d" % total_cost, Rect2(30, 478, 132, 44), true, 12)
+		revive_all.name = "ReviveAllButton"
+		revive_all.disabled = total_cost <= 0 or soul_crystal < total_cost
+		revive_all.pressed.connect(_revive_selected.bind(all_ids))
+	var close := _camp_button(body, "返回营地", Rect2(197, 478, 132, 44), false, 14)
+	close.pressed.connect(_close_modal)
+
+func _revive_selected(hero_ids: Array) -> void:
+	var result := Game.revive_cultivators(hero_ids)
+	_open_revive_hall(str(result.get("message", "还魂处理失败")), bool(result.get("ok", false)))
+
+func _emergency_revive(hero_id: String) -> void:
+	var result := Game.emergency_revive_cultivator(hero_id)
+	_open_revive_hall(str(result.get("message", "免费还魂处理失败")), bool(result.get("ok", false)))
 
 func _make_modal(title: String, background_path: String = "") -> Panel:
 	_close_modal()
@@ -528,13 +592,25 @@ func _open_expedition() -> void:
 		var close_resume := _camp_button(body, "返回营地", Rect2(113.5, 556, 132, 44), false, 14)
 		close_resume.pressed.connect(_close_modal)
 		return
+	if Game.living_heroes().is_empty() and not Game.dead_heroes().is_empty():
+		KWUI.label(body, "当前没有可出战修士", Rect2(30, 122, 299, 36), 18, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+		KWUI.label(body, "四名修士均已阵亡。\n请先前往还魂殿恢复至少一人。", Rect2(45, 180, 269, 72), 13, Color("#d8c8aa"), HORIZONTAL_ALIGNMENT_CENTER)
+		var revive := _camp_button(body, "前往还魂殿", Rect2(62, 310, 235, 50), true, 15)
+		revive.name = "GoToReviveHallButton"
+		revive.pressed.connect(_open_revive_hall)
+		var blocked_close := _camp_button(body, "返回营地", Rect2(113.5, 556, 132, 44), false, 14)
+		blocked_close.pressed.connect(_close_modal)
+		return
 	if expedition_draft.is_empty():
-		expedition_draft = Game.profile.get("expeditionPreparation", {}).get("loadout", {"spiritGrain": 60, "pickaxe": 0, "lens": 0}).duplicate(true)
+		var preparation_raw: Variant = Game.profile.get("expeditionPreparation")
+		var preparation: Dictionary = preparation_raw if preparation_raw is Dictionary else {}
+		var loadout_raw: Variant = preparation.get("loadout")
+		expedition_draft = (loadout_raw if loadout_raw is Dictionary else {"spiritGrain": 60, "pickaxe": 0, "lens": 0}).duplicate(true)
 	KWUI.label(body, "传送阵 · 昆吾山外缘", Rect2(89.5, 76, 180, 16), 12, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
 	var portraits := ["shi_yan", "lu_qing", "bai_ling", "mo_yan"]
 	var heroes: Array = Game.party_heroes()
-	for index in portraits.size():
-		var hero: Dictionary = heroes[index]
+	for index in mini(portraits.size(), heroes.size()):
+		var hero: Dictionary = heroes[index] if heroes[index] is Dictionary else {}
 		_add_expedition_hero_card(body, Rect2(31 + index * 74.5, 98, 71, 163), portraits[index], hero)
 	var edit_party := _camp_button(body, "编辑队伍", Rect2(48, 273, 72, 28), false, 10)
 	edit_party.pressed.connect(_open_hero_selection)
@@ -558,8 +634,10 @@ func _open_expedition() -> void:
 	KWUI.label(body, "负重：", Rect2(128, 314, 43, 20), 12, Color("#91a49e"))
 	KWUI.label(body, "%d / %d" % [burden, burden_limit], Rect2(171, 314, 76, 20), 12, Color("#e58b52") if burden > burden_limit else Color("#e8dcbb"))
 	_add_expedition_loadout_row(body, "spiritGrain", "灵粮", "res://assets/camp/ui/top/icon_resource_spirit_grain.png", 366, Game.wallet_value("spiritGrain"), burden_limit)
-	_add_expedition_loadout_row(body, "pickaxe", "开山镐", "res://assets/camp/ui/expedition/icon_expedition_pickaxe.png", 410, int(Game.profile.get("inventory", {}).get("pickaxe", 0)), burden_limit)
-	_add_expedition_loadout_row(body, "lens", "探灵镜", "res://assets/camp/ui/expedition/icon_expedition_lens.png", 454, int(Game.profile.get("inventory", {}).get("lens", 0)), burden_limit)
+	var inventory_raw: Variant = Game.profile.get("inventory")
+	var inventory: Dictionary = inventory_raw if inventory_raw is Dictionary else {}
+	_add_expedition_loadout_row(body, "pickaxe", "开山镐", "res://assets/camp/ui/expedition/icon_expedition_pickaxe.png", 410, int(inventory.get("pickaxe", 0)), burden_limit)
+	_add_expedition_loadout_row(body, "lens", "探灵镜", "res://assets/camp/ui/expedition/icon_expedition_lens.png", 454, int(inventory.get("lens", 0)), burden_limit)
 	var depart := _camp_button(body, "传送", Rect2(30, 556, 132, 44), true, 14)
 	var default_map_rule := Game.get_expedition_map_rule(ConfigRepository.default_map_id())
 	depart.disabled = int(expedition_draft.get("spiritGrain", 0)) < int(default_map_rule.get("minimumCarriedGrain", 0)) or burden > burden_limit
@@ -755,7 +833,9 @@ func _open_map_selection() -> void:
 		var map_info: Dictionary = maps[index]
 		var unlock_value: Variant = map_info.get("unlockFlag", "")
 		var unlock_flag := "" if unlock_value == null else str(unlock_value)
-		var unlocked := unlock_flag.is_empty() or bool(Game.profile.get("storyFlags", {}).get(unlock_flag, false))
+		var story_flags_raw: Variant = Game.profile.get("storyFlags")
+		var story_flags: Dictionary = story_flags_raw if story_flags_raw is Dictionary else {}
+		var unlocked := unlock_flag.is_empty() or bool(story_flags.get(unlock_flag, false))
 		var row := Button.new()
 		row.position = Vector2(51.5, 164 + index * 76)
 		row.size = Vector2(272, 70)

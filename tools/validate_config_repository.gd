@@ -1,8 +1,8 @@
-extends Node
+extends SceneTree
 
 var errors: Array[String] = []
 
-func _ready() -> void:
+func _initialize() -> void:
 	call_deferred("_validate")
 
 func _validate() -> void:
@@ -10,8 +10,8 @@ func _validate() -> void:
 		_fail("validation requires --no-profile-write")
 		_finish()
 		return
-	var game: Node = get_tree().root.get_node_or_null("Game")
-	var repository: Node = get_tree().root.get_node_or_null("ConfigRepository")
+	var game: Node = root.get_node_or_null("Game")
+	var repository: Node = root.get_node_or_null("ConfigRepository")
 	if game == null or repository == null:
 		_fail("configuration autoloads are missing")
 		_finish()
@@ -27,19 +27,23 @@ func _validate() -> void:
 	if repository.get("source") == "embedded": _assert(loaded_modules.is_empty(), "内置回退不应伪造发布模块")
 	else: _assert(loaded_modules.size() == 6, "发布模块数量不完整")
 	var map_definition: Dictionary = game.call("get_map_definition", "map_01")
-	_assert(not map_definition.is_empty() and map_definition.get("objects", []).size() == 3, "地图模块适配失败")
-	var encounter: Dictionary = game.call("get_encounter", "can_jin_shi_kui")
-	_assert(not encounter.is_empty() and encounter.get("enemies", []).size() == 1, "战斗模块适配失败")
+	var formal_map: bool = map_definition.get("objects", []).size() == 31
+	_assert(not map_definition.is_empty() and map_definition.get("objects", []).size() in [3, 31], "地图模块适配失败")
+	var encounter_id: String = "m1_g01" if formal_map else "can_jin_shi_kui"
+	var map_object_id: String = "m1_g01" if formal_map else "can_jin_shi_kui_01"
+	var expected_enemy_count: int = 2 if formal_map else 1
+	var encounter: Dictionary = game.call("get_encounter", encounter_id)
+	_assert(not encounter.is_empty() and encounter.get("enemies", []).size() == expected_enemy_count, "战斗模块适配失败")
 	var map_rule: Dictionary = game.call("get_expedition_map_rule", "map_01")
 	_assert(int(map_rule.get("minimumCarriedGrain", 0)) == 20, "出征模块适配失败")
 	_assert(game.call("item_weight", "pickaxe") == 12 and game.call("item_weight", "lens") == 4, "基础资源重量适配失败")
 	var ling_pu: Dictionary = game.get("ling_pu_config")
 	_assert(int(ling_pu.get("recruitSpiritGrainCost", 0)) == 50, "生产模块适配失败")
-	_validate_runtime_state(game, map_definition)
+	_validate_runtime_state(game, map_definition, encounter_id, map_object_id)
 	if errors.is_empty(): print("CONFIG_REPOSITORY_VALIDATION_OK source=%s version=%s modules=%d" % [repository.get("source"), repository.get("version"), loaded_modules.size()])
 	_finish()
 
-func _validate_runtime_state(game: Node, map_definition: Dictionary) -> void:
+func _validate_runtime_state(game: Node, map_definition: Dictionary, encounter_id: String, map_object_id: String) -> void:
 	var runtime_profile: Dictionary = game.get("default_profile").duplicate(true)
 	runtime_profile["camp"]["lastSettledAtUtc"] = int(game.call("now")) - 31
 	runtime_profile["camp"]["workerAssignments"] = {"spiritGrain": 0, "spiritWood": 1, "darkIron": 0, "spiritStone": 0, "gengJing": 0}
@@ -67,11 +71,11 @@ func _validate_runtime_state(game: Node, map_definition: Dictionary) -> void:
 	_assert(expedition.get("mapId") == "map_01" and expedition.get("partyPresetId") == "party_01", "出征未记录地图或队伍稳定 ID")
 	var encounter_object: Dictionary = {}
 	for object in map_definition.get("objects", []):
-		if str(object.get("encounterId", object.get("enemyId", ""))) == "can_jin_shi_kui": encounter_object = object
+		if str(object.get("encounterId", object.get("enemyId", ""))) == encounter_id: encounter_object = object
 	var encounter_result: Dictionary = game.call("begin_encounter", encounter_object)
 	_assert(encounter_result.get("ok", false), "按 encounterId 开始遭遇失败")
 	expedition = game.get("profile").get("expedition", {})
-	_assert(expedition.get("encounterId") == "can_jin_shi_kui" and expedition.get("mapObjectId") == "can_jin_shi_kui_01", "遭遇未记录 encounterId 或 mapObjectId")
+	_assert(expedition.get("encounterId") == encounter_id and expedition.get("mapObjectId") == map_object_id, "遭遇未记录 encounterId 或 mapObjectId")
 
 func _assert(condition: bool, message: String) -> void:
 	if not condition: _fail(message)
@@ -86,4 +90,4 @@ func _fail(message: String) -> void:
 	push_error(message)
 
 func _finish() -> void:
-	get_tree().quit(0 if errors.is_empty() else 1)
+	quit(0 if errors.is_empty() else 1)

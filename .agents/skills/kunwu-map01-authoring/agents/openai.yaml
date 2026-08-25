@@ -1,4 +1,4 @@
 interface:
   display_name: "昆吾 Map01 地图制作"
-  short_description: "使用 TileMapDual 安全制作和验证 Map01"
+  short_description: "安全维护 28×64 高清背景与 JSON Map01"
   default_prompt: "使用 $kunwu-map01-authoring 制作或修改 Map01 地图。"

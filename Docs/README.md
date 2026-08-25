@@ -30,15 +30,15 @@ D0/D1 Demo 的范围、进度和验收独立读取 [`Demo/`](Demo/README.md)，�
 
 - 世界视觉、Tile、对象、迷雾和四图共用标准：
   [`ArtAssets/15_野外探索资源副本与四图内容.md`](ArtAssets/15_野外探索资源副本与四图内容.md)。
-- D0 `map_01` 状态流与验收：
-  [`Demo/Tech/D0_MAP_客户端技术设计.md`](Demo/Tech/D0_MAP_客户端技术设计.md)。
-- 当前地图数据：`res://data/maps/map_01_demo.json`。
-- 当前地图场景：`res://scenes/map.tscn`。
-- 当前 CC0 tileset 来源与许可：
-  `res://assets/maps/map_01/puny_dungeon/PROVENANCE.md`。
+- 当前 Map01 进度与验收：
+  [`Demo/05_Demo开发进度与待办.md`](Demo/05_Demo开发进度与待办.md)。
+- 当前唯一正式地图数据：`res://data/maps/map_01_formal.json`。
+- 当前地图页面：`res://scenes/map.tscn`。
+- 当前唯一 Map01 视觉场景：`res://scenes/maps/map_01.tscn`。
+- 当前唯一 Map01 背景：`res://assets/maps/map_01/map01_background.png`。
 
-当前 D0 地图仍是可玩的像素灰盒，不等于 `map_01` 正式美术已经完成。正式替换时必须保持
-`16×16` 源 Tile、`48×48` 逻辑显示、nearest filtering、四方向移动、迷雾状态和固定对象语义。
+Map01 使用 `28×64` JSON 语义网格和 `1344×3072` 高清视觉背景。背景不承担碰撞或对象坐标；
+`terrainRows`、`dynamicBlockers` 与 `objects` 分别保存移动、状态阻挡和对象事实。
 
 ## 历史与归档
 

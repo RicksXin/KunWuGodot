@@ -2,9 +2,15 @@ extends Control
 
 signal cell_clicked(x: int, y: int)
 
+const CLICK_DRAG_THRESHOLD := 5.0
+
 var tile_size := 48.0
 var terrain_instance: Node2D
 var overlay: Control
+var pointer_active := false
+var pointer_index := -1
+var pointer_start := Vector2.ZERO
+var pointer_moved := false
 
 func _ready() -> void:
 	var active_map := Game.get_map_definition()
@@ -41,13 +47,61 @@ func _instantiate_terrain(scene_path: String) -> bool:
 	return true
 
 func refresh() -> void:
+	if is_instance_valid(terrain_instance) and terrain_instance.has_method("sync_external_state_from_game"):
+		terrain_instance.call("sync_external_state_from_game")
+	if is_instance_valid(terrain_instance) and terrain_instance.has_method("sync_player_occluders"):
+		var expedition: Variant = Game.profile.get("expedition")
+		if expedition is Dictionary:
+			terrain_instance.call("sync_player_occluders", expedition.get("position", {}))
 	if is_instance_valid(overlay):
 		overlay.call("refresh")
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		var cell_x := floori(event.position.x / tile_size)
-		var screen_y := floori(event.position.y / tile_size)
-		var cell_y := int(Game.get_map_definition().get("activeHeight", 15)) - 1 - screen_y
-		if Game.is_visible(cell_x, cell_y):
-			emit_signal("cell_clicked", cell_x, cell_y)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_begin_pointer(-1, event.position)
+		elif pointer_active and pointer_index == -1:
+			_end_pointer(event.position)
+		return
+	if event is InputEventMouseMotion and pointer_active and pointer_index == -1:
+		_update_pointer(event.position)
+		return
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			if not pointer_active:
+				_begin_pointer(event.index, event.position)
+			elif event.index != pointer_index:
+				pointer_moved = true
+		elif pointer_active and event.index == pointer_index:
+			_end_pointer(event.position)
+		return
+	if event is InputEventScreenDrag and pointer_active and event.index == pointer_index:
+		_update_pointer(event.position)
+
+func cancel_pending_click() -> void:
+	pointer_moved = true
+
+func _begin_pointer(index: int, position: Vector2) -> void:
+	pointer_active = true
+	pointer_index = index
+	pointer_start = position
+	pointer_moved = false
+
+func _update_pointer(position: Vector2) -> void:
+	if position.distance_to(pointer_start) >= CLICK_DRAG_THRESHOLD:
+		pointer_moved = true
+
+func _end_pointer(position: Vector2) -> void:
+	_update_pointer(position)
+	if not pointer_moved and Rect2(Vector2.ZERO, size).has_point(position):
+		_emit_cell_click(position)
+	pointer_active = false
+	pointer_index = -1
+	pointer_moved = false
+
+func _emit_cell_click(position: Vector2) -> void:
+	var cell_x := floori(position.x / tile_size)
+	var screen_y := floori(position.y / tile_size)
+	var cell_y := int(Game.get_map_definition().get("activeHeight", 15)) - 1 - screen_y
+	if Game.is_visible(cell_x, cell_y):
+		emit_signal("cell_clicked", cell_x, cell_y)

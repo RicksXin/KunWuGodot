@@ -8,6 +8,9 @@
     "soulCrystal": 0,
     "immortalCoin": 0
   },
+  "statistics": {
+    "encounterVictories": 0
+  },
   "camp": {
     "buildingLevels": {
       "yi_shi_dian": 1,
@@ -149,7 +152,74 @@
     "return_talisman": 1
   },
   "storyFlags": {
-    "tutorial_started": false
+    "tutorial_started": false,
+    "cen_trust": 0,
+    "ye_evidence": 0,
+    "seal_integrity": 0,
+    "demonic_taint": 0,
+    "saved_gu_nanlu": false,
+    "identity_clues": 0,
+    "map_02_unlocked": false,
+    "side_cen_old_ledger": "LOCKED",
+    "side_hanli_time_gardener": "LOCKED",
+    "timeless_tree_state": "unseen"
+  },
+  "mapStates": {
+    "map_01": {
+      "landmarks": {
+        "m1_event_lamp_01": {
+          "state": "LAMP_REVERSED"
+        },
+        "m1_event_lamp_02": {
+          "state": "LAMP_BROKEN"
+        },
+        "m1_event_lamp_03": {
+          "state": "LAMP_BROKEN"
+        },
+        "m1_event_corpses": {
+          "state": "CAMP_CORPSES_DEFAULT"
+        }
+      },
+      "encounters": {
+        "m1_boss_gate_spirit": {
+          "defeated": false,
+          "firstClearClaimed": false,
+          "coreAcquired": false
+        }
+      },
+      "shortcuts": {
+        "m1_shortcut_stairs": {
+          "unlocked": false
+        }
+      },
+      "events": {
+        "m1_event_corpses": {
+          "orderHandled": false,
+          "bodyHandled": false
+        },
+        "m1_event_ledger": {
+          "handled": false
+        },
+        "m1_event_stele": {
+          "recorded": false,
+          "timelessSeedAvailable": false,
+          "timelessSeedClaimed": false
+        },
+        "m1_dungeon_tunnel": {
+          "resolved": false,
+          "savedGuNanlu": false,
+          "discovered": false,
+          "delayStarted": false,
+          "deadlineArmed": false,
+          "rescueDeadlineVictoryCount": 0,
+          "deadlineExpired": false,
+          "rescueMethod": ""
+        },
+        "m1_exit": {
+          "unlocked": false
+        }
+      }
+    }
   },
   "completedMapObjects": {},
   "expeditionPreparation": {

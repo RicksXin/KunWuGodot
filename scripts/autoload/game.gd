@@ -7,7 +7,6 @@ const PROFILE_PATH := "user://kunwu_profile.json"
 const PROFILE_TMP_PATH := "user://kunwu_profile.tmp"
 const DEFAULT_PROFILE_PATH := "res://data/config/default_profile.json"
 const CONFIG_ROOT := "res://data/config/"
-const MapSceneLayout := preload("res://scripts/maps/map_scene_layout.gd")
 const LOCAL_MAP_LAYOUT_SCENES := {
 	"map_01": "res://scenes/maps/map_01.tscn",
 }
@@ -23,7 +22,6 @@ var map_definition: Dictionary = {}
 var asset_definitions: Dictionary = {}
 var loaded_from_save := false
 var suppress_profile_writes := false
-var _map_layout_cache: Dictionary = {}
 
 func _ready() -> void:
 	# Tool scripts and editor scans are validation contexts, never gameplay.
@@ -45,7 +43,6 @@ func _load_json(path: String) -> Variant:
 	return parsed if parsed != null else {}
 
 func _load_json_tables() -> void:
-	_map_layout_cache.clear()
 	localization = ConfigRepository.table("localization").duplicate(true)
 	expedition_config = ConfigRepository.table("expedition").duplicate(true)
 	ling_pu_config = ConfigRepository.table("ling_pu").duplicate(true)
@@ -85,12 +82,28 @@ func _load_profile() -> void:
 func _normalise_profile() -> void:
 	var defaults: Dictionary = default_profile if not default_profile.is_empty() else _load_json(DEFAULT_PROFILE_PATH)
 	_merge_missing(profile, defaults)
+	# JSON 中显式的 null 不会被 Dictionary.get(key, default) 替换，
+	# 旧存档若把这些容器写成 null，后续链式 .get() 就会落到 Nil。
+	for key in ["wallet", "camp", "inventory", "storyFlags", "mapStates", "completedMapObjects"]:
+		if not profile.get(key) is Dictionary:
+			var default_value: Variant = defaults.get(key, {})
+			profile[key] = default_value.duplicate(true) if default_value is Dictionary else {}
+	if not profile.get("roster") is Array:
+		var default_roster: Variant = defaults.get("roster", [])
+		profile["roster"] = default_roster.duplicate(true) if default_roster is Array else []
+	_merge_missing(profile, defaults)
+	# 旧版本曾把入山队伍槽位保存成全 null。当前演示队伍是固定的四名修士，
+	# 这种存档不能直接拿来构建入山面板或开始远征；仅在没有任何有效槽位时
+	# 用默认队伍补齐，不覆盖用户已经做出的有效选择。
+	_normalise_expedition_preparation(defaults)
 	if not profile.get("camp", {}).has("workerCount"):
 		profile["camp"]["workerCount"] = 6
 	if not profile.get("camp", {}).has("resourceStorageLevels"):
 		profile["camp"]["resourceStorageLevels"] = {"spiritGrain": 1, "spiritWood": 1, "darkIron": 1}
 	if not profile.has("completedMapObjects"):
 		profile["completedMapObjects"] = {}
+	if not profile.has("mapStates") or not profile["mapStates"] is Dictionary:
+		profile["mapStates"] = {}
 	if not profile.has("expeditionPreparation"):
 		profile["expeditionPreparation"] = defaults["expeditionPreparation"].duplicate(true)
 	if not profile["expeditionPreparation"].has("loadout"):
@@ -101,13 +114,71 @@ func _normalise_profile() -> void:
 		if not profile["expedition"].has("encounterId"): profile["expedition"]["encounterId"] = ""
 		if not profile["expedition"].has("mapObjectId"): profile["expedition"]["mapObjectId"] = ""
 	for hero in profile.get("roster", []):
+		if not hero is Dictionary:
+			continue
 		if not hero.has("stamina"): hero["stamina"] = 100
 		if not hero.has("isDead"): hero["isDead"] = false
+		if int(hero.get("currentHp", hero.get("maxHp", 1))) <= 0:
+			hero["currentHp"] = 0
+			hero["isDead"] = true
+
+func _normalise_expedition_preparation(defaults: Dictionary) -> void:
+	var raw_preparation: Variant = profile.get("expeditionPreparation")
+	var preparation: Dictionary = raw_preparation if raw_preparation is Dictionary else {}
+	var default_preparation: Dictionary = defaults.get("expeditionPreparation", {}) if defaults.get("expeditionPreparation") is Dictionary else {}
+	if preparation.is_empty():
+		preparation = default_preparation.duplicate(true)
+	if not preparation.has("loadout") or not preparation["loadout"] is Dictionary:
+		preparation["loadout"] = {"spiritGrain": 60, "pickaxe": 0, "lens": 0}
+	var raw_presets: Variant = preparation.get("partyPresets", [])
+	var presets: Array = raw_presets if raw_presets is Array else []
+	if presets.is_empty() and default_preparation.get("partyPresets") is Array:
+		presets = default_preparation["partyPresets"].duplicate(true)
+	var roster: Array = profile.get("roster", []) if profile.get("roster") is Array else []
+	var fallback_ids: Array = []
+	for hero in roster:
+		if hero is Dictionary and not bool(hero.get("isDead", false)):
+			fallback_ids.append(hero.get("instanceId", ""))
+	var normalized_presets: Array = []
+	for raw_preset in presets:
+		if not raw_preset is Dictionary:
+			continue
+		var preset: Dictionary = raw_preset
+		var raw_slots: Variant = preset.get("slots", [])
+		var slots: Array = raw_slots if raw_slots is Array else []
+		var has_valid_slot := false
+		for slot in slots:
+			if slot != null and not str(slot).is_empty():
+				has_valid_slot = true
+				break
+		if not has_valid_slot:
+			slots = fallback_ids.duplicate()
+		elif slots.size() < fallback_ids.size():
+			# 只补齐旧存档中缺失的尾部槽位；保留已有的选择顺序。
+			for hero_id in fallback_ids:
+				if slots.size() >= fallback_ids.size():
+					break
+				if hero_id not in slots:
+					slots.append(hero_id)
+		preset["slots"] = slots
+		normalized_presets.append(preset)
+	if normalized_presets.is_empty() and not fallback_ids.is_empty():
+		normalized_presets.append({
+			"presetId": "party_01",
+			"name": "1队",
+			"slots": fallback_ids.duplicate(),
+		})
+	preparation["partyPresets"] = normalized_presets
+	if not preparation.has("activePresetId") and not normalized_presets.is_empty():
+		preparation["activePresetId"] = str(normalized_presets[0].get("presetId", "party_01"))
+	profile["expeditionPreparation"] = preparation
 
 func _merge_missing(target: Dictionary, defaults: Dictionary) -> void:
 	for key in defaults:
 		if not target.has(key):
 			target[key] = defaults[key].duplicate(true) if defaults[key] is Dictionary else defaults[key]
+		elif defaults[key] is Dictionary and not target[key] is Dictionary:
+			target[key] = defaults[key].duplicate(true)
 		elif target[key] is Dictionary and defaults[key] is Dictionary:
 			_merge_missing(target[key], defaults[key])
 
@@ -271,48 +342,155 @@ func party_heroes(preset_id: String = "") -> Array:
 	var result: Array = []
 	for id in ids:
 		for hero in profile.get("roster", []):
+			if not hero is Dictionary:
+				continue
 			if hero.get("instanceId") == id: result.append(hero)
 	return result
+
+func living_heroes() -> Array:
+	var result: Array = []
+	for hero in profile.get("roster", []):
+		if hero is Dictionary and not bool(hero.get("isDead", false)) and int(hero.get("currentHp", 0)) > 0:
+			result.append(hero)
+	return result
+
+func dead_heroes() -> Array:
+	var result: Array = []
+	for hero in profile.get("roster", []):
+		if hero is Dictionary and (bool(hero.get("isDead", false)) or int(hero.get("currentHp", 0)) <= 0):
+			result.append(hero)
+	return result
+
+func revival_cost(hero: Dictionary) -> int:
+	var level := maxi(1, int(hero.get("level", 1)))
+	var raw_cost := -1
+	match str(hero.get("realmId", "")):
+		"lian_qi": raw_cost = 20 + 8 * level
+		"zhu_ji": raw_cost = 100 + 15 * (level - 10)
+		"jie_dan": raw_cost = 300 + 25 * (level - 20)
+	if raw_cost < 0:
+		return -1
+	return ceili(float(maxi(0, raw_cost)) / 5.0) * 5
+
+func revive_cultivators(hero_ids: Array) -> Dictionary:
+	if profile.get("expedition") != null:
+		return {"ok": false, "message": "出征结算尚未完成，暂时不能还魂"}
+	var unique_ids: Array[String] = []
+	for raw_id in hero_ids:
+		var hero_id := str(raw_id)
+		if not hero_id.is_empty() and not unique_ids.has(hero_id):
+			unique_ids.append(hero_id)
+	if unique_ids.is_empty():
+		return {"ok": false, "message": "没有选择待还魂修士"}
+	var selected: Array[Dictionary] = []
+	var total_cost := 0
+	for hero_id in unique_ids:
+		var hero := _roster_hero(hero_id)
+		if hero.is_empty() or (not bool(hero.get("isDead", false)) and int(hero.get("currentHp", 0)) > 0):
+			return {"ok": false, "message": "待还魂修士状态已经变化，请刷新后重试"}
+		var cost := revival_cost(hero)
+		if cost < 0:
+			return {"ok": false, "message": "修士境界数据异常，无法计算还魂费用"}
+		selected.append(hero)
+		total_cost += cost
+	if wallet_value("soulCrystal") < total_cost:
+		return {"ok": false, "message": "魂晶不足，还需 %d" % (total_cost - wallet_value("soulCrystal"))}
+	var previous_profile := profile.duplicate(true)
+	profile["wallet"]["soulCrystal"] = wallet_value("soulCrystal") - total_cost
+	for hero in selected:
+		_restore_cultivator(hero)
+	if not save_profile():
+		profile = previous_profile
+		return {"ok": false, "message": "还魂保存失败，请重试"}
+	return {"ok": true, "message": "已还魂 %d 名修士，消耗魂晶 %d" % [selected.size(), total_cost], "cost": total_cost}
+
+func emergency_revive_cultivator(hero_id: String) -> Dictionary:
+	if profile.get("expedition") != null:
+		return {"ok": false, "message": "出征结算尚未完成，暂时不能还魂"}
+	if not living_heroes().is_empty():
+		return {"ok": false, "message": "仍有存活修士，当前不满足免费还魂条件"}
+	var dead := dead_heroes()
+	var minimum_cost := 2147483647
+	for candidate in dead:
+		var candidate_cost := revival_cost(candidate)
+		if candidate_cost >= 0:
+			minimum_cost = mini(minimum_cost, candidate_cost)
+	if dead.is_empty() or wallet_value("soulCrystal") >= minimum_cost:
+		return {"ok": false, "message": "当前魂晶足以正常还魂"}
+	var hero := _roster_hero(hero_id)
+	if hero.is_empty() or (not bool(hero.get("isDead", false)) and int(hero.get("currentHp", 0)) > 0):
+		return {"ok": false, "message": "待还魂修士状态已经变化，请刷新后重试"}
+	if revival_cost(hero) < 0:
+		return {"ok": false, "message": "修士境界数据异常，无法执行免费还魂"}
+	var previous_profile := profile.duplicate(true)
+	_restore_cultivator(hero)
+	if not save_profile():
+		profile = previous_profile
+		return {"ok": false, "message": "还魂保存失败，请重试"}
+	return {"ok": true, "message": "%s 已免费还魂，可重新整备出战" % text(str(hero.get("nameKey", "")), "修士"), "cost": 0}
+
+func _roster_hero(hero_id: String) -> Dictionary:
+	for hero in profile.get("roster", []):
+		if hero is Dictionary and str(hero.get("instanceId", "")) == hero_id:
+			return hero
+	return {}
+
+func _restore_cultivator(hero: Dictionary) -> void:
+	hero["isDead"] = false
+	hero["currentHp"] = maxi(1, int(hero.get("maxHp", 1)))
+	_restore_hero_to_party_presets(str(hero.get("instanceId", "")))
+
+func _restore_hero_to_party_presets(hero_id: String) -> void:
+	if hero_id.is_empty():
+		return
+	var preparation: Dictionary = profile.get("expeditionPreparation", {})
+	var presets: Array = preparation.get("partyPresets", [])
+	var default_preparation: Dictionary = default_profile.get("expeditionPreparation", {})
+	for preset in presets:
+		if not preset is Dictionary:
+			continue
+		var slots: Array = preset.get("slots", [])
+		if hero_id in slots:
+			continue
+		var preferred_index := -1
+		for default_preset in default_preparation.get("partyPresets", []):
+			if not default_preset is Dictionary or str(default_preset.get("presetId", "")) != str(preset.get("presetId", "")):
+				continue
+			preferred_index = default_preset.get("slots", []).find(hero_id)
+			break
+		if preferred_index >= 0:
+			while slots.size() <= preferred_index:
+				slots.append(null)
+			if slots[preferred_index] == null or str(slots[preferred_index]).is_empty():
+				slots[preferred_index] = hero_id
+				preset["slots"] = slots
+				continue
+		var empty_index := -1
+		for index in slots.size():
+			if slots[index] == null or str(slots[index]).is_empty():
+				empty_index = index
+				break
+		if empty_index >= 0:
+			slots[empty_index] = hero_id
+		elif slots.size() < 4:
+			slots.append(hero_id)
+		preset["slots"] = slots
+	preparation["partyPresets"] = presets
+	profile["expeditionPreparation"] = preparation
 
 func get_map_definition(map_id: String = "") -> Dictionary:
 	var target_id := map_id if not map_id.is_empty() else get_active_map_id()
 	var configured: Dictionary = map_definitions.get(target_id, {})
 	if configured.is_empty():
 		return {}
+	var resolved := configured.duplicate(true)
 	var configured_visual: Variant = configured.get("visual")
 	var visual: Dictionary = configured_visual.duplicate(true) if configured_visual is Dictionary else {}
 	var scene_path := str(visual.get("scenePath", LOCAL_MAP_LAYOUT_SCENES.get(target_id, "")))
-	var resolved := configured.duplicate(true)
+	if not scene_path.is_empty():
+		visual["scenePath"] = scene_path
 	resolved["visual"] = visual
-	if scene_path.is_empty():
-		return resolved
-	var cache_key := "%s|%s" % [target_id, scene_path]
-	if _map_layout_cache.has(cache_key):
-		return _map_layout_cache[cache_key]
-	var layout: Dictionary = MapSceneLayout.load_layout(scene_path)
-	if layout.is_empty():
-		return resolved
-	visual["scenePath"] = scene_path
-	resolved["visual"] = visual
-	var merged := resolved
-	for key in ["activeWidth", "activeHeight", "entryX", "entryY", "terrainRows"]:
-		merged[key] = layout[key]
-	var object_positions: Dictionary = layout.get("objectPositions", {})
-	var merged_objects: Array = []
-	for configured_object in configured.get("objects", []):
-		var object: Dictionary = configured_object.duplicate(true)
-		var object_id := str(object.get("id", ""))
-		if object_positions.has(object_id):
-			var placement: Dictionary = object_positions[object_id]
-			object["x"] = int(placement.get("x", object.get("x", 0)))
-			object["y"] = int(placement.get("y", object.get("y", 0)))
-			if str(object.get("kind", "")).is_empty():
-				object["kind"] = str(placement.get("kind", ""))
-		merged_objects.append(object)
-	merged["objects"] = merged_objects
-	merged["layoutSource"] = "godot_scene"
-	_map_layout_cache[cache_key] = merged
-	return merged
+	return resolved
 
 func get_expedition_map_rule(map_id: String = "") -> Dictionary:
 	var target_id := map_id if not map_id.is_empty() else get_active_map_id()
@@ -364,6 +542,314 @@ func get_active_map_object_id() -> String:
 func map_object_key(map_id: String, object_id: String) -> String:
 	return "%s.%s" % [map_id, object_id]
 
+func map_state_value(state_key: String, fallback: Variant = null) -> Variant:
+	var parts := state_key.split(".", false)
+	if parts.size() < 2:
+		return fallback
+	var cursor: Variant = profile.get("mapStates", {})
+	for part in parts:
+		if not cursor is Dictionary or not cursor.has(part):
+			return fallback
+		cursor = cursor[part]
+	return cursor
+
+func set_map_state_value(state_key: String, value: Variant) -> bool:
+	return apply_map_state_patch({state_key: value})
+
+func apply_map_state_patch(updates: Dictionary) -> bool:
+	if updates.is_empty():
+		return false
+	var next_states: Dictionary = profile.get("mapStates", {}).duplicate(true)
+	for state_key in updates:
+		var parts := str(state_key).split(".", false)
+		if parts.size() < 2 or not str(parts[0]).begins_with("map_"):
+			return false
+		var cursor := next_states
+		for index in parts.size() - 1:
+			var part := str(parts[index])
+			if not cursor.has(part) or not cursor[part] is Dictionary:
+				cursor[part] = {}
+			cursor = cursor[part]
+		cursor[str(parts[-1])] = updates[state_key]
+	profile["mapStates"] = next_states
+	return save_profile()
+
+func available_map_object_actions(object: Dictionary) -> Array:
+	var result: Array = []
+	for raw_action in object.get("choices", []):
+		if not raw_action is Dictionary:
+			continue
+		var action: Dictionary = raw_action.duplicate(true)
+		var check := check_map_object_requirements(action.get("requirements", {}))
+		if not bool(check.get("ok", false)) and bool(action.get("hideWhenUnavailable", false)):
+			continue
+		action["enabled"] = bool(check.get("ok", false))
+		action["unavailableText"] = str(check.get("message", action.get("unavailableText", "条件尚未满足")))
+		result.append(action)
+	return result
+
+func check_map_object_requirements(requirements: Dictionary) -> Dictionary:
+	if requirements.is_empty():
+		return {"ok": true, "message": ""}
+	for state_key in requirements.get("mapStateEquals", {}):
+		var expected: Variant = requirements["mapStateEquals"][state_key]
+		if map_state_value(str(state_key), null) != expected:
+			return {"ok": false, "message": str(requirements.get("failureText", "地图状态尚未满足"))}
+	for state_key in requirements.get("mapStateNotEquals", {}):
+		var rejected: Variant = requirements["mapStateNotEquals"][state_key]
+		if map_state_value(str(state_key), null) == rejected:
+			return {"ok": false, "message": str(requirements.get("failureText", "该选择已经处理"))}
+	for flag_id in requirements.get("storyFlags", {}):
+		if profile.get("storyFlags", {}).get(flag_id) != requirements["storyFlags"][flag_id]:
+			return {"ok": false, "message": str(requirements.get("failureText", "剧情条件尚未满足"))}
+	for object_id in requirements.get("completedObjects", []):
+		if not bool(profile.get("completedMapObjects", {}).get(map_object_key(get_active_map_id(), str(object_id)), false)):
+			return {"ok": false, "message": str(requirements.get("failureText", "前置目标尚未完成"))}
+	var expedition: Dictionary = profile.get("expedition", {}) if profile.get("expedition") is Dictionary else {}
+	var required_position: Variant = requirements.get("expeditionPositionEquals", {})
+	if required_position is Dictionary and not required_position.is_empty():
+		var current_position: Dictionary = expedition.get("position", {}) if expedition.get("position") is Dictionary else {}
+		if int(current_position.get("x", -1)) != int(required_position.get("x", -2)) \
+			or int(current_position.get("y", -1)) != int(required_position.get("y", -2)):
+			return {"ok": false, "message": str(requirements.get("failureText", "队伍不在对应的地图位置"))}
+	for item_id in requirements.get("minCarriedItems", {}):
+		if int(expedition.get("carriedItems", {}).get(item_id, 0)) < int(requirements["minCarriedItems"][item_id]):
+			return {"ok": false, "message": str(requirements.get("failureText", "本次入山未携带所需工具"))}
+	var heroes := party_heroes()
+	for attribute_id in requirements.get("partyMaxAttributes", {}):
+		var maximum := 0
+		for hero in heroes:
+			maximum = maxi(maximum, int(hero.get("attributes", {}).get(attribute_id, 0)))
+		if maximum < int(requirements["partyMaxAttributes"][attribute_id]):
+			return {"ok": false, "message": str(requirements.get("failureText", "队伍最高属性不足"))}
+	for attribute_id in requirements.get("partySumAttributes", {}):
+		var total := 0
+		for hero in heroes:
+			total += int(hero.get("attributes", {}).get(attribute_id, 0))
+		if total < int(requirements["partySumAttributes"][attribute_id]):
+			return {"ok": false, "message": str(requirements.get("failureText", "队伍合计属性不足"))}
+	return {"ok": true, "message": ""}
+
+func resolve_map_object_action(object: Dictionary, action_id: String) -> Dictionary:
+	var selected: Dictionary = {}
+	for raw_action in object.get("choices", []):
+		if raw_action is Dictionary and str(raw_action.get("id", "")) == action_id:
+			selected = raw_action
+			break
+	if selected.is_empty():
+		var leave_action: Variant = object.get("leaveAction", {})
+		if leave_action is Dictionary and str(leave_action.get("id", "")) == action_id:
+			selected = leave_action
+	if selected.is_empty():
+		return {"ok": false, "message": "该地图行动不存在"}
+	var requirement_result := check_map_object_requirements(selected.get("requirements", {}))
+	if not bool(requirement_result.get("ok", false)):
+		return requirement_result
+	var previous_profile := profile.duplicate(true)
+	var previous_position: Dictionary = {}
+	if profile.get("expedition") is Dictionary:
+		previous_position = profile["expedition"].get("position", {}).duplicate(true)
+	var object_id := str(object.get("id", ""))
+	var first_claim := true
+	var claim_key := str(selected.get("claimKey", ""))
+	if not claim_key.is_empty():
+		first_claim = not bool(map_state_value(claim_key, false))
+		_set_map_state_in_profile(claim_key, true)
+	_apply_profile_effects(selected.get("effects", {}), object_id, first_claim)
+	if first_claim:
+		_apply_profile_effects(selected.get("firstClaimEffects", {}), object_id, true)
+	else:
+		_apply_profile_effects(selected.get("repeatEffects", {}), object_id, false)
+	var encounter_id := str(selected.get("startEncounterId", ""))
+	if not encounter_id.is_empty():
+		var encounter := get_encounter(encounter_id)
+		if encounter.is_empty():
+			profile = previous_profile
+			return {"ok": false, "message": "关联遭遇配置不存在"}
+		var expedition: Variant = profile.get("expedition")
+		if not expedition is Dictionary:
+			profile = previous_profile
+			return {"ok": false, "message": "当前没有探索进度"}
+		expedition["encounterId"] = encounter_id
+		expedition["mapObjectId"] = object_id
+	if bool(selected.get("completeObject", false)):
+		profile["completedMapObjects"][map_object_key(get_active_map_id(), object_id)] = true
+	if not save_profile():
+		profile = previous_profile
+		return {"ok": false, "message": "状态保存失败，请重试"}
+	var current_position: Dictionary = {}
+	if profile.get("expedition") is Dictionary:
+		current_position = profile["expedition"].get("position", {}).duplicate(true)
+	return {
+		"ok": true,
+		"message": str(selected.get("resultText", "行动已经完成")),
+		"startEncounter": not encounter_id.is_empty(),
+		"encounterId": encounter_id,
+		"completed": bool(selected.get("completeObject", false)),
+		"positionChanged": previous_position != current_position,
+		"position": current_position,
+	}
+
+func _apply_profile_effects(effects: Dictionary, object_id: String, first_claim: bool) -> void:
+	for state_key in effects.get("mapStatePatch", {}):
+		_set_map_state_in_profile(str(state_key), effects["mapStatePatch"][state_key])
+	for state_key in effects.get("incrementMapStates", {}):
+		var next_value := int(map_state_value(str(state_key), 0)) + int(effects["incrementMapStates"][state_key])
+		_set_map_state_in_profile(str(state_key), next_value)
+	var encounter_victories := int(profile.get("statistics", {}).get("encounterVictories", 0))
+	for capture in effects.get("captureEncounterVictoryDeadlines", []):
+		if not capture is Dictionary:
+			continue
+		var deadline_key := str(capture.get("stateKey", ""))
+		var victories_until := maxi(0, int(capture.get("victoriesUntil", 0)))
+		if not deadline_key.is_empty() and victories_until > 0:
+			_set_map_state_in_profile(deadline_key, encounter_victories + victories_until)
+	var story_flags: Dictionary = profile.get("storyFlags", {})
+	for flag_id in effects.get("storyFlagPatch", {}):
+		story_flags[str(flag_id)] = effects["storyFlagPatch"][flag_id]
+	for flag_id in effects.get("incrementStoryFlags", {}):
+		story_flags[str(flag_id)] = int(story_flags.get(flag_id, 0)) + int(effects["incrementStoryFlags"][flag_id])
+	profile["storyFlags"] = story_flags
+	var expedition: Variant = profile.get("expedition")
+	if expedition is Dictionary:
+		var position_effect: Variant = effects.get("expeditionPosition", {})
+		if position_effect is Dictionary and not position_effect.is_empty():
+			var target_position := {
+				"x": int(position_effect.get("x", -1)),
+				"y": int(position_effect.get("y", -1)),
+			}
+			if bool(tile_at(int(target_position["x"]), int(target_position["y"])).get("walkable", false)):
+				expedition["position"] = target_position
+				expedition["revealedTiles"] = _reveal(
+					expedition.get("revealedTiles", []),
+					target_position,
+					int(get_expedition_map_rule().get("discoveryRadius", 2))
+				)
+		var temporary_loot: Dictionary = expedition.get("temporaryLoot", {})
+		for reward in effects.get("rewards", []):
+			if not reward is Dictionary:
+				continue
+			var item_id := str(reward.get("itemId", ""))
+			if item_id.is_empty():
+				continue
+			var amount := int(reward.get("firstAmount", reward.get("amount", 0))) if first_claim else int(reward.get("repeatAmount", reward.get("amount", 0)))
+			if amount > 0:
+				temporary_loot[item_id] = int(temporary_loot.get(item_id, 0)) + amount
+		expedition["temporaryLoot"] = temporary_loot
+		var carried_items: Dictionary = expedition.get("carriedItems", {})
+		for item_id in effects.get("consumeCarriedItems", {}):
+			carried_items[item_id] = maxi(0, int(carried_items.get(item_id, 0)) - int(effects["consumeCarriedItems"][item_id]))
+		expedition["carriedItems"] = carried_items
+	var healing_percent := int(effects.get("healPartyPercent", 0))
+	if healing_percent > 0:
+		for hero in party_heroes():
+			if bool(hero.get("isDead", false)):
+				continue
+			var max_hp := int(hero.get("maxHp", 1))
+			hero["currentHp"] = mini(max_hp, int(hero.get("currentHp", max_hp)) + ceili(max_hp * healing_percent / 100.0))
+	for building_id in effects.get("campBuildingLevels", {}):
+		var levels: Dictionary = profile.get("camp", {}).get("buildingLevels", {})
+		levels[str(building_id)] = maxi(int(levels.get(building_id, 0)), int(effects["campBuildingLevels"][building_id]))
+		profile["camp"]["buildingLevels"] = levels
+	if bool(effects.get("completeObject", false)) and not object_id.is_empty():
+		profile["completedMapObjects"][map_object_key(get_active_map_id(), object_id)] = true
+
+func _set_map_state_in_profile(state_key: String, value: Variant) -> void:
+	var parts := state_key.split(".", false)
+	if parts.size() < 2 or not str(parts[0]).begins_with("map_"):
+		return
+	var states: Dictionary = profile.get("mapStates", {})
+	var cursor := states
+	for index in parts.size() - 1:
+		var part := str(parts[index])
+		if not cursor.has(part) or not cursor[part] is Dictionary:
+			cursor[part] = {}
+		cursor = cursor[part]
+	cursor[str(parts[-1])] = value
+	profile["mapStates"] = states
+
+func finish_encounter_victory(encounter: Dictionary) -> Dictionary:
+	var expedition: Variant = profile.get("expedition")
+	if not expedition is Dictionary:
+		return {"ok": false, "message": "当前没有探索进度"}
+	var previous_profile := profile.duplicate(true)
+	var map_id := get_active_map_id()
+	var object_id := get_active_map_object_id()
+	if object_id.is_empty():
+		return {"ok": false, "message": "遭遇缺少地图对象ID"}
+	var first_key := "%s.encounters.%s.firstClearClaimed" % [map_id, object_id]
+	var first_clear := not bool(map_state_value(first_key, false))
+	profile["completedMapObjects"][map_object_key(map_id, object_id)] = true
+	_set_map_state_in_profile(first_key, true)
+	var soul_reward := int(encounter.get("firstSoulCrystalReward", encounter.get("soulCrystalReward", 0))) if first_clear else int(encounter.get("repeatSoulCrystalReward", encounter.get("soulCrystalReward", 0)))
+	profile["wallet"]["soulCrystal"] = int(profile["wallet"].get("soulCrystal", 0)) + soul_reward
+	_apply_profile_effects(encounter.get("victoryEffects", {}), object_id, first_clear)
+	if first_clear:
+		_apply_profile_effects(encounter.get("firstVictoryEffects", {}), object_id, true)
+	var progress_messages := _record_encounter_victory_and_apply_rules(map_id)
+	var reward_loot: Array = encounter.get("loot", []).duplicate(true)
+	if first_clear:
+		reward_loot.append_array(encounter.get("firstLoot", []).duplicate(true))
+	expedition["pendingEncounterLoot"] = reward_loot
+	expedition["pendingEncounterSoulCrystal"] = soul_reward
+	if not save_profile():
+		profile = previous_profile
+		return {"ok": false, "message": "战斗结算保存失败"}
+	return {"ok": true, "firstClear": first_clear, "soulCrystal": soul_reward, "loot": reward_loot, "progressMessages": progress_messages}
+
+
+func _record_encounter_victory_and_apply_rules(map_id: String) -> Array[String]:
+	var statistics: Dictionary = profile.get("statistics", {})
+	statistics["encounterVictories"] = int(statistics.get("encounterVictories", 0)) + 1
+	profile["statistics"] = statistics
+	var victory_count := int(statistics["encounterVictories"])
+	var messages: Array[String] = []
+	for raw_rule in get_map_definition(map_id).get("encounterVictoryRules", []):
+		if not raw_rule is Dictionary:
+			continue
+		var rule: Dictionary = raw_rule
+		var once_key := str(rule.get("onceStateKey", ""))
+		if not once_key.is_empty() and bool(map_state_value(once_key, false)):
+			continue
+		var requirement_result := check_map_object_requirements(rule.get("requirements", {}))
+		if not bool(requirement_result.get("ok", false)):
+			continue
+		var deadline_key := str(rule.get("deadlineStateKey", ""))
+		var deadline := int(map_state_value(deadline_key, 0))
+		if deadline <= 0 or victory_count < deadline:
+			continue
+		var rule_object_id := str(rule.get("objectId", ""))
+		_apply_profile_effects(rule.get("effects", {}), rule_object_id, true)
+		if not once_key.is_empty():
+			_set_map_state_in_profile(once_key, true)
+		var message := str(rule.get("message", ""))
+		if not message.is_empty():
+			messages.append(message)
+	return messages
+
+func take_pending_encounter_loot() -> bool:
+	var expedition: Variant = profile.get("expedition")
+	if not expedition is Dictionary:
+		return false
+	var temporary_loot: Dictionary = expedition.get("temporaryLoot", {})
+	for reward in expedition.get("pendingEncounterLoot", []):
+		var item_id := str(reward.get("itemId", ""))
+		var amount := int(reward.get("amount", 0))
+		if not item_id.is_empty() and amount > 0:
+			temporary_loot[item_id] = int(temporary_loot.get(item_id, 0)) + amount
+	expedition["temporaryLoot"] = temporary_loot
+	expedition["pendingEncounterLoot"] = []
+	expedition["pendingEncounterSoulCrystal"] = 0
+	return save_profile()
+
+func discard_pending_encounter_loot() -> bool:
+	var expedition: Variant = profile.get("expedition")
+	if not expedition is Dictionary:
+		return false
+	expedition["pendingEncounterLoot"] = []
+	expedition["pendingEncounterSoulCrystal"] = 0
+	return save_profile()
+
 func item_weight(item_id: String) -> int:
 	if asset_definitions.has(item_id): return int(asset_definitions[item_id].get("weight", 0))
 	for item in expedition_config.get("items", []):
@@ -389,7 +875,7 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 	if preset.is_empty(): return {"ok": false, "message": "当前队伍预设不存在"}
 	var ids: Array = preset.get("slots", []).filter(func(v): return v != null)
 	var heroes := party_heroes(preset_id)
-	if ids.is_empty(): return {"ok": false, "message": "至少选择一名存活修士"}
+	if ids.is_empty() or heroes.is_empty(): return {"ok": false, "message": "至少选择一名存活修士，请前往还魂殿处理阵亡状态"}
 	var target_map_id := map_id if not map_id.is_empty() else ConfigRepository.default_map_id()
 	var target_map := get_map_definition(target_map_id)
 	var map_rule := get_expedition_map_rule(target_map_id)
@@ -400,7 +886,7 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 		return {"ok": false, "message": "所选地图尚未解锁"}
 	var map_cost := int(map_rule.get("staminaCost", 0))
 	for hero in heroes:
-		if hero.get("isDead", false): return {"ok": false, "message": "队伍中有阵亡修士"}
+		if hero.get("isDead", false) or int(hero.get("currentHp", 0)) <= 0: return {"ok": false, "message": "队伍中有阵亡修士，请先前往还魂殿"}
 		if int(hero.get("stamina", 0)) < map_cost: return {"ok": false, "message": "有修士灵息不足"}
 	var grain := int(loadout.get("spiritGrain", prep.get("loadout", {}).get("spiritGrain", 60)))
 	var minimum_grain := int(map_rule.get("minimumCarriedGrain", 0))
@@ -429,7 +915,8 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 		"position": entry, "remainingGrain": grain, "grainCapacity": grain,
 		"grainDepletionSteps": 0, "carriedItems": {"pickaxe": pickaxe, "lens": lens}, "restUsesRemaining": int(map_rule.get("restCount", 1)),
 		"isResting": false, "restHealingUsed": false,
-		"revealedTiles": _reveal([], entry, discovery_radius), "temporaryLoot": {}
+		"revealedTiles": _reveal([], entry, discovery_radius), "temporaryLoot": {},
+		"pendingEncounterLoot": [], "pendingEncounterSoulCrystal": 0
 	}
 	map_definition = target_map
 	save_profile()
@@ -446,6 +933,12 @@ func tile_at(x: int, y: int) -> Dictionary:
 	var row: String = str(rows[row_index])
 	var symbol := row.substr(x, 1)
 	if symbol == "#": return {"walkable": false, "cost": 0, "symbol": symbol}
+	for blocker in active_map.get("dynamicBlockers", []):
+		if int(blocker.get("x", -1)) != x or int(blocker.get("y", -1)) != y:
+			continue
+		var state_value: Variant = map_state_value(str(blocker.get("stateKey", "")), null)
+		if state_value != blocker.get("passValue", true):
+			return {"walkable": false, "cost": 0, "symbol": symbol, "blockerId": str(blocker.get("id", ""))}
 	var grain_per_step := int(get_expedition_map_rule().get("grainPerStep", 1))
 	return {"walkable": true, "cost": grain_per_step * 2 if symbol == "~" else 0 if symbol == "E" else grain_per_step, "symbol": symbol}
 
@@ -475,7 +968,12 @@ func move_expedition(dx: int, dy: int) -> Dictionary:
 
 func object_at(x: int, y: int) -> Dictionary:
 	for object in get_map_definition().get("objects", []):
-		if int(object.get("x", -1)) == x and int(object.get("y", -1)) == y: return object
+		if int(object.get("x", -1)) == x and int(object.get("y", -1)) == y:
+			return object
+		for raw_cell in object.get("activationCells", []):
+			if raw_cell is Array and raw_cell.size() >= 2 \
+				and int(raw_cell[0]) == x and int(raw_cell[1]) == y:
+				return object
 	return {}
 
 func _reveal(previous: Array, center: Dictionary, radius: int) -> Array:
@@ -505,6 +1003,9 @@ func is_revealed(x: int, y: int) -> bool:
 func begin_encounter(object: Dictionary) -> Dictionary:
 	var expedition: Variant = profile.get("expedition")
 	if not expedition is Dictionary or expedition.is_empty(): return {"ok": false, "message": "当前没有探索进度"}
+	var requirement_result := check_map_object_requirements(object.get("requirements", {}))
+	if not bool(requirement_result.get("ok", false)):
+		return requirement_result
 	var encounter_id := str(object.get("encounterId", object.get("enemyId", "")))
 	if encounter_id.is_empty() or get_encounter(encounter_id).is_empty(): return {"ok": false, "message": "该地图对象没有可用的遭遇配置"}
 	expedition["encounterId"] = encounter_id
@@ -645,6 +1146,15 @@ func _finish_expedition(defeated: bool) -> void:
 	else:
 		profile["wallet"]["spiritGrain"] += int(expedition.get("remainingGrain", 0))
 		for source in [expedition.get("carriedItems", {}), expedition.get("temporaryLoot", {})]:
-			for id in source: profile["inventory"][id] = int(profile["inventory"].get(id, 0)) + int(source[id])
+			for id in source:
+				_credit_returned_item(str(id), int(source[id]))
 	profile["expedition"] = null
 	save_profile()
+
+func _credit_returned_item(item_id: String, amount: int) -> void:
+	if amount <= 0:
+		return
+	if profile.get("wallet", {}).has(item_id):
+		profile["wallet"][item_id] = int(profile["wallet"].get(item_id, 0)) + amount
+	else:
+		profile["inventory"][item_id] = int(profile["inventory"].get(item_id, 0)) + amount

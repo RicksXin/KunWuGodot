@@ -37,6 +37,7 @@ var animated_portraits: Array[Dictionary] = []
 var active_target_hit_vfx: Dictionary = {}
 var shi_yan_cast_a_hit_count := 0
 var current_encounter: Dictionary = {}
+var victory_result: Dictionary = {}
 
 func _ready() -> void:
 	if Game.profile.get("expedition") == null:
@@ -67,11 +68,23 @@ func _build_units() -> void:
 	for index in heroes.size():
 		var hero: Dictionary = heroes[index]
 		var initial_timer := int(timers[index] if index < timers.size() else 30)
-		units.append({"unit_id": index + 1, "name": Game.text(hero.get("nameKey", "修士")), "side": "ally", "hero": hero, "hp": int(hero.get("currentHp", hero.get("maxHp", 1))), "max_hp": int(hero.get("maxHp", 1)), "attrs": hero.get("attributes", {}), "skills": hero.get("skillIds", []), "timer": initial_timer, "action_max": initial_timer, "auto": true, "dead": false, "shield": 0, "cooldowns": {}, "statuses": []})
+		var hero_hp := int(hero.get("currentHp", hero.get("maxHp", 1)))
+		var hero_dead := bool(hero.get("isDead", false)) or hero_hp <= 0
+		units.append({"unit_id": index + 1, "name": Game.text(str(hero.get("nameKey", "")), str(hero.get("name", "修士"))), "side": "ally", "hero": hero, "hp": maxi(0, hero_hp), "max_hp": int(hero.get("maxHp", 1)), "attrs": hero.get("attributes", {}), "skills": hero.get("skillIds", []), "timer": initial_timer, "action_max": initial_timer, "auto": true, "dead": hero_dead, "shield": 0, "cooldowns": {}, "statuses": []})
 	for enemy_index in current_encounter.get("enemies", []).size():
 		var enemy: Dictionary = current_encounter.get("enemies", [])[enemy_index]
 		var enemy_timer := int(enemy.get("initialActionTimer", 45))
-		units.append({"unit_id": 100 + enemy_index, "name": Game.text(enemy.get("nameKey", "敌人")), "side": "enemy", "enemy": enemy, "hp": int(enemy.get("maxHp", 1)), "max_hp": int(enemy.get("maxHp", 1)), "attrs": enemy.get("attributes", {}), "skills": enemy.get("skillIds", []), "timer": enemy_timer, "action_max": enemy_timer, "auto": true, "dead": false, "shield": 0, "cooldowns": {}, "statuses": []})
+		units.append({
+			"unit_id": 100 + enemy_index,
+			"name": Game.text(str(enemy.get("nameKey", "")), str(enemy.get("name", "敌人"))),
+			"side": "enemy", "enemy": enemy,
+			"hp": int(enemy.get("maxHp", 1)), "max_hp": int(enemy.get("maxHp", 1)),
+			"attrs": enemy.get("attributes", {}).duplicate(true), "skills": enemy.get("skillIds", []).duplicate(),
+			"timer": enemy_timer, "action_max": enemy_timer, "auto": true, "dead": false,
+			"shield": 0, "cooldowns": {}, "statuses": [], "ai_index": 0,
+			"mechanics": enemy.get("mechanics", {}).duplicate(true), "physical_hit_count": 0,
+			"forced_shields_used": [], "next_periodic_tick": int(enemy.get("mechanics", {}).get("periodicShield", {}).get("intervalTicks", 0)),
+		})
 
 func _build_scene() -> void:
 	var bg := ColorRect.new()
@@ -99,28 +112,13 @@ func _build_scene() -> void:
 	flee.pressed.connect(_escape)
 	flee.visible = false
 	escape_button = flee
-	var enemy_host := KWUI.panel(self, Rect2(144.5, 156, 86, 205), Color("#3a312ef5"), Color("#895344"))
-	unit_hosts[100] = enemy_host
-	_add_enemy_silhouette(enemy_host)
-	KWUI.panel(enemy_host, Rect2(1, 149, 84, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var enemy_name := KWUI.combat_button(enemy_host, "残禁石傀", Rect2(4, 145, 78, 18), 11)
-	enemy_name.name = "Name"
-	enemy_name.disabled = true
-	enemy_name.add_theme_stylebox_override("normal", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
-	enemy_name.add_theme_stylebox_override("disabled", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
-	enemy_name.add_theme_color_override("font_disabled_color", Color8(235, 230, 207))
-	KWUI.label(enemy_host, "傀", Rect2(2, 164, 12, 12), 8, Color("#dbb57a"), HORIZONTAL_ALIGNMENT_CENTER).name = "Race"
-	var enemy_bar := ProgressBar.new()
-	enemy_bar.name = "Hp"
-	enemy_bar.position = Vector2(18, 169)
-	enemy_bar.size = Vector2(62, 8)
-	enemy_bar.show_percentage = false
-	enemy_bar.add_theme_stylebox_override("background", KWUI.style_box(Color("#151012"), Color("#7d4949"), 2, 1))
-	enemy_bar.add_theme_stylebox_override("fill", KWUI.style_box(Color("#be4636"), Color("#ef9b72"), 2, 0))
-	enemy_host.add_child(enemy_bar)
-	KWUI.label(enemy_host, "", Rect2(18, 168, 62, 10), 7, Color("#f5efd8"), HORIZONTAL_ALIGNMENT_CENTER).name = "HpValue"
-	_combat_progress(enemy_host, "Action", Vector2(18, 180), Color("#0c1113"), Color("#4bccd0"), Vector2(62, 5))
-	KWUI.label(enemy_host, "", Rect2(4, 186, 78, 14), 8, Color("#dbc482"), HORIZONTAL_ALIGNMENT_CENTER).name = "Status"
+	var enemy_units := units.filter(func(unit): return unit.get("side") == "enemy")
+	var enemy_card_width := 82.0
+	var enemy_gap := 6.0
+	var enemy_total_width := enemy_units.size() * enemy_card_width + maxi(0, enemy_units.size() - 1) * enemy_gap
+	var enemy_start_x := (375.0 - enemy_total_width) * 0.5
+	for enemy_index in enemy_units.size():
+		_build_enemy_card(enemy_units[enemy_index], Vector2(enemy_start_x + enemy_index * (enemy_card_width + enemy_gap), 156), enemy_card_width)
 	for index in 4:
 		var x := 15.5 + index * 86
 		var host := KWUI.panel(self, Rect2(x, 541, 86, 205), Color("#2a3a41eb"), Color("#537a7d"))
@@ -217,6 +215,32 @@ func _build_scene() -> void:
 	outcome_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_build_loot_overlay()
 
+func _build_enemy_card(enemy_unit: Dictionary, position: Vector2, width: float) -> void:
+	var enemy_host := KWUI.panel(self, Rect2(position, Vector2(width, 205)), Color("#3a312ef5"), Color("#895344"))
+	unit_hosts[int(enemy_unit.get("unit_id", -1))] = enemy_host
+	enemy_host.clip_contents = true
+	_add_enemy_silhouette(enemy_host)
+	KWUI.panel(enemy_host, Rect2(1, 149, width - 2, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var enemy_name := KWUI.combat_button(enemy_host, str(enemy_unit.get("name", "敌人")), Rect2(3, 145, width - 6, 18), 9 if str(enemy_unit.get("name", "")).length() > 6 else 10)
+	enemy_name.name = "Name"
+	enemy_name.disabled = true
+	enemy_name.add_theme_stylebox_override("normal", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
+	enemy_name.add_theme_stylebox_override("disabled", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
+	enemy_name.add_theme_color_override("font_disabled_color", Color8(235, 230, 207))
+	KWUI.label(enemy_host, "敌", Rect2(2, 164, 12, 12), 8, Color("#dbb57a"), HORIZONTAL_ALIGNMENT_CENTER).name = "Race"
+	var bar_width := width - 24.0
+	var enemy_bar := ProgressBar.new()
+	enemy_bar.name = "Hp"
+	enemy_bar.position = Vector2(17, 169)
+	enemy_bar.size = Vector2(bar_width, 8)
+	enemy_bar.show_percentage = false
+	enemy_bar.add_theme_stylebox_override("background", KWUI.style_box(Color("#151012"), Color("#7d4949"), 2, 1))
+	enemy_bar.add_theme_stylebox_override("fill", KWUI.style_box(Color("#be4636"), Color("#ef9b72"), 2, 0))
+	enemy_host.add_child(enemy_bar)
+	KWUI.label(enemy_host, "", Rect2(17, 168, bar_width, 10), 7, Color("#f5efd8"), HORIZONTAL_ALIGNMENT_CENTER).name = "HpValue"
+	_combat_progress(enemy_host, "Action", Vector2(17, 180), Color("#0c1113"), Color("#4bccd0"), Vector2(bar_width, 5))
+	KWUI.label(enemy_host, "", Rect2(3, 186, width - 6, 14), 7, Color("#dbc482"), HORIZONTAL_ALIGNMENT_CENTER).name = "Status"
+
 func _build_loot_overlay() -> void:
 	loot_overlay = Control.new()
 	loot_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -310,18 +334,24 @@ func _step(ticks: int) -> void:
 	combat_ticks += ticks
 	for unit in units:
 		if unit["dead"]: continue
+		_apply_periodic_mechanics(unit)
+		_apply_status_ticks(unit)
+		if finished: return
 		var cooldowns: Dictionary = unit.get("cooldowns", {})
 		for cooldown_id in cooldowns:
 			cooldowns[cooldown_id] = maxi(0, int(cooldowns[cooldown_id]) - ticks)
 		unit["cooldowns"] = cooldowns
 		var active_statuses: Array = []
 		for status in unit.get("statuses", []):
-			var status_copy: Dictionary = status
+			var status_copy: Dictionary = status.duplicate(true)
 			status_copy["ticks"] = int(status_copy.get("ticks", 0)) - ticks
 			if int(status_copy["ticks"]) > 0: active_statuses.append(status_copy)
 		unit["statuses"] = active_statuses
 		unit["timer"] = int(unit["timer"]) - ticks
 		if unit["timer"] > 0: continue
+		if _has_status(unit, "stun"):
+			unit["timer"] = 1
+			continue
 		if unit["side"] == "enemy": _enemy_action(unit)
 		elif unit["auto"]: _auto_action(unit)
 		else: unit["timer"] = 0
@@ -333,6 +363,12 @@ func _auto_action(unit: Dictionary) -> void:
 	var hp_ratio := float(unit["hp"]) / float(unit["max_hp"])
 	if unit["name"] == "白灵" and hp_ratio < 0.72 and unit["skills"].size() > 0: skill_id = "hui_chun_shu"
 	if unit["name"] == "石岩" and hp_ratio > 0.8 and unit["skills"].size() > 1: skill_id = "tiao_xin"
+	if _has_status(unit, "silence"):
+		for candidate_id in unit.get("skills", []):
+			var candidate := KWCombatResolver.skill_by_id(Game.combat_config, str(candidate_id))
+			if str(candidate.get("damageKind", "none")) == "physical":
+				skill_id = str(candidate_id)
+				break
 	_resolve_command(unit, skill_id)
 
 func _choose_skill(skill_index: int) -> void:
@@ -359,29 +395,49 @@ func _toggle_auto(unit_id: int) -> void:
 	_refresh()
 
 func _enemy_action(enemy: Dictionary) -> void:
-	var targets := units.filter(func(u): return u["side"] == "ally" and not u["dead"])
-	if targets.is_empty(): _finish_defeat(); return
-	var target: Dictionary = targets[0]
-	var skill := KWCombatResolver.skill_by_id(Game.combat_config, str(enemy["skills"][0]))
-	var damage := KWCombatResolver.physical_damage(enemy, target, skill, int(Game.combat_config.get("defenseLevelConstant", 100)))
-	_apply_damage(target, damage)
-	enemy["timer"] = int(skill.get("baseIntervalTicks", 40))
-	_show_log("石傀施放 %s，对 %s 造成 %d 点伤害" % [Game.text(skill.get("nameKey", "石拳")), target["name"], damage])
+	var living_targets := _living_units("ally")
+	if living_targets.is_empty():
+		_finish_defeat()
+		return
+	var available_skills: Array[String] = []
+	var cooldowns: Dictionary = enemy.get("cooldowns", {})
+	for skill_id in enemy.get("skills", []):
+		if int(cooldowns.get(str(skill_id), 0)) <= 0:
+			available_skills.append(str(skill_id))
+	if available_skills.is_empty():
+		enemy["timer"] = 1
+		return
+	var chosen_index := int(enemy.get("ai_index", 0)) % available_skills.size()
+	var chosen_id := available_skills[chosen_index]
+	for candidate_id in available_skills:
+		var candidate := KWCombatResolver.skill_by_id(Game.combat_config, candidate_id)
+		var use_below := int(candidate.get("useBelowHpPercent", -1))
+		if use_below >= 0 and int(enemy["hp"]) * 100 <= int(enemy["max_hp"]) * use_below:
+			chosen_id = candidate_id
+			break
+	enemy["ai_index"] = int(enemy.get("ai_index", 0)) + 1
+	_resolve_command(enemy, chosen_id)
 
 func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 	var skill := KWCombatResolver.skill_by_id(Game.combat_config, skill_id)
 	if skill.is_empty(): actor["timer"] = 20; return
+	if _has_status(actor, "silence") and str(skill.get("damageKind", "none")) in ["magical", "none"]:
+		actor["timer"] = 8
+		_show_log("%s 被封灵，无法施放 %s" % [actor["name"], _skill_name(skill, skill_id)])
+		return
 	var cooldowns: Dictionary = actor.get("cooldowns", {})
 	if int(cooldowns.get(skill_id, 0)) > 0:
 		_show_log("%s 尚在冷却" % Game.text(skill.get("nameKey", skill_id)))
 		return
-	actor["timer"] = int(skill.get("baseIntervalTicks", 20))
+	var interval_percent := 80 if actor.get("side") == "enemy" and _is_low_phase_boss(actor) else 100
+	actor["timer"] = KWCombatResolver.action_interval(int(skill.get("baseIntervalTicks", 20)), actor.get("statuses", []), interval_percent)
+	actor["action_max"] = actor["timer"]
 	var cooldown_ticks := int(skill.get("cooldownTicks", 0))
 	if cooldown_ticks > 0:
 		cooldowns[skill_id] = cooldown_ticks
 	actor["cooldowns"] = cooldowns
-	if skill_id == "hui_chun_shu":
-		var allies := units.filter(func(u): return u["side"] == "ally" and not u["dead"])
+	if bool(skill.get("healing", false)) or skill_id == "hui_chun_shu":
+		var allies := _living_units(str(actor.get("side", "ally")))
 		if allies.is_empty(): return
 		var target: Dictionary = allies[0]
 		for candidate in allies:
@@ -390,22 +446,82 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 		target["hp"] = mini(int(target["max_hp"]), int(target["hp"]) + amount)
 		_show_log("%s 使用回春术，%s 恢复 %d 点生命" % [actor["name"], target["name"], amount])
 		return
+	var targets := _targets_for_skill(actor, skill)
 	if skill.get("damageKind", "none") == "none":
-		_apply_skill_status(actor, actor, skill)
-		_show_log("%s 使用 %s" % [actor["name"], Game.text(skill.get("nameKey", skill_id))])
+		if targets.is_empty(): targets = [actor]
+		for target in targets:
+			_apply_skill_status(actor, target, skill)
+		_show_log("%s 使用 %s" % [actor["name"], _skill_name(skill, skill_id)])
 		return
-	var enemies := units.filter(func(u): return u["side"] == "enemy" and not u["dead"])
-	if enemies.is_empty(): _finish_victory(); return
-	var target: Dictionary = enemies.front()
-	if str(skill.get("targetType", "")).contains("LOWEST"):
-		for candidate in enemies:
-			if candidate["hp"] < target["hp"]: target = candidate
-	var damage := KWCombatResolver.physical_damage(actor, target, skill, int(Game.combat_config.get("defenseLevelConstant", 100)))
-	_apply_damage(target, damage)
-	_apply_skill_status(actor, target, skill)
+	if targets.is_empty():
+		if actor.get("side") == "ally": _finish_victory()
+		else: _finish_defeat()
+		return
+	var total_damage := 0
+	var first_target: Dictionary = targets.front()
+	for target in targets:
+		var defender := _effective_defender(target)
+		var incoming_percent := 125 if _has_status(target, "core_exposed") else 100
+		var damage := KWCombatResolver.damage_amount(actor, defender, skill, int(Game.combat_config.get("defenseLevelConstant", 100)), _outgoing_damage_percent(actor), incoming_percent)
+		total_damage += damage
+		_apply_damage(target, damage, actor, str(skill.get("damageKind", "physical")), true)
+		if not target.get("dead", false):
+			_apply_skill_status(actor, target, skill)
 	# 战斗数值已经结算；Cast A 和命中特效只消费这次结果，不参与判伤或重算。
-	_play_shi_yan_cast_a(actor, target)
-	_show_log("%s 使用 %s，对 %s 造成 %d 点伤害" % [actor["name"], Game.text(skill.get("nameKey", skill_id)), target["name"], damage])
+	if actor.get("side") == "ally" and not first_target.is_empty():
+		_play_shi_yan_cast_a(actor, first_target)
+	_show_log("%s 使用 %s，造成 %d 点伤害" % [actor["name"], _skill_name(skill, skill_id), total_damage])
+
+func _living_units(side: String) -> Array:
+	return units.filter(func(unit): return str(unit.get("side", "")) == side and not bool(unit.get("dead", false)))
+
+func _targets_for_skill(actor: Dictionary, skill: Dictionary) -> Array:
+	var target_type := str(skill.get("targetType", "ENEMY_SINGLE"))
+	if target_type == "SELF":
+		return [actor]
+	var target_side := str(actor.get("side", "ally")) if target_type.begins_with("ALLY") else ("enemy" if actor.get("side") == "ally" else "ally")
+	var candidates := _living_units(target_side)
+	if candidates.is_empty():
+		return []
+	if target_type.ends_with("_ALL"):
+		return candidates
+	var selected: Dictionary = candidates.front()
+	if target_type.contains("LOWEST_HP"):
+		for candidate in candidates:
+			if float(candidate["hp"]) / float(candidate["max_hp"]) < float(selected["hp"]) / float(selected["max_hp"]): selected = candidate
+	elif target_type.contains("HIGHEST_HP"):
+		for candidate in candidates:
+			if int(candidate["hp"]) > int(selected["hp"]): selected = candidate
+	elif target_type.contains("RANDOM"):
+		selected = candidates[combat_ticks % candidates.size()]
+	return [selected]
+
+func _skill_name(skill: Dictionary, skill_id: String) -> String:
+	return Game.text(str(skill.get("nameKey", "")), str(skill.get("name", skill_id)))
+
+func _has_status(unit: Dictionary, kind: String) -> bool:
+	for status in unit.get("statuses", []):
+		if str(status.get("kind", "")) == kind:
+			return true
+	return false
+
+func _is_low_phase_boss(unit: Dictionary) -> bool:
+	return bool(unit.get("mechanics", {}).get("bossGoldBody", false)) and int(unit.get("hp", 0)) * 100 <= int(unit.get("max_hp", 1)) * 35
+
+func _effective_defender(target: Dictionary) -> Dictionary:
+	var defender := target.duplicate(true)
+	var attrs: Dictionary = target.get("attrs", {}).duplicate(true)
+	if int(target.get("shield", 0)) > 0:
+		attrs["armor"] = int(attrs.get("armor", 0)) + int(target.get("mechanics", {}).get("shieldArmorBonus", 0))
+	defender["attrs"] = attrs
+	return defender
+
+func _outgoing_damage_percent(actor: Dictionary) -> int:
+	var percent := 100
+	if actor.get("side") == "enemy":
+		for ally in _living_units("enemy"):
+			percent += int(ally.get("mechanics", {}).get("allyDamageAuraPercent", 0))
+	return percent
 
 func _play_shi_yan_cast_a(actor: Dictionary, target: Dictionary) -> void:
 	var hero: Dictionary = actor.get("hero", {})
@@ -559,34 +675,109 @@ func _clear_target_hit_vfx(target_unit_id: int) -> void:
 		layer.queue_free()
 	active_target_hit_vfx.erase(target_unit_id)
 
+func _apply_periodic_mechanics(unit: Dictionary) -> void:
+	var periodic: Dictionary = unit.get("mechanics", {}).get("periodicShield", {})
+	if periodic.is_empty():
+		return
+	var interval := int(periodic.get("intervalTicks", 0))
+	if interval <= 0 or combat_ticks < int(unit.get("next_periodic_tick", interval)):
+		return
+	unit["shield"] = int(unit.get("shield", 0)) + int(periodic.get("amount", 0))
+	unit["next_periodic_tick"] = combat_ticks + interval
+	_show_log("%s 获得 %d 点石盾" % [unit["name"], int(periodic.get("amount", 0))])
+
+func _apply_status_ticks(unit: Dictionary) -> void:
+	if combat_ticks % 20 != 0:
+		return
+	var total_damage := 0
+	for status in unit.get("statuses", []):
+		total_damage += int(status.get("perSecondDamage", 0))
+	if total_damage > 0:
+		_apply_damage(unit, total_damage, {}, "status", false)
+		if not unit.get("dead", false):
+			_show_log("%s 受到 %d 点持续伤害" % [unit["name"], total_damage])
+
 func _apply_skill_status(actor: Dictionary, target: Dictionary, skill: Dictionary) -> void:
 	var status_definition: Dictionary = skill.get("appliesStatus", {})
 	if status_definition.is_empty(): return
+	var chance := int(status_definition.get("chancePercent", 100))
+	if chance < 100 and int((combat_ticks + int(actor.get("unit_id", 0)) * 17 + int(target.get("unit_id", 0)) * 31) % 100) >= chance:
+		return
 	var status_kind := str(status_definition.get("kind", ""))
-	var recipient := actor
-	if str(skill.get("targetType", "")).contains("ALLY_LOWEST"):
-		var allies := units.filter(func(u): return u["side"] == "ally" and not u["dead"])
-		if not allies.is_empty():
-			recipient = allies[0]
-			for candidate in allies:
-				if float(candidate["hp"]) / candidate["max_hp"] < float(recipient["hp"]) / recipient["max_hp"]: recipient = candidate
-	elif str(skill.get("targetType", "")).contains("ENEMY"):
-		recipient = target
-	if status_kind == "shield": recipient["shield"] = int(recipient.get("shield", 0)) + int(status_definition.get("magnitude", 0))
-	var status_label: String = str({"gather_spirit": "引", "shield": "护", "stun": "晕", "haste": "迅", "purify": "净"}.get(status_kind, status_kind))
-	var statuses: Array = recipient.get("statuses", [])
-	statuses.append({"kind": str(status_label), "ticks": int(status_definition.get("durationTicks", 20))})
-	recipient["statuses"] = statuses
+	if status_kind == "shield":
+		target["shield"] = int(target.get("shield", 0)) + int(status_definition.get("magnitude", 0))
+		return
+	if status_kind == "purify":
+		target["statuses"] = target.get("statuses", []).filter(func(status): return str(status.get("kind", "")) not in ["slow", "stun", "silence", "poison", "bleed"])
+		return
+	var statuses: Array = target.get("statuses", [])
+	for index in statuses.size():
+		if str(statuses[index].get("kind", "")) == status_kind:
+			statuses.remove_at(index)
+			break
+	statuses.append({
+		"kind": status_kind,
+		"ticks": int(status_definition.get("durationTicks", 20)),
+		"magnitude": int(status_definition.get("magnitude", 0)),
+		"perSecondDamage": int(status_definition.get("perSecondDamage", 0)),
+		"sourceUnitId": int(actor.get("unit_id", -1)),
+	})
+	target["statuses"] = statuses
 
-func _apply_damage(target: Dictionary, damage: int) -> void:
+func _apply_damage(target: Dictionary, damage: int, attacker: Dictionary = {}, damage_kind: String = "physical", direct_hit: bool = false) -> void:
+	if bool(target.get("dead", false)):
+		return
+	var previous_hp := int(target.get("hp", 0))
+	var previous_shield := int(target.get("shield", 0))
 	var absorbed := mini(int(target.get("shield", 0)), damage)
 	target["shield"] = int(target.get("shield", 0)) - absorbed
 	target["hp"] = maxi(0, int(target["hp"]) - damage + absorbed)
+	if direct_hit and target.get("side") == "enemy" and attacker.get("side") == "ally":
+		_apply_reactive_mechanics(target, attacker, damage_kind)
+	if previous_shield > 0 and int(target.get("shield", 0)) == 0 and bool(target.get("mechanics", {}).get("coreExposedOnShieldBreak", false)):
+		var statuses: Array = target.get("statuses", [])
+		statuses.append({"kind": "core_exposed", "ticks": int(target.get("mechanics", {}).get("coreExposedTicks", 80)), "magnitude": 25})
+		target["statuses"] = statuses
+		_show_log("%s 金身破碎，核心外露" % target["name"])
+	_apply_forced_boss_shields(target, previous_hp)
 	if target["hp"] <= 0:
 		target["dead"] = true
 		_show_log("%s 倒下了" % target["name"])
-		if target["side"] == "enemy": _finish_victory()
+		if target["side"] == "enemy" and _living_units("enemy").is_empty(): _finish_victory()
 		elif units.filter(func(u): return u["side"] == "ally" and not u["dead"]).is_empty(): _finish_defeat()
+
+func _apply_reactive_mechanics(target: Dictionary, attacker: Dictionary, damage_kind: String) -> void:
+	var counter: Dictionary = target.get("mechanics", {}).get("physicalHitCounter", {})
+	if counter.is_empty():
+		return
+	if damage_kind == "magical" and bool(counter.get("clearOnMagical", true)):
+		target["physical_hit_count"] = maxi(0, int(target.get("physical_hit_count", 0)) - int(counter.get("magicalClearAmount", 99)))
+		return
+	if damage_kind != "physical":
+		return
+	target["physical_hit_count"] = int(target.get("physical_hit_count", 0)) + 1
+	var threshold := maxi(1, int(counter.get("threshold", 3)))
+	if int(target["physical_hit_count"]) < threshold:
+		return
+	target["physical_hit_count"] = 0
+	var counter_damage := KWCombatResolver.counter_damage(int(target.get("attrs", {}).get("strength", 0)), int(counter.get("counterPercent", 35)), attacker, int(Game.combat_config.get("defenseLevelConstant", 100)))
+	_apply_damage(attacker, counter_damage, target, "counter", false)
+	_show_log("%s 触发反震，%s 受到 %d 点伤害" % [target["name"], attacker["name"], counter_damage])
+
+func _apply_forced_boss_shields(target: Dictionary, previous_hp: int) -> void:
+	var mechanics: Dictionary = target.get("mechanics", {})
+	if not bool(mechanics.get("bossGoldBody", false)) or int(target.get("hp", 0)) <= 0:
+		return
+	var used: Array = target.get("forced_shields_used", [])
+	for threshold in mechanics.get("forcedShieldThresholds", [75, 35]):
+		var threshold_value := int(threshold)
+		if used.has(threshold_value):
+			continue
+		if previous_hp * 100 > int(target["max_hp"]) * threshold_value and int(target["hp"]) * 100 <= int(target["max_hp"]) * threshold_value:
+			target["shield"] = int(target.get("shield", 0)) + int(mechanics.get("forcedShieldAmount", 900))
+			used.append(threshold_value)
+			_show_log("%s 在 %d%% 生命激活石灵金身" % [target["name"], threshold_value])
+	target["forced_shields_used"] = used
 
 func _refresh() -> void:
 	escape_button.visible = not finished and _escape_available()
@@ -615,21 +806,6 @@ func _refresh() -> void:
 				name_label.text = "%s · 阵亡" % unit["name"] if bool(unit.get("dead", false)) else "%s · %s" % [unit["name"], "自" if unit["auto"] else "手"]
 	if is_instance_valid(log_label): log_label.text = log_lines.back() if not log_lines.is_empty() else ""
 	_refresh_skill_panel()
-	var enemy_unit: Dictionary = {}
-	for candidate in units:
-		if candidate["side"] == "enemy":
-			enemy_unit = candidate
-			break
-	var enemy_host: Panel = unit_hosts.get(100)
-	if enemy_host and not enemy_unit.is_empty():
-		var enemy_bar: ProgressBar = enemy_host.get_node_or_null("Hp")
-		var enemy_hp_value: Label = enemy_host.get_node_or_null("HpValue")
-		var enemy_action: ProgressBar = enemy_host.get_node_or_null("Action")
-		if enemy_bar: enemy_bar.value = float(enemy_unit["hp"]) / float(enemy_unit["max_hp"]) * 100.0
-		if enemy_hp_value: enemy_hp_value.text = "%d/%d" % [int(enemy_unit["hp"]), int(enemy_unit["max_hp"])]
-		if enemy_action:
-			var enemy_max := maxi(1, int(enemy_unit.get("action_max", enemy_unit["timer"])))
-			enemy_action.value = clampf(float(enemy_max - int(enemy_unit["timer"])) / float(enemy_max) * 100.0, 0.0, 100.0)
 
 func _refresh_skill_panel() -> void:
 	if not is_instance_valid(skill_panel): return
@@ -658,24 +834,25 @@ func _refresh_skill_panel() -> void:
 
 func _escape_available() -> bool:
 	var escape_percent := int(current_encounter.get("escapeEnemyHpPercent", 35))
+	var current_hp := 0
+	var maximum_hp := 0
 	for unit in units:
 		if unit["side"] == "enemy":
-			return int(unit["hp"]) * 100 <= int(unit["max_hp"]) * escape_percent
-	return false
+			current_hp += int(unit["hp"])
+			maximum_hp += int(unit["max_hp"])
+	return maximum_hp > 0 and current_hp * 100 <= maximum_hp * escape_percent
 
 func _finish_victory() -> void:
 	if finished: return
 	finished = true
-	for unit in units:
-		if unit["side"] == "ally":
-			unit["hero"]["currentHp"] = int(unit["hp"])
-	var completion_key := Game.map_object_key(Game.get_active_map_id(), Game.get_active_map_object_id())
-	var already: bool = bool(Game.profile.get("completedMapObjects", {}).get(completion_key, false))
-	if not already:
-		Game.profile["completedMapObjects"][completion_key] = true
-		var soul_reward := int(current_encounter.get("soulCrystalReward", 0))
-		Game.profile["wallet"]["soulCrystal"] = int(Game.profile["wallet"].get("soulCrystal", 0)) + soul_reward
-	Game.save_profile()
+	_persist_ally_unit_states()
+	victory_result = Game.finish_encounter_victory(current_encounter)
+	if not bool(victory_result.get("ok", false)):
+		finished = false
+		_show_log(str(victory_result.get("message", "战斗结算失败")))
+		return
+	for message in victory_result.get("progressMessages", []):
+		_show_log(str(message))
 	_show_loot_overlay()
 
 func _finish_defeat() -> void:
@@ -712,34 +889,33 @@ func _show_loot_overlay() -> void:
 	for label in loot_reward_labels:
 		label.visible = false
 	var reward_index := 0
-	var soul_reward := int(current_encounter.get("soulCrystalReward", 0))
+	var soul_reward := int(expedition.get("pendingEncounterSoulCrystal", victory_result.get("soulCrystal", 0)))
 	if reward_index < loot_reward_labels.size():
 		loot_reward_labels[reward_index].text = "魂晶 +%d（已获得）" % soul_reward
 		loot_reward_labels[reward_index].visible = true
 		reward_index += 1
-	for reward in current_encounter.get("loot", []):
+	var pending_loot: Array = expedition.get("pendingEncounterLoot", [])
+	for reward in pending_loot:
 		if reward_index >= loot_reward_labels.size(): break
 		loot_reward_labels[reward_index].text = "%s ×%d    重量 %d" % [Game.text(str(reward.get("nameKey", reward.get("itemId", "战利品"))), str(reward.get("itemId", "战利品"))), int(reward.get("amount", 1)), int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))]
 		loot_reward_labels[reward_index].visible = true
 		reward_index += 1
 	var reward_weight := 0
-	for reward in current_encounter.get("loot", []): reward_weight += int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))
+	for reward in pending_loot: reward_weight += int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))
 	loot_status_label.text = "全部拾取后：%d/%d" % [burden + reward_weight, limit]
 	loot_status_label.add_theme_color_override("font_color", Color("#a8c2a6") if burden + reward_weight <= limit else Color("#eb8b6f"))
 	KWUI.set_combat_button_disabled(loot_take_all_button, burden + reward_weight > limit)
 
 func _take_all_loot() -> void:
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	var loot: Dictionary = expedition.get("temporaryLoot", {})
-	for reward in current_encounter.get("loot", []):
-		var item_id := str(reward.get("itemId", ""))
-		loot[item_id] = int(loot.get(item_id, 0)) + int(reward.get("amount", 1))
-	expedition["temporaryLoot"] = loot
-	Game.save_profile()
+	if not Game.take_pending_encounter_loot():
+		_show_log("战利品保存失败，请重试")
+		return
 	_leave_loot()
 
 func _leave_loot() -> void:
 	loot_overlay.visible = false
+	if not Game.profile.get("expedition", {}).get("pendingEncounterLoot", []).is_empty():
+		Game.discard_pending_encounter_loot()
 	Game.clear_active_encounter()
 	get_tree().change_scene_to_file("res://scenes/map.tscn")
 
@@ -776,17 +952,23 @@ func _escape() -> void:
 	if not _escape_available():
 		_show_log("敌方生命未低于 %d%%，暂时无法撤离" % int(current_encounter.get("escapeEnemyHpPercent", 35)))
 		return
-	for unit in units:
-		if unit["side"] == "ally": unit["hero"]["currentHp"] = int(unit["hp"])
+	_persist_ally_unit_states()
 	Game.clear_active_encounter()
 	get_tree().change_scene_to_file("res://scenes/map.tscn")
 
 func _give_up() -> void:
 	if finished: return
-	for unit in units:
-		if unit["side"] == "ally": unit["hero"]["currentHp"] = int(unit["hp"])
+	_persist_ally_unit_states()
 	Game.clear_active_encounter()
 	get_tree().change_scene_to_file("res://scenes/map.tscn")
+
+func _persist_ally_unit_states() -> void:
+	for unit in units:
+		if unit["side"] != "ally":
+			continue
+		var hp := maxi(0, int(unit.get("hp", 0)))
+		unit["hero"]["currentHp"] = hp
+		unit["hero"]["isDead"] = bool(unit.get("dead", false)) or hp <= 0
 
 func _show_log(message: String) -> void:
 	log_lines.append(message)

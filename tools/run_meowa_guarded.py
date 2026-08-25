@@ -32,6 +32,11 @@ BLOCKED_COMMANDS = {
     "spine-run": "Spine has no approved Godot runtime or stable public pricing contract.",
     "custom-workflow-run": "Custom workflow pricing and output bounds are account-specific.",
     "game-design-run": "Realtime token charging cannot be capped reliably by this gate.",
+    "nano-banana-run": (
+        "Nano Banana paid submission is paused: a 2026-08-24 1K normal run with two "
+        "references charged 14 credits after the official page and user approval both "
+        "set a 10-credit ceiling. Resume only after the pricing upper bound is stable."
+    ),
 }
 
 MINIMUM_ESTIMATED_CREDITS = {

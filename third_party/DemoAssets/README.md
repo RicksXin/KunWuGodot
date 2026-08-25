@@ -21,7 +21,6 @@
 | 僧侣/施法者动画 | `Characters/Monk_CC0` | [rehcub / OpenGameArt](https://opengameart.org/content/2d-character-monk) | CC0 | 阵修、符修、御器占位 | 有待机、攻击、飞行、阅读、转换动作 |
 | 动画怪物 | `Enemies/AnimatedMonsters_CC0` | [stealthix / OpenGameArt](https://opengameart.org/content/animated-monsters) | CC0 | 骷髅、尸傀、邪修占位 | 含待机、行走、攻击、受击、倒地 |
 | 法术序列帧 | `VFX/SpellEffects_CC0` | [StarsteelGaming / OpenGameArt](https://opengameart.org/content/spell-effects-by-starsteelgaming) | CC0 | 火法、冰锥、雷法 | 可换色为剑气、煞气、灵焰 |
-| 地牢 Tilemap | `Environment/PunyDungeon_CC0` | [Shade / OpenGameArt](https://opengameart.org/content/16x16-puny-dungeon-tileset) | CC0 | 洞府、封印遗迹、机关 | 含16×16地砖、门、陷阱、火焰、传送门和Tiled示例 |
 | 俯视地牢与人物 | `Environment/TopdownDungeonCharacter_CC0` | [profpatonildo / OpenGameArt](https://opengameart.org/content/pixel-art-top-down-dungeon-tileset-and-rpg-character-with-animations) | CC0 | 快速搭建探索原型 | 含可编辑Aseprite文件 |
 | 像素 UI | `UI/KenneyPixelUI_CC0` | [Kenney](https://www.kenney.nl/assets/pixel-ui-pack) | CC0 | 按钮、面板、滑条和选择框 | 建议重新配色为墨黑、石青、朱砂 |
 | 符文图标 | `Icons/KenneyRunes_CC0` | [Kenney](https://www.kenney.nl/assets/rune-pack) | CC0 | 阵纹、禁制、状态和技能图标 | 含PNG、SpriteSheet和矢量源文件 |
@@ -38,7 +37,6 @@
 | `kenney_pixel_ui.zip` | `B76F2F60F2BE76EB8E66511038FA4D48FAEC11E638316FA37D06084878CDF0C7` |
 | `kenney_runes.zip` | `FBC69B7036E399D56AAE249C667476A7C6E50E80A8612030E1CA17DDB9C1B2D9` |
 | `monk.zip` | `62C55A3F26F455DCDE46C357740E9E10E283DDE844CF362DA60190BF7B8D0C2A` |
-| `puny_dungeon.zip` | `22FD85633CCD3D92FF7F4F036CC3934841EF497637F34E22C90431D479FA7954` |
 | `samurai_sideview.zip` | `F7B19F54339214E935AA575A36CF98452E07805852E164C389BEF2F975F86954` |
 | `samurai_topdown.zip` | `89A294B00A2C4186D7E049784B7230CAC7484D9EAB66E8DBE2C5D898379CB307` |
 | `spell_effects.zip` | `B5692931609436BC11FED995393BA560080043C448EF37AEE6C636425FD56C4E` |

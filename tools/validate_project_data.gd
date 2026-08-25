@@ -19,7 +19,8 @@ const REQUIRED_JSON_PATHS := [
 	"res://data/config/default_profile.json",
 	"res://data/config/expedition_preparation.json",
 	"res://data/config/ling_pu_config.json",
-	"res://data/maps/map_01_demo.json",
+	"res://data/config/combat_map01_formal.json",
+	"res://data/maps/map_01_formal.json",
 	"res://data/maps/map_01_manifest.json",
 	"res://data/maps/map_02_manifest.json"
 ]
@@ -169,16 +170,20 @@ func _validate_realm_ranges() -> void:
 		_fail("realm ranges do not end at maxLevel")
 
 func _validate_map_files() -> void:
-	var map_document: Variant = _read_json("res://data/maps/map_01_demo.json")
+	var map_document: Variant = _read_json("res://data/maps/map_01_formal.json")
 	if map_document is Dictionary:
+		if str(map_document.get("id", "")) != "map_01":
+			_fail("formal map id must be map_01")
+		if int(map_document.get("activeWidth", 0)) != 28 or int(map_document.get("activeHeight", 0)) != 64:
+			_fail("formal map size must be 28x64")
 		var visual: Variant = map_document.get("visual")
 		if not visual is Dictionary:
-			_fail("map_01 visual object is missing")
+			_fail("formal map visual object is missing")
 		else:
-			_validate_res_path(str(visual.get("scenePath", "")), "map_01 scenePath")
-			_validate_res_path(str(visual.get("tileSetPath", "")), "map_01 tileSetPath")
-			if int(visual.get("tileSourceSize", 0)) <= 0 or int(visual.get("logicalTileSize", 0)) <= 0:
-				_fail("map_01 tile sizes must be positive")
+			_validate_res_path(str(visual.get("scenePath", "")), "formal map scenePath")
+			_validate_res_path(str(visual.get("backgroundPath", "")), "formal map backgroundPath")
+			if int(visual.get("logicalTileSize", 0)) != 48:
+				_fail("formal map logicalTileSize must be 48")
 	_validate_manifest("res://data/maps/map_01_manifest.json", true)
 	_validate_manifest("res://data/maps/map_02_manifest.json", false)
 
@@ -190,7 +195,7 @@ func _validate_manifest(path: String, require_content: bool) -> void:
 		_fail("manifest mapId is missing: %s" % path)
 	if int(manifest.get("schemaVersion", 0)) <= 0:
 		_fail("manifest schemaVersion is invalid: %s" % path)
-	for key in ["scenePath", "mapDataPath", "tileSetPath"]:
+	for key in ["scenePath", "layoutScenePath", "mapDataPath", "combatDataPath", "backgroundPath"]:
 		var value: Variant = manifest.get(key)
 		if value is String and not value.is_empty():
 			_validate_res_path(value, "%s %s" % [path, key])

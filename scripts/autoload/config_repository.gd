@@ -14,6 +14,8 @@ var modules: Dictionary = {}
 var runtime_tables: Dictionary = {}
 
 func _ready() -> void:
+	var embedded_manifest: Dictionary = _load_json("res://data/maps/map_01_manifest.json")
+	version = str(embedded_manifest.get("embeddedVersion", "embedded-d0"))
 	runtime_tables = _embedded_runtime_tables()
 	if not OS.get_cmdline_user_args().has("--ignore-config-cache"): _load_cached_release()
 
@@ -83,16 +85,69 @@ func default_map_id() -> String:
 	return ""
 
 func _embedded_runtime_tables() -> Dictionary:
-	var map_data: Dictionary = _load_json("res://data/maps/map_01_demo.json")
+	var map_manifest: Dictionary = _load_json("res://data/maps/map_01_manifest.json")
+	var map_data_path := str(map_manifest.get("mapDataPath", "res://data/maps/map_01_formal.json"))
+	var combat_data_path := str(map_manifest.get("combatDataPath", "res://data/config/combat_map01_formal.json"))
+	var map_data: Dictionary = _load_json(map_data_path)
 	return {
 		"localization": _load_json("res://data/localization/zh_cn.json"),
 		"expedition": _load_json("res://data/config/expedition_preparation.json").get("expedition_preparation", {}),
 		"ling_pu": _load_json("res://data/config/ling_pu_config.json").get("ling_pu", {}),
-		"combat": _load_json("res://data/config/combat_d0.json"),
+		"combat": _load_embedded_combat(combat_data_path),
 		"maps": {str(map_data.get("id", "")): map_data},
 		"default_profile": _load_json("res://data/config/default_profile.json"),
 		"assets": [],
 	}
+
+func _load_embedded_combat(path: String) -> Dictionary:
+	var document: Dictionary = _load_json(path)
+	var inherited_path := str(document.get("inherits", ""))
+	if not inherited_path.is_empty():
+		var inherited: Dictionary = _load_json(inherited_path)
+		var combined_skills: Array = inherited.get("skills", []).duplicate(true)
+		var skill_index: Dictionary = {}
+		for index in combined_skills.size():
+			skill_index[str(combined_skills[index].get("id", ""))] = index
+		for skill in document.get("skills", []):
+			var skill_id := str(skill.get("id", ""))
+			if skill_index.has(skill_id):
+				combined_skills[int(skill_index[skill_id])] = skill.duplicate(true)
+			else:
+				skill_index[skill_id] = combined_skills.size()
+				combined_skills.append(skill.duplicate(true))
+		document["skills"] = combined_skills
+		for key in ["defenseLevelConstant", "partyInitialActionTimers"]:
+			if not document.has(key) and inherited.has(key):
+				document[key] = inherited[key]
+	return _expand_embedded_encounters(document)
+
+func _expand_embedded_encounters(document: Dictionary) -> Dictionary:
+	var templates: Dictionary = {}
+	for enemy in document.get("enemyTemplates", []):
+		templates[str(enemy.get("id", ""))] = enemy
+	if templates.is_empty():
+		return document
+	var encounters: Array = []
+	for raw_encounter in document.get("encounters", []):
+		var encounter: Dictionary = raw_encounter.duplicate(true)
+		var enemies: Array = encounter.get("enemies", []).duplicate(true)
+		for member in encounter.get("members", []):
+			var template_id := str(member.get("enemyId", ""))
+			var quantity := maxi(1, int(member.get("quantity", 1)))
+			for copy_index in quantity:
+				var enemy: Dictionary = templates.get(template_id, {}).duplicate(true)
+				if enemy.is_empty():
+					continue
+				enemy["definitionId"] = template_id
+				enemy["id"] = "%s_%d" % [template_id, copy_index + 1] if quantity > 1 else template_id
+				if member.has("initialActionTimer"):
+					enemy["initialActionTimer"] = int(member.get("initialActionTimer", 45))
+				enemies.append(enemy)
+		encounter["enemies"] = enemies
+		encounter.erase("members")
+		encounters.append(encounter)
+	document["encounters"] = encounters
+	return document
 
 func _adapt_remote_modules(remote_modules: Dictionary) -> Dictionary:
 	for module_code in REQUIRED_MODULES:
