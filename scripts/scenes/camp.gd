@@ -39,12 +39,16 @@ var expedition_draft: Dictionary = {}
 var animated_portraits: Array[Dictionary] = []
 
 func _ready() -> void:
+	var reopen_debug_settings := Game.debug_combat_return_to_settings
+	Game.debug_combat_return_to_settings = false
 	Game.settle_production()
 	_build_scene()
 	_refresh_hud()
 	Game.state_changed.connect(_refresh_hud)
 	Game.feedback.connect(_show_feedback)
 	set_process_input(true)
+	if reopen_debug_settings:
+		call_deferred("_open_settings")
 
 func _process(delta: float) -> void:
 	# TextureRect 不会把 Sprite Sheet 自动当作动画播放。这里逐帧替换
@@ -583,6 +587,7 @@ func _upgrade_storage(job: String) -> void:
 	_open_ling_pu()
 
 func _open_expedition() -> void:
+	Game.settle_stamina()
 	var body := _make_modal("入山整备", "res://assets/camp/ui/expedition/ui_expedition_panel_body.png")
 	if Game.profile.get("expedition") != null:
 		KWUI.label(body, "检测到未结束的探索进度", Rect2(30, 130, 299, 40), 16, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
@@ -823,6 +828,10 @@ func _open_map_selection() -> void:
 	var panel := Control.new()
 	panel.position = Vector2(16, 86)
 	panel.size = Vector2(343, 622)
+	# The panel is a visual hit area only.  It spans the map rows, so leaving
+	# the default STOP filter here makes it swallow clicks before the sibling
+	# row Buttons can receive them on some Godot/platform combinations.
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	modal.add_child(panel)
 	var panel_art := KWUI.texture(panel, "res://assets/camp/ui/expedition/ui_expedition_map_selection_panel.png", Rect2(0, 0, 343, 622))
 	panel_art.stretch_mode = TextureRect.STRETCH_SCALE
@@ -861,7 +870,13 @@ func _open_map_selection() -> void:
 func _depart(map_id: String) -> void:
 	var result := Game.start_expedition(expedition_draft, map_id)
 	if result.get("ok", false): get_tree().change_scene_to_file("res://scenes/map.tscn")
-	else: _show_feedback(result.get("message", "当前无法入山"), 2)
+	else:
+		# Feedback is rendered by the camp HUD behind the modal.  Close the
+		# selection first so a validation error (for example an existing active
+		# expedition or insufficient stamina) is visible instead of looking like
+		# a dead click.
+		_close_modal()
+		_show_feedback(str(result.get("message", "当前无法入山")), 2)
 
 func _map_selection_row_background(parent: Control) -> Panel:
 	var background := Panel.new()
@@ -933,11 +948,56 @@ func _open_settings() -> void:
 	KWUI.label(body, "存档位置", Rect2(25, 72, 290, 30), 13, KWUI.MUTED)
 	KWUI.label(body, "user://kunwu_profile.json", Rect2(25, 103, 290, 34), 12, KWUI.TEXT)
 	KWUI.label(body, "Godot 会在生产、移动、结算和场景切换前后自动保存。", Rect2(25, 150, 290, 62), 12, KWUI.MUTED)
-	var save := _camp_button(body, "立即保存", Rect2(55, 245, 235, 48), true, 14)
+	var save := _camp_button(body, "立即保存", Rect2(55, 235, 235, 48), true, 14)
 	save.pressed.connect(func(): Game.save_profile(); _show_feedback("存档已写入", 0))
-	var reset := _camp_button(body, "重置新档", Rect2(55, 320, 235, 48), false, 14)
+	var reset := _camp_button(body, "重置新档", Rect2(55, 300, 235, 48), false, 14)
 	reset.pressed.connect(func(): Game.reset_profile(); _close_modal(); get_tree().reload_current_scene())
-	KWUI.label(body, "迁移版保留源项目内部资源 ID 与七维字段，存档采用可读 JSON。", Rect2(30, 410, 285, 80), 11, KWUI.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	if OS.is_debug_build():
+		var debug := _camp_button(body, "打开调试面板", Rect2(55, 365, 235, 48), false, 14)
+		debug.name = "OpenDebugPanelButton"
+		debug.pressed.connect(_open_debug_panel)
+	KWUI.label(body, "迁移版保留源项目内部资源 ID 与七维字段，存档采用可读 JSON。", Rect2(30, 445, 285, 80), 11, KWUI.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+
+func _open_debug_panel() -> void:
+	if not OS.is_debug_build():
+		return
+	var body := _make_modal("调试面板")
+	KWUI.label(body, "仅在 Debug 构建显示；操作会立即写入当前存档。\n直接战斗不消耗灵粮、灵息或道具。", Rect2(28, 72, 303, 42), 11, KWUI.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	var grain_value := Game.wallet_value("spiritGrain")
+	var grain_capacity := Game.resource_capacity("spiritGrain")
+	KWUI.label(body, "灵粮：%d / %d" % [grain_value, grain_capacity], Rect2(32, 140, 311, 26), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var refill := _camp_button(body, "补充满灵粮", Rect2(55, 178, 235, 48), true, 14)
+	refill.name = "DebugRefillSpiritGrainButton"
+	refill.pressed.connect(func():
+		if Game.debug_refill_spirit_grain(): _open_debug_panel()
+		else: _show_feedback("灵粮补充失败", 2)
+	)
+	var heroes: Array = Game.profile.get("roster", [])
+	var stamina_max := int(Game.expedition_config.get("staminaMax", 100))
+	var min_stamina := stamina_max
+	for hero in heroes:
+		if hero is Dictionary: min_stamina = mini(min_stamina, int(hero.get("stamina", stamina_max)))
+	KWUI.label(body, "全队灵息：最低 %d / %d" % [min_stamina, stamina_max], Rect2(32, 270, 311, 26), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var restore := _camp_button(body, "恢复全队灵息", Rect2(55, 308, 235, 48), true, 14)
+	restore.name = "DebugRestoreStaminaButton"
+	restore.pressed.connect(func():
+		if Game.debug_restore_stamina(): _open_debug_panel()
+		else: _show_feedback("灵息恢复失败", 2)
+	)
+	var expedition_state := "进行中" if Game.profile.get("expedition") is Dictionary else "无"
+	KWUI.label(body, "当前探索：%s" % expedition_state, Rect2(32, 392, 311, 22), 12, KWUI.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	var direct_combat := _camp_button(body, "直接进入战斗", Rect2(55, 420, 235, 48), true, 14)
+	direct_combat.name = "DebugStartCombatButton"
+	direct_combat.pressed.connect(func():
+		var result: Dictionary = Game.debug_start_combat()
+		if bool(result.get("ok", false)):
+			get_tree().change_scene_to_file("res://scenes/combat.tscn")
+		else:
+			_close_modal()
+			_show_feedback(str(result.get("message", "当前无法进入战斗")), 2)
+	)
+	var close := _camp_button(body, "返回设置", Rect2(116, 500, 132, 44), false, 14)
+	close.pressed.connect(_open_settings)
 
 func _show_feedback(message: String, severity: int = 0) -> void:
 	toast_serial += 1

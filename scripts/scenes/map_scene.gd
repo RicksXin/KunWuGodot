@@ -94,6 +94,36 @@ func _enter_tree() -> void:
 		DisplayServer.window_set_size(target_size)
 		DisplayServer.window_set_position(usable.position + (usable.size - target_size) / 2)
 		restore_window_geometry = true
+	# Scene changes and the embedded game view can apply their own window
+	# geometry after _enter_tree(). Re-assert the device/window orientation on
+	# the next frame so the whole game surface is landscape, not only the map
+	# content canvas.
+	if DisplayServer.get_name() != "headless":
+		call_deferred("_ensure_landscape_device")
+
+func _ensure_landscape_device() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
+	var window := get_window()
+	if not is_instance_valid(window) or OS.has_feature("mobile"):
+		return
+	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_WINDOWED:
+		return
+	var size := DisplayServer.window_get_size()
+	if size.y <= size.x:
+		return
+	# Standalone desktop runs can be resized by the launcher/editor between
+	# _enter_tree() and the deferred callback. Rotate that final geometry while
+	# preserving its area, then center it on the current screen.
+	var target_size := Vector2i(size.y, size.x)
+	var screen := DisplayServer.window_get_current_screen()
+	var usable := DisplayServer.screen_get_usable_rect(screen)
+	if target_size.x > usable.size.x or target_size.y > usable.size.y:
+		var scale := minf(float(usable.size.x) / float(target_size.x), float(usable.size.y) / float(target_size.y))
+		target_size = Vector2i(maxi(1, floori(target_size.x * scale)), maxi(1, floori(target_size.y * scale)))
+	DisplayServer.window_set_size(target_size)
+	DisplayServer.window_set_position(usable.position + (usable.size - target_size) / 2)
 
 
 func _exit_tree() -> void:

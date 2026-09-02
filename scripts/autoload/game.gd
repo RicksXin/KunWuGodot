@@ -22,6 +22,7 @@ var map_definition: Dictionary = {}
 var asset_definitions: Dictionary = {}
 var loaded_from_save := false
 var suppress_profile_writes := false
+var debug_combat_return_to_settings := false
 
 func _ready() -> void:
 	# Tool scripts and editor scans are validation contexts, never gameplay.
@@ -31,8 +32,11 @@ func _ready() -> void:
 		or OS.get_cmdline_user_args().has("--no-profile-write")
 	_load_json_tables()
 	_load_profile()
+	var saved_expedition: Variant = profile.get("expedition")
+	debug_combat_return_to_settings = saved_expedition is Dictionary and bool(saved_expedition.get("debugReturnToSettings", false))
 	map_definition = get_map_definition()
 	settle_production()
+	settle_stamina()
 
 func _load_json(path: String) -> Variant:
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -203,6 +207,7 @@ func reset_profile() -> void:
 	profile = default_profile.duplicate(true)
 	_normalise_profile()
 	loaded_from_save = false
+	debug_combat_return_to_settings = false
 	save_profile()
 
 func text(key: String, fallback: String = "") -> String:
@@ -263,6 +268,172 @@ func settle_production() -> void:
 	camp["lastSettledAtUtc"] = anchor + cycles * cycle_seconds
 	profile["camp"] = camp
 	_save_quietly()
+
+func settle_stamina() -> void:
+	# 灵息只在营地随现实时间恢复；探索中的离线时间不应计入恢复。
+	var preparation_raw: Variant = profile.get("expeditionPreparation")
+	var preparation: Dictionary = preparation_raw if preparation_raw is Dictionary else {}
+	var current := now()
+	var anchor := int(preparation.get("lastStaminaSettledAtUtc", 0))
+	if anchor <= 0:
+		preparation["lastStaminaSettledAtUtc"] = current
+		profile["expeditionPreparation"] = preparation
+		_save_quietly()
+		return
+	# 旧存档可能在出征期间停留了很久；从本次启动开始重新计算营地时间。
+	if profile.get("expedition") is Dictionary:
+		if current > anchor:
+			preparation["lastStaminaSettledAtUtc"] = current
+			profile["expeditionPreparation"] = preparation
+			_save_quietly()
+		return
+	var interval := maxi(1, int(expedition_config.get("staminaRecoveryIntervalSeconds", 300)))
+	var amount := maxi(0, int(expedition_config.get("staminaRecoveryAmount", 1)))
+	var stamina_max := maxi(0, int(expedition_config.get("staminaMax", 100)))
+	var elapsed := maxi(0, current - anchor)
+	var cycles := int(elapsed / interval)
+	if cycles <= 0 or amount <= 0:
+		return
+	var changed := false
+	for hero in profile.get("roster", []):
+		if not hero is Dictionary:
+			continue
+		var before := int(hero.get("stamina", stamina_max))
+		var after := mini(stamina_max, before + cycles * amount)
+		if after != before:
+			hero["stamina"] = after
+			changed = true
+	# 保留不足一个周期的余数；恢复时间从当前营地时段继续累计。
+	preparation["lastStaminaSettledAtUtc"] = anchor + cycles * interval
+	profile["expeditionPreparation"] = preparation
+	if changed:
+		save_profile()
+	else:
+		_save_quietly()
+
+func debug_refill_spirit_grain() -> bool:
+	if not OS.is_debug_build():
+		return false
+	var wallet: Dictionary = profile.get("wallet", {})
+	wallet["spiritGrain"] = resource_capacity("spiritGrain")
+	profile["wallet"] = wallet
+	# If a debug session is already exploring, refill the carried field supply
+	# as well so the control is useful before and after entering Map01.
+	var expedition: Variant = profile.get("expedition")
+	if expedition is Dictionary:
+		var carried_capacity := maxi(0, int(expedition.get("grainCapacity", 0)))
+		if carried_capacity > 0:
+			expedition["remainingGrain"] = carried_capacity
+			expedition["grainDepletionSteps"] = 0
+	profile["expedition"] = expedition
+	return save_profile()
+
+func debug_restore_stamina() -> bool:
+	if not OS.is_debug_build():
+		return false
+	var stamina_max := maxi(0, int(expedition_config.get("staminaMax", 100)))
+	for hero in profile.get("roster", []):
+		if hero is Dictionary:
+			hero["stamina"] = stamina_max
+	var preparation: Dictionary = profile.get("expeditionPreparation", {})
+	preparation["lastStaminaSettledAtUtc"] = now()
+	profile["expeditionPreparation"] = preparation
+	return save_profile()
+
+func debug_start_combat(encounter_id: String = "") -> Dictionary:
+	"""Create or resume a no-cost expedition state for the camp Debug panel.
+
+	The combat scene intentionally uses the same expedition fields as the
+	normal map flow.  This helper only prepares those fields; it does not alter
+	combat rules or consume spirit grain, stamina, tools, or other inventory.
+	"""
+	if not OS.is_debug_build():
+		return {"ok": false, "message": "仅 Debug 构建可直接进入战斗"}
+
+	var existing: Variant = profile.get("expedition")
+	var expedition: Dictionary = existing if existing is Dictionary and not existing.is_empty() else {}
+	var target_map_id := str(expedition.get("mapId", "")) if not expedition.is_empty() else ""
+	if target_map_id.is_empty():
+		target_map_id = ConfigRepository.default_map_id()
+	var target_map := get_map_definition(target_map_id)
+	if target_map.is_empty():
+		return {"ok": false, "message": "没有可用的测试地图配置"}
+
+	var active_encounter_id := str(expedition.get("encounterId", ""))
+	var requested_encounter_id := encounter_id.strip_edges()
+	if not active_encounter_id.is_empty():
+		# A stale combat state can remain after closing the app during a fight.
+		# Pressing the Debug button without an argument resumes that fight; do
+		# not silently replace it with another encounter.
+		if requested_encounter_id.is_empty():
+			requested_encounter_id = active_encounter_id
+		elif requested_encounter_id != active_encounter_id:
+			return {"ok": false, "message": "当前已有待处理战斗，请先完成或撤离"}
+
+	var selected_object_id := ""
+	for object in target_map.get("objects", []):
+		if not object is Dictionary:
+			continue
+		var candidate_id := str(object.get("encounterId", object.get("enemyId", "")))
+		if candidate_id.is_empty():
+			continue
+		if requested_encounter_id.is_empty():
+			if get_encounter(candidate_id).is_empty():
+				continue
+			requested_encounter_id = candidate_id
+			selected_object_id = str(object.get("id", ""))
+			break
+		if candidate_id == requested_encounter_id:
+			selected_object_id = str(object.get("id", ""))
+			break
+	if requested_encounter_id.is_empty() or get_encounter(requested_encounter_id).is_empty():
+		return {"ok": false, "message": "没有可用的测试遭遇配置"}
+	if selected_object_id.is_empty():
+		return {"ok": false, "message": "测试遭遇没有对应的地图对象"}
+
+	if expedition.is_empty():
+		var preparation: Dictionary = profile.get("expeditionPreparation", {})
+		var preset_id := str(preparation.get("activePresetId", ""))
+		var preset := get_party_preset(preset_id)
+		var heroes := party_heroes(preset_id)
+		if preset.is_empty() or heroes.is_empty():
+			return {"ok": false, "message": "当前队伍预设不存在或没有可出战修士"}
+		for hero in heroes:
+			if bool(hero.get("isDead", false)) or int(hero.get("currentHp", 0)) <= 0:
+				return {"ok": false, "message": "队伍中有阵亡修士，请先前往还魂殿"}
+		var member_ids: Array = []
+		for hero in heroes:
+			member_ids.append(str(hero.get("instanceId", "")))
+		var map_rule := get_expedition_map_rule(target_map_id)
+		var entry := {"x": int(target_map.get("entryX", 2)), "y": int(target_map.get("entryY", 2))}
+		var discovery_radius := int(map_rule.get("discoveryRadius", 2))
+		expedition = {
+			"mapId": target_map_id, "partyPresetId": preset_id, "partyMemberIds": member_ids,
+			"encounterId": "", "mapObjectId": "", "position": entry,
+			"debugReturnToSettings": true,
+			# Debug battles are deliberately free and start with no carried supply.
+			"remainingGrain": 0, "grainCapacity": 0, "grainDepletionSteps": 0,
+			"carriedItems": {"pickaxe": 0, "lens": 0}, "restUsesRemaining": int(map_rule.get("restCount", 0)),
+			"isResting": false, "restHealingUsed": false, "revealedTiles": _reveal([], entry, discovery_radius),
+			"temporaryLoot": {}, "pendingEncounterLoot": [], "pendingEncounterSoulCrystal": 0,
+		}
+	else:
+		var existing_heroes := party_heroes()
+		if existing_heroes.is_empty():
+			return {"ok": false, "message": "当前探索队伍不存在或没有可出战修士"}
+
+	# Keep old expedition bookkeeping intact and only replace the active
+	# encounter fields required by combat and victory settlement.
+	expedition["mapId"] = target_map_id
+	expedition["encounterId"] = requested_encounter_id
+	expedition["mapObjectId"] = selected_object_id
+	expedition["debugReturnToSettings"] = true
+	profile["expedition"] = expedition
+	map_definition = target_map
+	if not save_profile():
+		return {"ok": false, "message": "测试战斗状态保存失败"}
+	debug_combat_return_to_settings = true
+	return {"ok": true, "encounterId": requested_encounter_id, "mapObjectId": selected_object_id}
 
 func _save_quietly() -> void:
 	if suppress_profile_writes:
@@ -869,6 +1040,7 @@ func expedition_burden_limit(heroes: Array) -> int:
 
 func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictionary:
 	if profile.get("expedition") != null: return {"ok": false, "message": "当前已有一段入山进度"}
+	settle_stamina()
 	var prep: Dictionary = profile["expeditionPreparation"]
 	var preset_id := str(prep.get("activePresetId", ""))
 	var preset := get_party_preset(preset_id)
@@ -901,7 +1073,10 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 	profile["inventory"]["pickaxe"] = int(profile["inventory"].get("pickaxe", 0)) - pickaxe
 	profile["inventory"]["lens"] = int(profile["inventory"].get("lens", 0)) - lens
 	prep["loadout"] = {"spiritGrain": grain, "pickaxe": pickaxe, "lens": lens}
+	# 出征后暂停灵息恢复计时；返回营地时会重新开始一个营地时段。
+	prep["lastStaminaSettledAtUtc"] = now()
 	profile["expeditionPreparation"] = prep
+	debug_combat_return_to_settings = false
 	for hero in heroes: hero["stamina"] = int(hero.get("stamina", 100)) - map_cost
 	# 每次新的入山只重置当前地图的普通遭遇，宝箱和剧情对象保持永久状态。
 	for object in target_map.get("objects", []):
@@ -911,7 +1086,7 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 	var discovery_radius := int(map_rule.get("discoveryRadius", 2))
 	profile["expedition"] = {
 		"mapId": target_map_id, "partyPresetId": preset_id, "partyMemberIds": ids,
-		"encounterId": "", "mapObjectId": "",
+		"encounterId": "", "mapObjectId": "", "debugReturnToSettings": false,
 		"position": entry, "remainingGrain": grain, "grainCapacity": grain,
 		"grainDepletionSteps": 0, "carriedItems": {"pickaxe": pickaxe, "lens": lens}, "restUsesRemaining": int(map_rule.get("restCount", 1)),
 		"isResting": false, "restHealingUsed": false,
@@ -1149,6 +1324,9 @@ func _finish_expedition(defeated: bool) -> void:
 			for id in source:
 				_credit_returned_item(str(id), int(source[id]))
 	profile["expedition"] = null
+	var preparation: Dictionary = profile.get("expeditionPreparation", {})
+	preparation["lastStaminaSettledAtUtc"] = now()
+	profile["expeditionPreparation"] = preparation
 	save_profile()
 
 func _credit_returned_item(item_id: String, amount: int) -> void:

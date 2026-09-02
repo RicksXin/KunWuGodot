@@ -74,6 +74,8 @@ Godot 4，不需要下载 .NET/C# 版本。
   --path "/Users/zhangxiaoen/Desktop/Game/KunWuGodot"
 ```
 
+如果在 Godot 编辑器里按 `F5`，编辑器可能把游戏嵌入固定的竖屏预览框，地图的设备横向切换不会改变这个外层框。要验收地图的真实横屏窗口，请双击项目根目录的 `run_kunwu_game.command`，或使用上面的“直接启动游戏”命令；也可以在编辑器游戏视图右上角菜单中关闭“嵌入游戏”。
+
 ## 三、游戏怎么操作
 
 ### 营地
@@ -190,7 +192,7 @@ Godot 的“文件系统”面板中右键 `assets`，选择“重新扫描”�
 在营地点击“设置”→“重置新档”。也可以关闭游戏后删除
 `kunwu_profile.json`，下次启动时会自动建立新档。
 
-## 八、Codex Godot MCP
+## 九、Codex Godot MCP
 
 本机已为 Codex 注册 `godot-mcp`（`@coding-solo/godot-mcp@0.1.1`）。它通过 MCP 让 AI
 读取项目结构、获取 Godot 版本、启动编辑器、运行项目和读取调试输出；它不是放在
@@ -223,7 +225,7 @@ GODOT_PATH=/Applications/Godot.app/Contents/MacOS/Godot
 本机可以安装 TileMap 编辑辅助工具，但当前正式 Map01 不使用 TileMapLayer 或 TileSet。Map01 的
 移动与阻挡直接编辑 `data/maps/map_01_formal.json`，不得通过旧 TileMap 配置回写。
 
-## 九、在 Godot 中编辑 Map01
+## 十、在 Godot 中编辑 Map01
 
 Map01 已经是可直接编辑的 Godot 场景：
 

@@ -60,7 +60,7 @@ func _go_camp() -> void:
 
 func _go_map() -> void:
 	Game.clear_active_encounter()
-	get_tree().change_scene_to_file("res://scenes/map.tscn")
+	_change_scene_after_combat("res://scenes/map.tscn")
 
 func _build_units() -> void:
 	var heroes: Array = Game.party_heroes()
@@ -270,7 +270,7 @@ func _build_loot_overlay() -> void:
 	loot_status_label = KWUI.label(panel, "", Rect2(20, 440, 295, 34), 11, Color("#a8c2a6"), HORIZONTAL_ALIGNMENT_CENTER)
 	loot_take_all_button = KWUI.combat_button(panel, "全部拾取", Rect2(24, 478, 134, 44), 13)
 	loot_take_all_button.pressed.connect(_take_all_loot)
-	var leave := KWUI.combat_button(panel, "离开", Rect2(177, 478, 134, 44), 13)
+	var leave := KWUI.combat_button(panel, "返回设置" if Game.debug_combat_return_to_settings else "离开", Rect2(177, 478, 134, 44), 13)
 	leave.pressed.connect(_leave_loot)
 
 func _process(delta: float) -> void:
@@ -865,8 +865,9 @@ func _show_outcome(victory: bool) -> void:
 	_refresh()
 	KWUI.label(outcome_panel, "战斗胜利" if victory else "全队阵亡", Rect2(15, 29, 295, 38), 24, KWUI.GOLD if victory else KWUI.RED, HORIZONTAL_ALIGNMENT_CENTER)
 	KWUI.label(outcome_panel, "战斗已结束，战利品正在结算" if victory else "本次入山队伍失去战斗能力。\n修士将进入还魂殿待处理。", Rect2(25, 75, 275, 60), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var next := KWUI.combat_button(outcome_panel, "返回地图" if victory else "返回营地", Rect2(53, 166, 219, 48), 15)
-	next.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/map.tscn" if victory else "res://scenes/camp.tscn"))
+	var next_label := "返回设置" if Game.debug_combat_return_to_settings else ("返回地图" if victory else "返回营地")
+	var next := KWUI.combat_button(outcome_panel, next_label, Rect2(53, 166, 219, 48), 15)
+	next.pressed.connect(_change_scene_after_combat.bind("res://scenes/map.tscn" if victory else "res://scenes/camp.tscn"))
 	outcome_overlay.visible = true
 
 func _show_loot_overlay() -> void:
@@ -917,7 +918,7 @@ func _leave_loot() -> void:
 	if not Game.profile.get("expedition", {}).get("pendingEncounterLoot", []).is_empty():
 		Game.discard_pending_encounter_loot()
 	Game.clear_active_encounter()
-	get_tree().change_scene_to_file("res://scenes/map.tscn")
+	_change_scene_after_combat("res://scenes/map.tscn")
 
 func _drop_loot_item(index: int) -> void:
 	var expedition: Dictionary = Game.profile.get("expedition", {})
@@ -954,13 +955,24 @@ func _escape() -> void:
 		return
 	_persist_ally_unit_states()
 	Game.clear_active_encounter()
-	get_tree().change_scene_to_file("res://scenes/map.tscn")
+	_change_scene_after_combat("res://scenes/map.tscn")
 
 func _give_up() -> void:
 	if finished: return
 	_persist_ally_unit_states()
 	Game.clear_active_encounter()
-	get_tree().change_scene_to_file("res://scenes/map.tscn")
+	_change_scene_after_combat("res://scenes/map.tscn")
+
+func _change_scene_after_combat(normal_scene_path: String) -> void:
+	if Game.debug_combat_return_to_settings:
+		# Direct Debug battles do not belong to the map exploration loop.  Close
+		# the temporary expedition after victory/escape so the camp can open the
+		# settings panel without showing a stale "continue expedition" prompt.
+		if Game.profile.get("expedition") is Dictionary:
+			Game._finish_expedition(false)
+		get_tree().change_scene_to_file("res://scenes/camp.tscn")
+		return
+	get_tree().change_scene_to_file(normal_scene_path)
 
 func _persist_ally_unit_states() -> void:
 	for unit in units:

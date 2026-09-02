@@ -135,6 +135,13 @@ func _draw_object_marker(kind: String, marker: Vector2) -> void:
 		"dungeon": "dungeon",
 		"boss": "boss",
 		"map_exit": "map_exit",
+		# Optional high-definition interaction markers. They are intentionally
+		# data-driven: until approved textures are added to visual.markerTextures,
+		# the existing deterministic fallback symbols remain active.
+		"treasure_chest": "treasure_chest",
+		"landmark_event": "landmark_event",
+		"story_event": "story_event",
+		"shortcut": "shortcut",
 	}.get(kind, ""))
 	if not texture_kind.is_empty() and _draw_marker_texture(texture_kind, marker, "center" if kind == "boss" else "bottom"):
 		if kind == "elite_enemy":

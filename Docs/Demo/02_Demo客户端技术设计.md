@@ -75,5 +75,5 @@ camp.gd / map_scene.gd / combat.gd
 
 - Godot 无界面导入和场景解析。
 - `tools/validate_project_data.gd` 校验 JSON 和 `res://` 路径。
-- `tools/validate_tilemapdual_brush.gd` 校验 Dual Grid 全掩码可达。
+- `tools/validate_map01_formal.gd` 校验唯一正式 Map01 背景、JSON 地形、对象与动态阻挡。
 - 编辑器内人工完成启动至归营全链路。
