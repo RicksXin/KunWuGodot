@@ -9,7 +9,7 @@
 |---|---|---|
 | `Boot.scene` / `AppRoot` | `scenes/boot.tscn` + `Game` | 启动、配置加载、场景切换 |
 | `Camp.scene` | `scenes/camp.tscn` + `camp.gd` | 营地横滑、建筑与固定 HUD |
-| `Map.scene` / `TiledMap` | `scenes/map.tscn` + `map_canvas.gd` + `map_overlay.gd` | 共用探索页、迷雾、Marker、拖动与缩放 |
+| `Map.scene` / `TiledMap` | `scenes/map.tscn` + `map_canvas.gd` + `map_overlay.gd` | `817×375` 横屏探索页、迷雾、Marker、拖动与缩放；离开时恢复竖屏 |
 | Map01 布局与内容 | `data/maps/map_01_formal.json` | 唯一移动、阻挡、对象坐标、互动与地图文案事实源 |
 | Map01 视觉 | `scenes/maps/map_01.tscn` + `assets/maps/map_01/map01_background.png` | 唯一正式高清背景；不承载碰撞或对象坐标 |
 | 战斗 | `scenes/combat.tscn` + `combat.gd` + `combat_resolver.gd` | `CombatCommand → 结算器 → CombatEvent → 表现层` |

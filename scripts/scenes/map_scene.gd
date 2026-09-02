@@ -1,6 +1,8 @@
 extends Control
 
-const MAP_VIEW_RECT := Rect2(0, 156, 375, 519)
+const PORTRAIT_CONTENT_SIZE := Vector2i(375, 817)
+const LANDSCAPE_CONTENT_SIZE := Vector2i(817, 375)
+const MAP_VIEW_RECT := Rect2(0, 60, 817, 255)
 const MAP_ZOOM_MIN := 0.5
 const MAP_ZOOM_MAX := 1.5
 const MAP_ZOOM_STEP := 0.05
@@ -54,6 +56,54 @@ var current_object: Dictionary = {}
 var toast_panel: Panel
 var toast_label: Label
 var toast_serial := 0
+var previous_content_scale_size := PORTRAIT_CONTENT_SIZE
+var previous_window_size := Vector2i.ZERO
+var previous_window_position := Vector2i.ZERO
+var previous_screen_orientation := DisplayServer.SCREEN_PORTRAIT
+var restore_window_geometry := false
+
+
+func _enter_tree() -> void:
+	var window := get_window()
+	previous_content_scale_size = window.content_scale_size
+	if previous_content_scale_size == Vector2i.ZERO:
+		previous_content_scale_size = PORTRAIT_CONTENT_SIZE
+	window.content_scale_size = LANDSCAPE_CONTENT_SIZE
+	if OS.has_feature("mobile"):
+		previous_screen_orientation = DisplayServer.screen_get_orientation()
+		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
+	elif DisplayServer.get_name() != "headless" and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_WINDOWED:
+		previous_window_size = DisplayServer.window_get_size()
+		previous_window_position = DisplayServer.window_get_position()
+		var screen := DisplayServer.window_get_current_screen()
+		var usable := DisplayServer.screen_get_usable_rect(screen)
+		var max_scale := minf(
+			float(maxi(1, usable.size.x - 40)) / float(LANDSCAPE_CONTENT_SIZE.x),
+			float(maxi(1, usable.size.y - 40)) / float(LANDSCAPE_CONTENT_SIZE.y)
+		)
+		var preferred_scale := maxf(
+			float(previous_window_size.x) / float(PORTRAIT_CONTENT_SIZE.x),
+			float(previous_window_size.y) / float(PORTRAIT_CONTENT_SIZE.y)
+		)
+		var target_scale := minf(maxf(0.75, preferred_scale), maxf(0.5, minf(2.0, max_scale)))
+		var target_size := Vector2i(
+			roundi(LANDSCAPE_CONTENT_SIZE.x * target_scale),
+			roundi(LANDSCAPE_CONTENT_SIZE.y * target_scale)
+		)
+		DisplayServer.window_set_size(target_size)
+		DisplayServer.window_set_position(usable.position + (usable.size - target_size) / 2)
+		restore_window_geometry = true
+
+
+func _exit_tree() -> void:
+	var window := get_window()
+	if is_instance_valid(window):
+		window.content_scale_size = previous_content_scale_size
+	if OS.has_feature("mobile"):
+		DisplayServer.screen_set_orientation(previous_screen_orientation)
+	elif restore_window_geometry and DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_size(previous_window_size)
+		DisplayServer.window_set_position(previous_window_position)
 
 func _ready() -> void:
 	if Game.profile.get("expedition") == null:
@@ -71,30 +121,30 @@ func _build_scene() -> void:
 	bg.color = Color("#081217")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	# Godot 正式 375×817 布局：顶部 156、世界 519、底部 142。
-	var top := KWUI.panel(self, Rect2(0, 0, 375, 156), Color("#141b22f8"), Color("#607770"))
-	var info := KWUI.panel(top, Rect2(8, 3, 157, 102), Color("#1c242afa"), Color("#607770"))
+	# 野外探索使用独立 817×375 横屏布局；营地和战斗保持 375×817。
+	var top := KWUI.panel(self, Rect2(0, 0, 817, 60), Color("#141b22f8"), Color("#607770"))
+	var info := KWUI.panel(top, Rect2(5, 4, 247, 52), Color("#1c242afa"), Color("#607770"))
 	var map_name := Game.text(str(active_map.get("nameKey", "")), str(active_map.get("name", Game.get_active_map_id())))
-	title_position_label = KWUI.label(info, "%s（--,--）" % map_name, Rect2(8, 10, 141, 28), 15, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	burden_label = KWUI.label(info, "负重 --/--", Rect2(8, 39, 141, 24), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	grain_label = KWUI.label(info, "灵粮：---", Rect2(8, 66, 141, 24), 13, Color("#dbcb84"), HORIZONTAL_ALIGNMENT_CENTER)
-	var actions := KWUI.panel(top, Rect2(174.5, 3, 192, 102), Color("#1c242afa"), Color("#607770"))
-	rest_button = KWUI.map_button(actions, "休整", Rect2(9, 5, 54, 48), 12)
+	title_position_label = KWUI.label(info, "%s（--,--）" % map_name, Rect2(6, 2, 235, 23), 14, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	burden_label = KWUI.label(info, "负重 --/--", Rect2(7, 26, 112, 21), 12, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	grain_label = KWUI.label(info, "灵粮：---", Rect2(124, 26, 116, 21), 12, Color("#dbcb84"), HORIZONTAL_ALIGNMENT_CENTER)
+	var task := KWUI.panel(top, Rect2(257, 4, 285, 52), Color("#1c242afa"), Color("#607770"))
+	objective_label = KWUI.label(task, _objective_text(active_map), Rect2(8, 4, 269, 44), 12, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	var actions := KWUI.panel(top, Rect2(547, 4, 264, 52), Color("#1c242afa"), Color("#607770"))
+	rest_button = KWUI.map_button(actions, "休整", Rect2(4, 4, 48, 44), 11)
 	rest_button.pressed.connect(_open_rest)
-	return_button = KWUI.map_button(actions, "归营", Rect2(69, 5, 54, 48), 12)
+	return_button = KWUI.map_button(actions, "归营", Rect2(56, 4, 48, 44), 11)
 	return_button.pressed.connect(_return_with_talisman)
-	var party := KWUI.map_button(actions, "队伍", Rect2(129, 5, 54, 48), 12)
+	var party := KWUI.map_button(actions, "队伍", Rect2(108, 4, 48, 44), 11)
 	party.pressed.connect(_show_feedback.bind("当前四人小队状态正常", 0))
-	var backpack := KWUI.map_button(actions, "背包", Rect2(39, 55, 54, 48), 12)
+	var backpack := KWUI.map_button(actions, "背包", Rect2(160, 4, 48, 44), 11)
 	backpack.pressed.connect(_open_backpack)
-	var settings := KWUI.map_button(actions, "设置", Rect2(99, 55, 54, 48), 12)
+	var settings := KWUI.map_button(actions, "设置", Rect2(212, 4, 48, 44), 11)
 	settings.pressed.connect(_show_feedback.bind("地图设置尚未开放", 1))
-	var task := KWUI.panel(top, Rect2(10, 113, 355, 40), Color("#1c242afa"), Color("#607770"))
-	objective_label = KWUI.label(task, _objective_text(active_map), Rect2(10, 5, 335, 30), 13, Color("#e8e0be"))
-	KWUI.panel(self, Rect2(0, 156, 375, 519), Color("#111e22"), Color("#4c6e65"))
+	KWUI.panel(self, MAP_VIEW_RECT, Color("#111e22"), Color("#4c6e65"))
 	map_scroll = ScrollContainer.new()
-	map_scroll.position = Vector2(0, 156)
-	map_scroll.size = Vector2(375, 519)
+	map_scroll.position = MAP_VIEW_RECT.position
+	map_scroll.size = MAP_VIEW_RECT.size
 	map_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	map_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	# Runtime owns panning so mouse drag, single-touch drag and pinch can share one
@@ -121,28 +171,28 @@ func _build_scene() -> void:
 	map_content.add_child(map_canvas)
 	map_canvas.cell_clicked.connect(_on_cell_clicked)
 	call_deferred("_center_map")
-	grain_warning = KWUI.panel(self, Rect2(15, 162.5, 345, 40), Color("#5b271ff5"), Color("#cf764aff"))
+	grain_warning = KWUI.panel(self, Rect2(220, 66, 377, 36), Color("#5b271ff5"), Color("#cf764aff"))
 	grain_warning.z_index = 150
 	grain_warning.visible = false
-	grain_warning_label = KWUI.label(grain_warning, "", Rect2(10, 5, 325, 30), 13, Color("#ffdca4"), HORIZONTAL_ALIGNMENT_CENTER)
-	var bottom := KWUI.panel(self, Rect2(0, 675, 375, 142), Color("#05090ceb"), Color("#607770"))
-	var up := KWUI.map_button(bottom, "↑", Rect2(51.5, 11, 48, 48), 16)
-	up.pressed.connect(_move.bind(0, 1))
-	movement_buttons["0:1"] = up
-	var left := KWUI.map_button(bottom, "←", Rect2(0.5, 60, 48, 48), 16)
+	grain_warning_label = KWUI.label(grain_warning, "", Rect2(10, 3, 357, 30), 12, Color("#ffdca4"), HORIZONTAL_ALIGNMENT_CENTER)
+	var bottom := KWUI.panel(self, Rect2(0, 315, 817, 60), Color("#05090ceb"), Color("#607770"))
+	var left := KWUI.map_button(bottom, "←", Rect2(8, 6, 48, 48), 16)
 	left.pressed.connect(_move.bind(-1, 0))
 	movement_buttons["-1:0"] = left
-	var down := KWUI.map_button(bottom, "↓", Rect2(51.5, 60, 48, 48), 16)
+	var down := KWUI.map_button(bottom, "↓", Rect2(60, 6, 48, 48), 16)
 	down.pressed.connect(_move.bind(0, -1))
 	movement_buttons["0:-1"] = down
-	var right := KWUI.map_button(bottom, "→", Rect2(102.5, 60, 48, 48), 16)
+	var up := KWUI.map_button(bottom, "↑", Rect2(112, 6, 48, 48), 16)
+	up.pressed.connect(_move.bind(0, 1))
+	movement_buttons["0:1"] = up
+	var right := KWUI.map_button(bottom, "→", Rect2(164, 6, 48, 48), 16)
 	right.pressed.connect(_move.bind(1, 0))
 	movement_buttons["1:0"] = right
-	zoom_value_label = KWUI.label(bottom, "缩放 100%", Rect2(184, 5, 76, 38), 11, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
+	zoom_value_label = KWUI.label(bottom, "缩放 100%", Rect2(229, 10, 82, 38), 11, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
 	zoom_slider = HSlider.new()
 	zoom_slider.name = "MapZoomSlider"
-	zoom_slider.position = Vector2(258, 4)
-	zoom_slider.size = Vector2(108, 40)
+	zoom_slider.position = Vector2(311, 8)
+	zoom_slider.size = Vector2(190, 42)
 	zoom_slider.min_value = MAP_ZOOM_MIN
 	zoom_slider.max_value = MAP_ZOOM_MAX
 	zoom_slider.step = MAP_ZOOM_STEP
@@ -152,16 +202,16 @@ func _build_scene() -> void:
 	zoom_slider.add_theme_stylebox_override("slider", _zoom_track_style())
 	bottom.add_child(zoom_slider)
 	zoom_slider.value_changed.connect(_on_zoom_slider_changed)
-	hint_label = KWUI.label(bottom, "归营符 0 · 休整 1", Rect2(192.5, 48, 174, 55), 13, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
+	hint_label = KWUI.label(bottom, "归营符 0 · 休整 1", Rect2(520, 8, 285, 42), 13, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
 	_build_rest_overlay()
 	_build_backpack_overlay()
 	_build_entry_return_overlay()
 	_build_event_overlay()
-	toast_panel = KWUI.panel(self, Rect2(35, 612, 305, 52), Color("#182c31ee"), KWUI.TEAL)
+	toast_panel = KWUI.panel(self, Rect2(226, 256, 365, 48), Color("#182c31ee"), KWUI.TEAL)
 	toast_panel.z_index = 300
 	toast_panel.visible = false
 	toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	toast_label = KWUI.label(toast_panel, "", Rect2(8, 3, 289, 46), 12, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	toast_label = KWUI.label(toast_panel, "", Rect2(8, 2, 349, 43), 12, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _make_overlay() -> Control:
 	var overlay := Control.new()
@@ -179,49 +229,49 @@ func _make_overlay() -> Control:
 
 func _build_rest_overlay() -> void:
 	rest_overlay = _make_overlay()
-	var card := KWUI.panel(rest_overlay, Rect2(19, 273.5, 337, 270), Color("#1b191dfc"), Color("#607770"))
-	KWUI.label(card, "野外休整", Rect2(18.5, 20, 300, 34), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	rest_chance_label = KWUI.label(card, "剩余休整次数：--", Rect2(21, 64.5, 295, 25), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	rest_food_label = KWUI.label(card, "野外食材：--", Rect2(21, 94, 295, 42), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	rest_heal_label = KWUI.label(card, "运功疗伤：--", Rect2(21, 139, 295, 30), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	replenish_button = KWUI.map_button(card, "补充灵粮", Rect2(10, 202, 100, 48), 13)
+	var card := KWUI.panel(rest_overlay, Rect2(190, 52, 437, 270), Color("#1b191dfc"), Color("#607770"))
+	KWUI.label(card, "野外休整", Rect2(18, 18, 401, 34), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	rest_chance_label = KWUI.label(card, "剩余休整次数：--", Rect2(24, 63, 389, 25), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	rest_food_label = KWUI.label(card, "野外食材：--", Rect2(24, 94, 389, 42), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	rest_heal_label = KWUI.label(card, "运功疗伤：--", Rect2(24, 139, 389, 30), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	replenish_button = KWUI.map_button(card, "补充灵粮", Rect2(42, 202, 108, 48), 13)
 	replenish_button.pressed.connect(_replenish_rest)
-	heal_button = KWUI.map_button(card, "运功疗伤", Rect2(118.5, 202, 100, 48), 13)
+	heal_button = KWUI.map_button(card, "运功疗伤", Rect2(164, 202, 108, 48), 13)
 	heal_button.pressed.connect(_heal_rest)
-	var continue_button := KWUI.map_button(card, "结束休整", Rect2(227, 202, 100, 48), 13)
+	var continue_button := KWUI.map_button(card, "结束休整", Rect2(286, 202, 108, 48), 13)
 	continue_button.pressed.connect(_continue_rest)
 
 func _build_backpack_overlay() -> void:
 	backpack_overlay = _make_overlay()
-	var card := KWUI.panel(backpack_overlay, Rect2(22, 238.5, 331, 340), Color("#1b191dfc"), Color("#607770"))
-	KWUI.label(card, "本次入山所得", Rect2(18, 15, 295, 36), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	var card := KWUI.panel(backpack_overlay, Rect2(180, 20, 457, 335), Color("#1b191dfc"), Color("#607770"))
+	KWUI.label(card, "本次入山所得", Rect2(18, 15, 421, 36), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
 	backpack_grid = Control.new()
-	backpack_grid.position = Vector2(23, 57)
-	backpack_grid.size = Vector2(285, 190)
+	backpack_grid.position = Vector2(22, 55)
+	backpack_grid.size = Vector2(413, 210)
 	card.add_child(backpack_grid)
-	backpack_empty_label = KWUI.label(card, "尚未获得临时战利品", Rect2(23, 57, 285, 190), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var close := KWUI.map_button(card, "关闭", Rect2(102.5, 283, 126, 48), 14)
+	backpack_empty_label = KWUI.label(card, "尚未获得临时战利品", Rect2(22, 55, 413, 210), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var close := KWUI.map_button(card, "关闭", Rect2(165.5, 274, 126, 48), 14)
 	close.pressed.connect(func(): backpack_overlay.visible = false)
 
 func _build_entry_return_overlay() -> void:
 	entry_return_overlay = _make_overlay()
-	var card := KWUI.panel(entry_return_overlay, Rect2(28, 313.5, 319, 190), Color("#1b191dfc"), Color("#607770"))
-	KWUI.label(card, "返回入口传送阵", Rect2(19.5, 23, 280, 34), 19, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	KWUI.label(card, "是否结束本次入山并返回营地？", Rect2(20.5, 62, 278, 42), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var confirm := KWUI.map_button(card, "确认归营", Rect2(18.5, 126, 132, 48), 14)
+	var card := KWUI.panel(entry_return_overlay, Rect2(220, 90, 377, 195), Color("#1b191dfc"), Color("#607770"))
+	KWUI.label(card, "返回入口传送阵", Rect2(20, 23, 337, 34), 19, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	KWUI.label(card, "是否结束本次入山并返回营地？", Rect2(20, 64, 337, 42), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+	var confirm := KWUI.map_button(card, "确认归营", Rect2(45.5, 129, 132, 48), 14)
 	confirm.pressed.connect(_return_camp)
-	var cancel := KWUI.map_button(card, "取消", Rect2(168.5, 126, 132, 48), 14)
+	var cancel := KWUI.map_button(card, "取消", Rect2(199.5, 129, 132, 48), 14)
 	cancel.pressed.connect(func(): entry_return_overlay.visible = false)
 
 func _build_event_overlay() -> void:
 	event_overlay = _make_overlay()
-	object_panel = KWUI.panel(event_overlay, Rect2(16, 201.5, 343, 414), Color("#1b191dfc"), Color("#9b5b48"))
-	object_kind_label = KWUI.label(object_panel, "奇遇", Rect2(20, 27, 303, 22), 12, Color("#aec0b1"), HORIZONTAL_ALIGNMENT_CENTER)
-	object_title_label = KWUI.label(object_panel, "事件标题", Rect2(20, 47, 303, 34), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	var object_info := KWUI.panel(object_panel, Rect2(17, 88, 309, 150), Color("#14161af5"), Color("#607770"))
-	object_label = KWUI.label(object_info, "", Rect2(15, 12, 279, 126), 14, Color("#e0dac2"), HORIZONTAL_ALIGNMENT_LEFT)
+	object_panel = KWUI.panel(event_overlay, Rect2(117, 5, 583, 365), Color("#1b191dfc"), Color("#9b5b48"))
+	object_kind_label = KWUI.label(object_panel, "奇遇", Rect2(20, 15, 543, 22), 12, Color("#aec0b1"), HORIZONTAL_ALIGNMENT_CENTER)
+	object_title_label = KWUI.label(object_panel, "事件标题", Rect2(20, 36, 543, 34), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
+	var object_info := KWUI.panel(object_panel, Rect2(20, 76, 543, 148), Color("#14161af5"), Color("#607770"))
+	object_label = KWUI.label(object_info, "", Rect2(16, 11, 511, 126), 14, Color("#e0dac2"), HORIZONTAL_ALIGNMENT_LEFT)
 	object_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	KWUI.label(object_panel, "可用行动", Rect2(20, 245, 303, 24), 13, Color("#aec0b1"), HORIZONTAL_ALIGNMENT_CENTER)
+	KWUI.label(object_panel, "可用行动", Rect2(20, 230, 543, 24), 13, Color("#aec0b1"), HORIZONTAL_ALIGNMENT_CENTER)
 	var definitions := [
 		["engage", "迎战", Callable(self, "_engage")],
 		["inspect", "探灵", Callable(self, "_inspect_object")],
@@ -231,12 +281,12 @@ func _build_event_overlay() -> void:
 		["leave", "离开", Callable(self, "_close_event")]
 	]
 	for definition in definitions:
-		var button := KWUI.map_button(object_panel, str(definition[1]), Rect2(0, 280, 92, 46), 14)
+		var button := KWUI.map_button(object_panel, str(definition[1]), Rect2(0, 260, 92, 46), 14)
 		button.visible = false
 		button.pressed.connect(definition[2])
 		event_buttons[str(definition[0])] = button
 	for index in 6:
-		var choice_button := KWUI.map_button(object_panel, "选择", Rect2(0, 280, 144, 46), 12)
+		var choice_button := KWUI.map_button(object_panel, "选择", Rect2(0, 260, 144, 46), 12)
 		choice_button.visible = false
 		choice_button.pressed.connect(_choose_object_action.bind(index))
 		choice_buttons.append(choice_button)
@@ -254,7 +304,7 @@ func _player_map_center() -> Vector2:
 	var tile_center_x := (float(position.get("x", 2)) + 0.5) * logical_tile_size * map_zoom
 	var screen_y := int(active_map.get("activeHeight", 15)) - 1 - int(position.get("y", 2))
 	var tile_center_y := (float(screen_y) + 0.5) * logical_tile_size * map_zoom
-	return Vector2(tile_center_x, tile_center_y)
+	return Vector2(tile_center_x, tile_center_y) + (map_canvas.position if is_instance_valid(map_canvas) else Vector2.ZERO)
 
 func _input(event: InputEvent) -> void:
 	if _map_input_blocked():
@@ -368,6 +418,11 @@ func _set_map_zoom(value: float, _focus_in_view: Vector2) -> void:
 	var next_zoom := clampf(snappedf(value, MAP_ZOOM_STEP), MAP_ZOOM_MIN, MAP_ZOOM_MAX)
 	map_zoom = next_zoom
 	map_canvas.scale = Vector2.ONE * map_zoom
+	var scaled_map_size := map_base_size * map_zoom
+	map_canvas.position = Vector2(
+		maxf(0.0, (map_scroll.size.x - scaled_map_size.x) * 0.5),
+		maxf(0.0, (map_scroll.size.y - scaled_map_size.y) * 0.5)
+	)
 	if is_instance_valid(zoom_slider):
 		zoom_slider.set_value_no_signal(map_zoom)
 	if is_instance_valid(zoom_value_label):
@@ -587,15 +642,16 @@ func _layout_action_buttons(buttons: Array) -> void:
 	var widest_button := 0.0
 	for button: Button in buttons:
 		widest_button = maxf(widest_button, button.size.x)
-	var columns_per_row := 2 if widest_button > 100.0 else 3
+	var columns_per_row := 3
 	for index in buttons.size():
 		var button: Button = buttons[index]
 		var row := floori(index / float(columns_per_row))
 		var count := mini(columns_per_row, buttons.size() - row * columns_per_row)
 		var column := index - row * columns_per_row
-		var spacing := 103.0 if button.size.x <= 100.0 else 151.0
-		var x := 171.5 + (column - (count - 1) / 2.0) * spacing - button.size.x * 0.5
-		var y := 280.0 if row == 0 else 335.0
+		var spacing := button.size.x + 10.0
+		var total_width := count * button.size.x + (count - 1) * 10.0
+		var x := (object_panel.size.x - total_width) * 0.5 + column * spacing
+		var y := 260.0 + row * 51.0
 		button.position = Vector2(x, y)
 
 func _choose_object_action(index: int) -> void:
@@ -749,8 +805,8 @@ func _refresh_backpack_overlay() -> void:
 		var amount := int(expedition["temporaryLoot"][item_id])
 		if amount > 0: entries.append([str(item_id), amount])
 	backpack_empty_label.visible = entries.is_empty()
-	var columns := 5
-	for index in mini(15, entries.size()):
+	var columns := 7
+	for index in mini(21, entries.size()):
 		var entry: Array = entries[index]
 		var column := index % columns
 		var row := floori(index / float(columns))
