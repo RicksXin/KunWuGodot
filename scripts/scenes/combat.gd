@@ -1,18 +1,54 @@
 extends Control
 
-const SHI_YAN_IDLE_HD2X_SHEET_SIZE := Vector2i(688, 1640)
-const SHI_YAN_IDLE_STANDARD_FPS := 8.0
-const SHI_YAN_CAST_A_SHEET_PATH := "res://assets/camp/ui/expedition/animations/shi_yan/shi_yan_punch_sheet.png"
-const SHI_YAN_CAST_A_SHEET_SIZE := Vector2i(688, 820)
-const SHI_YAN_CAST_A_WIDE_SHEET_SIZE := Vector2i(960, 820)
-const SHI_YAN_HD_TEXTURE_SCALE := 2.0
-const SHI_YAN_CAST_A_WIDE_PRESENTATION_SCALE := 0.98
-const SHI_YAN_CAST_A_WIDE_VERTICAL_OFFSET := 0.0
-const SHI_YAN_CAST_A_FPS := 10.0
-const SHI_YAN_CAST_A_HIT_FRAME := 4
-const SHI_YAN_CAST_A_MODE := "shi_yan_cast_a"
+const HERO_ANIMATION_FRAME_SIZE := Vector2i(172, 298)
+const HERO_ANIMATION_SHEET_SIZE := Vector2i(688, 1192)
+const HERO_ANIMATION_COLUMNS := 4
+const HERO_ANIMATION_ROWS := 4
+const HERO_ANIMATION_FRAME_COUNT := HERO_ANIMATION_COLUMNS * HERO_ANIMATION_ROWS
+const HERO_ANIMATION_FPS := 8.0
+const HERO_ANIMATION_ACTION_HIT_FRAME := 8
+const HERO_ANIMATION_MODE := "hero_action"
+const HERO_ANIMATION_SHEETS := {
+	"shi_yan": {"idle": "shi_yan_idle_sheet.png", "attack": "shi_yan_attack_sheet.png", "defense": "shi_yan_defense_sheet.png"},
+	"lu_qing": {"idle": "lu_qing_idle_sheet.png", "attack": "lu_qing_attack_sheet.png", "heal": "lu_qing_heal_sheet.png", "lei_ji": "lu_qing_lei_ji_sheet.png"},
+	"bai_ling": {"idle": "bai_ling_idle_sheet.png", "attack": "bai_ling_attack_sheet.png", "heal": "bai_ling_heal_sheet.png"},
+	"mo_yan": {"idle": "mo_yan_idle_sheet.png", "fei_jian": "mo_yan_fei_jian_sheet.png", "hui_jian": "mo_yan_hui_jian_sheet.png"},
+}
 const PORTRAIT_IDLE_MODE := "idle"
 const TARGET_HIT_VFX_DURATION := 0.22
+const HERO_CANVAS_WIDTH := 375.0 / 4.0
+const HERO_CARD_SIZE := Vector2(HERO_CANVAS_WIDTH, 205)
+const HERO_CARD_START := Vector2(0, 492)
+const HERO_CARD_STEP_X := HERO_CANVAS_WIDTH
+const HERO_INFO_POSITION := Vector2(0, 149)
+const HERO_INFO_SIZE := Vector2(HERO_CANVAS_WIDTH, 56)
+# 信息层控件到 y=205；人物画布视觉底边按当前战斗页微调到 y=190，
+# 避免绿色调试底压住姓名栏下沿。
+const HERO_PORTRAIT_VISUAL_BOTTOM := HERO_INFO_POSITION.y + 41.0
+# 四张人物画布横向铺满 375px；纵向统一以人物画布底边对齐卡片与
+# 信息面板的可见底边，不再把下方透明留白当作面板内容。
+const HERO_ANIMATION_DISPLAY_SIZE := Vector2(HERO_CANVAS_WIDTH, 149)
+# 白灵序列帧的透明留白较多，保持同一画布后视觉主体会偏小；仅放大主体，
+# 不改变四列画布的宽度和位置契约。
+const HERO_PORTRAIT_SCALES := {"bai_ling": 1.08}
+const HERO_NAME_AUTO_COLOR := Color("#be883a")
+const HERO_NAME_MANUAL_COLOR := Color("#e8dcbb")
+const SKILL_PICKER_POSITION := Vector2(117.5, 491)
+const SKILL_PICKER_SIZE := Vector2(140, 46)
+const SKILL_ITEM_SIZE := Vector2(40, 46)
+const SKILL_ITEM_STEP_X := 50.0
+const SKILL_ICON_SIZE := Vector2(24, 24)
+const SKILL_ICON_POSITION := Vector2(8, 11)
+const SKILL_COLOR_PRIMARY := Color("#e8dcbb")
+const SKILL_COLOR_SECONDARY := Color("#91a49e")
+const SKILL_COLOR_DAMAGE := Color("#b94a3e")
+const SKILL_COLOR_SELECTED := Color("#be883a")
+const SKILL_COLOR_SURFACE := Color("#202a27")
+const SKILL_COLOR_BORDER := Color("#80623a")
+const FIGMA_ENEMY_PORTRAIT_PATH := "res://assets/units/enemies/portrait_can_jin_shi_kui.png"
+const FIGMA_ENEMY_PORTRAIT_POSITION := Vector2(-12, 34)
+const FIGMA_ENEMY_PORTRAIT_SIZE := Vector2(110, 165)
+const FIGMA_ENEMY_CARD_Y := 180.0
 
 var units: Array = []
 var log_lines: Array[String] = []
@@ -22,7 +58,7 @@ var unit_hosts: Dictionary = {}
 var timer_accum := 0.0
 var combat_ticks := 0
 var finished := false
-var skill_panel: Panel
+var skill_panel: Control
 var skill_buttons: Array[Button] = []
 var outcome_overlay: Control
 var outcome_panel: Panel
@@ -33,6 +69,10 @@ var loot_backpack_buttons: Array[Button] = []
 var loot_reward_labels: Array[Label] = []
 var loot_take_all_button: Button
 var escape_button: Button
+var pause_button: Button
+var pause_overlay: Control
+var combat_paused := false
+var active_presentation_tweens: Array[Tween] = []
 var animated_portraits: Array[Dictionary] = []
 var active_target_hit_vfx: Dictionary = {}
 var shi_yan_cast_a_hit_count := 0
@@ -87,122 +127,138 @@ func _build_units() -> void:
 		})
 
 func _build_scene() -> void:
+	# Figma 战斗主稿是 375×817 的竖屏画布：背景图铺满，所有战斗信息
+	# 作为覆盖层压在立绘底部。背景与 HD 修士动效使用 linear，几何 UI
+	# 保持无纹理缩放，避免改变文字、边框和血条的像素对齐。
 	var bg := ColorRect.new()
-	bg.color = Color("#0a171d")
+	bg.color = Color("#071016")
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	_add_combat_polygon(PackedVector2Array([
-		Vector2(0, 338.5), Vector2(67.5, 228.5), Vector2(139.5, 314.5),
-		Vector2(212.5, 188.5), Vector2(282.5, 292.5), Vector2(375, 210.5),
-		Vector2(375, 817), Vector2(0, 817),
-	]), Color("#13272c"))
-	_add_combat_polygon(PackedVector2Array([
-		Vector2(0, 496.5), Vector2(107.5, 438.5), Vector2(261.5, 553.5),
-		Vector2(375, 480.5), Vector2(375, 817), Vector2(0, 817),
-	]), Color("#1d2f2f"))
-	for index in 7:
-		var line := Line2D.new()
-		line.width = 2.0
-		line.default_color = Color("#73503869")
-		line.points = PackedVector2Array([Vector2(0, 538.5 + index * 38), Vector2(375, 558.5 + index * 38)])
-		add_child(line)
-	KWUI.label(self, "破禁山麓 · 遭遇战", Rect2(72.5, 22.5, 230, 24), 13, Color("#c6cdb9"), HORIZONTAL_ALIGNMENT_CENTER)
-	tick_label = KWUI.label(self, "战斗 0.0 秒", Rect2(5.5, 53.5, 90, 20), 10, Color("#849d9c"))
-	var flee := KWUI.combat_button(self, "逃生", Rect2(282.5, 22.5, 86, 44), 13)
+	var background := TextureRect.new()
+	background.name = "CombatBackground"
+	background.position = Vector2.ZERO
+	background.size = Vector2(375, 817)
+	background.texture = load("res://assets/maps/map_01/map01_background.png")
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.modulate = Color(0.88, 0.93, 0.92, 1.0)
+	add_child(background)
+	var background_shade := ColorRect.new()
+	background_shade.color = Color("#07101626")
+	background_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(background_shade)
+	_add_status_bar()
+	# 逃生只在敌方生命低于阈值后出现；默认态保持 Figma 的干净顶部。
+	var flee := KWUI.combat_button(self, "撤离", Rect2(230, 27, 64, 32), 11)
 	flee.pressed.connect(_escape)
 	flee.visible = false
 	escape_button = flee
+	var pause := KWUI.combat_button(self, "暂停", Rect2(300, 27, 64, 32), 11)
+	pause.name = "PauseButton"
+	pause.process_mode = Node.PROCESS_MODE_ALWAYS
+	pause.z_index = 230
+	pause.pressed.connect(_toggle_combat_pause)
+	pause_button = pause
 	var enemy_units := units.filter(func(unit): return unit.get("side") == "enemy")
-	var enemy_card_width := 82.0
-	var enemy_gap := 6.0
+	var enemy_card_width := 86.0
+	var enemy_gap := 8.0
 	var enemy_total_width := enemy_units.size() * enemy_card_width + maxi(0, enemy_units.size() - 1) * enemy_gap
 	var enemy_start_x := (375.0 - enemy_total_width) * 0.5
 	for enemy_index in enemy_units.size():
-		_build_enemy_card(enemy_units[enemy_index], Vector2(enemy_start_x + enemy_index * (enemy_card_width + enemy_gap), 156), enemy_card_width)
+		_build_enemy_card(enemy_units[enemy_index], Vector2(enemy_start_x + enemy_index * (enemy_card_width + enemy_gap), FIGMA_ENEMY_CARD_Y), enemy_card_width)
+	# 四张修士卡片横向铺满 375px，每张宽度为 375 / 4 = 93.75px。
 	for index in 4:
-		var x := 15.5 + index * 86
-		var host := KWUI.panel(self, Rect2(x, 541, 86, 205), Color("#2a3a41eb"), Color("#537a7d"))
-		# 人物可使用更宽的攻击运动画布，但最终画面必须由自己的修士框裁切。
+		var host := Panel.new()
+		host.name = "HeroCard_%d" % (index + 1)
+		host.position = HERO_CARD_START + Vector2(index * HERO_CARD_STEP_X, 0)
+		host.size = HERO_CARD_SIZE
+		host.add_theme_stylebox_override("panel", KWUI.style_box(Color("#11191700"), Color.TRANSPARENT, 0, 0))
+		add_child(host)
+		# 三种动作共用一张固定 172×298 @2x 画布，运行时显示为 93.75×149；
+		# 卡牌式战斗只允许原地表演，不通过扩大画布制造位移。
 		host.clip_contents = true
 		unit_hosts[index + 1] = host
 		var portrait_path: String = str(["shi_yan", "lu_qing", "bai_ling", "mo_yan"][index])
 		var portrait_mask := Control.new()
 		portrait_mask.name = "PortraitMask"
-		portrait_mask.position = Vector2(1, 1)
-		portrait_mask.size = Vector2(84, 203)
+		# 立绘裁切区覆盖整张卡片；人物画布位于信息面板后方，信息层负责
+		# 覆盖人物底部的重叠部分。
+		portrait_mask.position = Vector2.ZERO
+		portrait_mask.size = HERO_CARD_SIZE
 		portrait_mask.clip_contents = true
 		portrait_mask.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		host.add_child(portrait_mask)
-		var portrait := KWUI.texture(portrait_mask, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_path, Rect2(-1, -1, 86, 205))
-		var idle_sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [portrait_path, portrait_path]
-		var idle_sheet: Texture2D = load(idle_sheet_path) if ResourceLoader.exists(idle_sheet_path) else null
-		if idle_sheet:
-			var use_hd2x_idle := portrait_path == "shi_yan" and Vector2i(idle_sheet.get_width(), idle_sheet.get_height()) == SHI_YAN_IDLE_HD2X_SHEET_SIZE
-			var idle_rows := 4 if use_hd2x_idle else 2
-			var frames := _sheet_frames(idle_sheet, 4, idle_rows)
-			portrait.texture = frames[0]
-			portrait.size = Vector2(86, 205) if use_hd2x_idle else Vector2(86, 149)
-			if use_hd2x_idle:
-				portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-			var portrait_animation := {
+		var portrait_display_position := _hero_portrait_display_position(portrait_path)
+		var portrait_display_size := _hero_portrait_display_size(portrait_path)
+		# 临时视觉标记：绿色区域表示人物序列帧的实际显示画布，
+		# 用于确认人物位置、裁切边界和脚底对齐。
+		var canvas_debug_background := ColorRect.new()
+		canvas_debug_background.name = "PortraitCanvasDebug"
+		canvas_debug_background.position = portrait_display_position
+		canvas_debug_background.size = portrait_display_size
+		canvas_debug_background.color = Color("#32b76866")
+		canvas_debug_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		portrait_mask.add_child(canvas_debug_background)
+		var portrait := KWUI.texture(portrait_mask, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_path, Rect2(portrait_display_position, portrait_display_size))
+		var idle_frames := _load_hero_animation_frames(portrait_path, "idle")
+		if not idle_frames.is_empty():
+			portrait.texture = idle_frames[0]
+			portrait.position = portrait_display_position
+			portrait.size = portrait_display_size
+			portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+			var action_frames: Dictionary = {}
+			for action_name in _hero_action_names(portrait_path):
+				var frames := _load_hero_animation_frames(portrait_path, action_name)
+				if not frames.is_empty():
+					action_frames[action_name] = frames
+			animated_portraits.append({
 				"node": portrait,
 				"unit_id": index + 1,
-				"frames": frames,
-				"idle_frames": frames,
-				"idle_frame_duration": 1.0 / SHI_YAN_IDLE_STANDARD_FPS if use_hd2x_idle else 1.0 / 6.0,
-				"frame_duration": 1.0 / SHI_YAN_IDLE_STANDARD_FPS if use_hd2x_idle else 1.0 / 6.0,
+				"frames": idle_frames,
+				"idle_frames": idle_frames,
+				"action_frames": action_frames,
+				"idle_frame_duration": 1.0 / HERO_ANIMATION_FPS,
+				"frame_duration": 1.0 / HERO_ANIMATION_FPS,
 				"elapsed": 0.0,
 				"frame_index": 0,
 				"loop": true,
 				"mode": PORTRAIT_IDLE_MODE,
-			}
-			if portrait_path == "shi_yan" and ResourceLoader.exists(SHI_YAN_CAST_A_SHEET_PATH):
-				var cast_a_sheet := load(SHI_YAN_CAST_A_SHEET_PATH) as Texture2D
-				var cast_a_sheet_size := Vector2i(cast_a_sheet.get_width(), cast_a_sheet.get_height()) if cast_a_sheet != null else Vector2i.ZERO
-				if cast_a_sheet != null and cast_a_sheet_size in [SHI_YAN_CAST_A_SHEET_SIZE, SHI_YAN_CAST_A_WIDE_SHEET_SIZE]:
-					portrait_animation["cast_a_frames"] = _sheet_frames(cast_a_sheet, 4, 2)
-			animated_portraits.append(portrait_animation)
+			})
 		portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		KWUI.panel(host, Rect2(1, 149, 84, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var name_button := KWUI.combat_button(host, "", Rect2(4, 145, 78, 18), 10)
-		name_button.name = "Name"
-		name_button.add_theme_stylebox_override("normal", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
-		name_button.add_theme_stylebox_override("hover", KWUI.style_box(Color("#1f3936aa"), Color("#4dd5c088"), 2, 1))
-		name_button.pressed.connect(_toggle_auto.bind(index + 1))
-		KWUI.label(host, "人", Rect2(2, 164, 12, 12), 8, Color("#b7d8cf"), HORIZONTAL_ALIGNMENT_CENTER).name = "Race"
-		var bar := ProgressBar.new()
-		bar.name = "Hp"
-		bar.position = Vector2(18, 168)
-		bar.size = Vector2(62, 8)
-		bar.show_percentage = false
-		bar.add_theme_stylebox_override("background", KWUI.style_box(Color("#101719"), Color("#3d6259"), 2, 1))
-		bar.add_theme_stylebox_override("fill", KWUI.style_box(Color("#4b9f7e"), Color("#8ee2aa"), 2, 0))
-		host.add_child(bar)
-		KWUI.label(host, "", Rect2(18, 167, 62, 10), 7, Color("#f5efd8"), HORIZONTAL_ALIGNMENT_CENTER).name = "HpValue"
-		_combat_progress(host, "Action", Vector2(18, 179), Color("#0c1113"), Color("#4bccd0"), Vector2(62, 5))
-		KWUI.label(host, "", Rect2(4, 186, 78, 14), 8, Color("#dbc482"), HORIZONTAL_ALIGNMENT_CENTER).name = "Status"
-		# Panel 自身的边框绘制在子节点之后不可控，因此再叠一层透明前景边框，
-		# 确保人物像素永远位于修士框边线之下。
+		_build_unit_info(host, units[index].get("hero", {}), index + 1, true)
+		# 保留前景层级，使序列帧始终位于修士框内容之下；同时兼容现有动画验证。
 		var frame_overlay := Panel.new()
 		frame_overlay.name = "FrameOverlay"
 		frame_overlay.position = Vector2.ZERO
-		frame_overlay.size = Vector2(86, 205)
+		frame_overlay.size = HERO_CARD_SIZE
 		frame_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		frame_overlay.z_index = 100
-		frame_overlay.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, Color("#537a7d"), 6, 1))
+		frame_overlay.z_index = 130
+		frame_overlay.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
 		host.add_child(frame_overlay)
-	var skill_card := KWUI.panel(self, Rect2(54, 424.5, 267, 78), Color("#0a0f12eb"), Color("#657762"))
-	skill_card.mouse_filter = Control.MOUSE_FILTER_STOP
-	KWUI.label(skill_card, "行动就绪 · 请选择技能", Rect2(13.5, 4, 240, 18), 10, Color("#abb8a6"), HORIZONTAL_ALIGNMENT_CENTER)
-	for index in 3:
-		var skill_button := KWUI.combat_button(skill_card, "技能", Rect2(14.5 + index * 82, 28, 74, 42), 11)
-		skill_button.pressed.connect(_choose_skill.bind(index))
-		skill_buttons.append(skill_button)
-	skill_panel = skill_card
-	skill_panel.visible = false
-	log_label = KWUI.label(self, "", Rect2(62.5, 362.5, 250, 28), 11, Color("#abb8a6"), HORIZONTAL_ALIGNMENT_CENTER)
+	_build_skill_picker()
+	log_label = KWUI.label(self, "", Rect2(35, 395, 305, 28), 11, Color("#d4d9c6"), HORIZONTAL_ALIGNMENT_CENTER)
+	# 安全区位于所有卡片之上，主页指示条也与 Figma 手机稿一致。
+	var safe_area := ColorRect.new()
+	safe_area.name = "BottomSafeArea"
+	safe_area.position = Vector2(0, 763)
+	safe_area.size = Vector2(375, 54)
+	safe_area.color = Color("#071016f2")
+	safe_area.mouse_filter = Control.MOUSE_FILTER_STOP
+	safe_area.z_index = 240
+	add_child(safe_area)
+	var home_indicator := ColorRect.new()
+	home_indicator.position = Vector2(127, 795)
+	home_indicator.size = Vector2(121, 4)
+	home_indicator.color = Color("#d1d2c5b8")
+	home_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	safe_area.add_child(home_indicator)
+	_build_pause_overlay()
 	outcome_overlay = Control.new()
+	outcome_overlay.z_index = 300
 	outcome_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	outcome_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	outcome_overlay.visible = false
@@ -214,35 +270,412 @@ func _build_scene() -> void:
 	outcome_panel = KWUI.panel(outcome_overlay, Rect2(30, 272.5, 315, 236), Color("#181d1eff"), Color("#9a7e48"))
 	outcome_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_build_loot_overlay()
+	# Godot 的 Control 命中顺序还受场景树顺序影响。暂停遮罩覆盖全屏，
+	# 因此把暂停按钮移到最后，确保暂停后“继续”不会被遮罩抢走点击。
+	move_child(pause_button, get_child_count() - 1)
+
+func _build_skill_picker() -> void:
+	# Figma 358:1393：技能选择是一条 140×46 的透明浮层，不使用旧版
+	# 大面板、标题或人物选中框。三个技能项各 40×46，水平间隔 10px。
+	skill_panel = Control.new()
+	skill_panel.name = "SkillPicker"
+	skill_panel.position = SKILL_PICKER_POSITION
+	skill_panel.size = SKILL_PICKER_SIZE
+	skill_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	skill_panel.z_index = 160
+	skill_panel.visible = false
+	add_child(skill_panel)
+
+	var empty_style := StyleBoxEmpty.new()
+	for index in 3:
+		var item := Button.new()
+		item.name = "SkillItem%d" % (index + 1)
+		item.position = Vector2(index * SKILL_ITEM_STEP_X, 0)
+		item.size = SKILL_ITEM_SIZE
+		item.text = ""
+		item.focus_mode = Control.FOCUS_NONE
+		item.clip_contents = false
+		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+			item.add_theme_stylebox_override(state, empty_style)
+		item.pressed.connect(_choose_skill.bind(index))
+		skill_panel.add_child(item)
+		skill_buttons.append(item)
+
+		var skill_name := _skill_picker_label(item, "Name", Rect2(0, 0, 40, 10), 7)
+		skill_name.add_theme_color_override("font_color", SKILL_COLOR_PRIMARY)
+
+		# StyleBoxFlat 没有模糊滤镜，用比图标外扩 2px 的半透明描边表达
+		# Figma 的 3px 金色辉光；仅当前可用的默认技能显示。
+		var glow := Panel.new()
+		glow.name = "Glow"
+		glow.position = SKILL_ICON_POSITION - Vector2(2, 2)
+		glow.size = SKILL_ICON_SIZE + Vector2(4, 4)
+		glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		glow.add_theme_stylebox_override("panel", _micro_style_box(Color.TRANSPARENT, Color("#be883a9e"), 1, 3))
+		glow.visible = false
+		item.add_child(glow)
+
+		var icon := Panel.new()
+		icon.name = "Icon"
+		icon.position = SKILL_ICON_POSITION
+		icon.size = SKILL_ICON_SIZE
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.add_theme_stylebox_override("panel", _micro_style_box(SKILL_COLOR_SURFACE, SKILL_COLOR_BORDER, 1, 2))
+		item.add_child(icon)
+		var glyph := _skill_picker_label(icon, "Glyph", Rect2(Vector2.ZERO, SKILL_ICON_SIZE), 11)
+		glyph.add_theme_color_override("font_color", SKILL_COLOR_PRIMARY)
+
+		var effect := _skill_picker_label(item, "Effect", Rect2(0, 37, 40, 9), 7)
+		effect.add_theme_color_override("font_color", SKILL_COLOR_SECONDARY)
+
+func _skill_picker_label(parent: Control, node_name: String, rect: Rect2, font_size: int) -> Label:
+	# 当前像素字体的固有行高为 23px。用固定 Figma 尺寸的裁切容器承载
+	# 文本，避免 Label 最小尺寸把 9–10px 的名称/效果区域撑大。
+	var clip := Control.new()
+	clip.name = node_name
+	clip.position = rect.position
+	clip.size = rect.size
+	clip.clip_contents = true
+	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(clip)
+	var label_height := maxf(23.0, rect.size.y)
+	var label := KWUI.label(clip, "", Rect2(0, (rect.size.y - label_height) * 0.5, rect.size.x, label_height), font_size, SKILL_COLOR_PRIMARY, HORIZONTAL_ALIGNMENT_CENTER)
+	label.name = "Text"
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.clip_text = true
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_color_override("font_shadow_color", Color("#000000e6"))
+	label.add_theme_constant_override("shadow_offset_x", 0)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+	return label
+
+func _skill_glyph(skill_id: String, skill_name: String) -> String:
+	var glyphs := {
+		"zhan_ji": "斩", "tiao_xin": "引", "chong_zhuang": "撞",
+		"ling_huo_dan": "火", "ning_shuang_hu": "护", "ling_neng_zhen_dang": "雷",
+		"hui_chun_shu": "愈", "qing_xin_jue": "净", "ling_guang_ji": "光",
+		"ying_xi": "影", "tou_ren": "刃", "yan_dun": "遁",
+	}
+	if glyphs.has(skill_id):
+		return str(glyphs[skill_id])
+	return skill_name.substr(0, 1) if not skill_name.is_empty() else "技"
+
+func _skill_effect_text(definition: Dictionary) -> String:
+	var percent := int(definition.get("primaryPercent", 0))
+	if percent > 0:
+		return "%d%%" % percent
+	var status_kind := str(definition.get("appliesStatus", {}).get("kind", ""))
+	var status_labels := {
+		"gather_spirit": "引敌",
+		"shield": "护盾",
+		"purify": "净化",
+		"haste": "加速",
+		"stun": "眩晕",
+	}
+	return str(status_labels.get(status_kind, "辅助"))
+
+func _skill_effect_color(definition: Dictionary) -> Color:
+	return SKILL_COLOR_DAMAGE if str(definition.get("damageKind", "none")) != "none" else SKILL_COLOR_SECONDARY
+
+func _apply_skill_item_state(item: Button, selected: bool, disabled: bool) -> void:
+	item.modulate = Color(1, 1, 1, 0.48) if disabled else Color.WHITE
+	var glow := item.get_node_or_null("Glow") as Panel
+	if glow != null:
+		glow.visible = selected and not disabled
+	var icon := item.get_node_or_null("Icon") as Panel
+	if icon == null:
+		return
+	var border_color := SKILL_COLOR_SELECTED if selected and not disabled else SKILL_COLOR_BORDER
+	var border_width := 2 if selected and not disabled else 1
+	icon.add_theme_stylebox_override("panel", _micro_style_box(SKILL_COLOR_SURFACE, border_color, border_width, 2))
+	var glyph := icon.get_node_or_null("Glyph/Text") as Label
+	if glyph != null:
+		glyph.add_theme_color_override("font_color", SKILL_COLOR_SELECTED if selected and not disabled else SKILL_COLOR_PRIMARY)
+
+func _build_unit_info(host: Control, unit_data: Dictionary, unit_id: int, is_ally: bool) -> void:
+	# Figma 333:1382 / 334:1384：敌我使用同一组透明信息覆盖层，
+	# 仅通过名称颜色和运行时数据表达阵营差异。
+	var info := Control.new()
+	info.name = "InfoOverlay"
+	info.position = HERO_INFO_POSITION
+	var info_width := host.size.x
+	info.size = Vector2(info_width, HERO_INFO_SIZE.y)
+	info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var progress_width := info_width - 6.0
+	host.add_child(info)
+
+	_add_gradient_frame(
+		info,
+		"Hp",
+		Rect2(0, 15, info_width, 10),
+		PackedColorArray([Color("#242117"), Color("#10120e"), Color("#070907")]),
+		PackedFloat32Array([0.0, 0.42, 1.0]),
+		Color("#9a7542")
+	)
+	var hp := _micro_progress(info, "Hp", Rect2(3, 18, progress_width, 5), Color("#b94a3e"))
+	hp.z_index = 1
+	var hp_value := Control.new()
+	hp_value.name = "HpValue"
+	hp_value.position = Vector2(3, 14)
+	hp_value.size = Vector2(progress_width, 10)
+	hp_value.clip_contents = true
+	hp_value.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_value.z_index = 3
+	info.add_child(hp_value)
+	var hp_text := KWUI.label(hp_value, "", Rect2(0, -6, progress_width, 23), 7, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	hp_text.name = "Text"
+	hp_text.autowrap_mode = TextServer.AUTOWRAP_OFF
+	hp_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_text.add_theme_color_override("font_shadow_color", Color("#000000e6"))
+	hp_text.add_theme_constant_override("shadow_offset_x", 0)
+	hp_text.add_theme_constant_override("shadow_offset_y", 1)
+	hp_text.add_theme_constant_override("shadow_outline_size", 1)
+
+	_add_gradient_frame(
+		info,
+		"Action",
+		Rect2(0, 28, info_width, 6),
+		PackedColorArray([Color("#182522"), Color("#0c1514"), Color("#060a0a")]),
+		PackedFloat32Array([0.0, 0.46, 1.0]),
+		Color("#5d877d")
+	)
+	var action := _micro_progress(info, "Action", Rect2(3, 30, progress_width, 3), Color("#58b9b4"))
+	action.z_index = 1
+
+	var race_frame := Panel.new()
+	race_frame.name = "RaceFrame"
+	race_frame.position = Vector2(0, 14)
+	race_frame.size = Vector2(12, 12)
+	race_frame.clip_contents = true
+	race_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	race_frame.z_index = 5
+	race_frame.add_theme_stylebox_override("panel", _micro_style_box(Color("#202a27"), Color("#3f5f59"), 1, 0))
+	info.add_child(race_frame)
+	var race_fallback := "人" if is_ally else "傀"
+	var race_key_fallback := "race.human" if is_ally else "race.puppet"
+	var race_text := Game.text(str(unit_data.get("raceKey", race_key_fallback)), race_fallback)
+	var race := KWUI.label(race_frame, race_text, Rect2(0, -5.5, 12, 23), 8, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+	race.name = "Race"
+	race.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var statuses := Control.new()
+	statuses.name = "StatusContainer"
+	statuses.position = Vector2.ZERO
+	statuses.size = Vector2(31, 14)
+	statuses.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	statuses.z_index = 5
+	info.add_child(statuses)
+	for index in 2:
+		var badge := Panel.new()
+		badge.name = "Badge%d" % (index + 1)
+		badge.position = Vector2(index * 17, 0)
+		badge.size = Vector2(14, 14)
+		badge.clip_contents = true
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.visible = false
+		badge.add_theme_stylebox_override("panel", _micro_style_box(Color("#202a27"), Color("#3f5f59"), 1, 1))
+		statuses.add_child(badge)
+		var badge_text := KWUI.label(badge, "", Rect2(0, -4.5, 14, 23), 8, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
+		badge_text.name = "Text"
+		badge_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# 姓名热区覆盖行动条底部 2px，与 Figma 节点坐标一致。它使用原生
+	# Button，避免 combat_button 的按压缩放改变四张卡片的视觉对齐。
+	var name_button := Button.new()
+	name_button.name = "Name"
+	name_button.position = Vector2(0, 32)
+	name_button.size = Vector2(info_width, 18)
+	name_button.text = ""
+	name_button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_button.focus_mode = Control.FOCUS_NONE
+	name_button.tooltip_text = "点击切换自动/手动" if is_ally else ""
+	name_button.add_theme_font_override("font", KWUI.FONT)
+	name_button.add_theme_font_size_override("font_size", 10)
+	var initial_name_color := HERO_NAME_AUTO_COLOR if is_ally else HERO_NAME_MANUAL_COLOR
+	name_button.add_theme_color_override("font_color", initial_name_color)
+	name_button.add_theme_color_override("font_hover_color", initial_name_color)
+	name_button.add_theme_color_override("font_pressed_color", initial_name_color)
+	name_button.add_theme_color_override("font_disabled_color", initial_name_color)
+	var empty_style := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+		name_button.add_theme_stylebox_override(state, empty_style)
+	name_button.z_index = 6
+	if is_ally:
+		name_button.pressed.connect(_toggle_auto.bind(unit_id))
+	else:
+		name_button.disabled = true
+		name_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		name_button.add_theme_stylebox_override("disabled", empty_style)
+	info.add_child(name_button)
+
+func _add_gradient_frame(parent: Control, prefix: String, rect: Rect2, colors: PackedColorArray, offsets: PackedFloat32Array, border_color: Color) -> void:
+	var gradient := Gradient.new()
+	gradient.colors = colors
+	gradient.offsets = offsets
+	var texture := GradientTexture1D.new()
+	texture.gradient = gradient
+	texture.width = maxi(2, int(rect.size.x))
+	var track := TextureRect.new()
+	track.name = "%sTrack" % prefix
+	track.position = rect.position
+	track.size = rect.size
+	track.texture = texture
+	track.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	track.stretch_mode = TextureRect.STRETCH_SCALE
+	track.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	track.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(track)
+	var frame := Panel.new()
+	frame.name = "%sFrame" % prefix
+	frame.position = rect.position
+	frame.size = rect.size
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.z_index = 2
+	frame.add_theme_stylebox_override("panel", _micro_style_box(Color.TRANSPARENT, border_color, 1, 1))
+	parent.add_child(frame)
+
+func _micro_progress(parent: Control, node_name: String, rect: Rect2, fill_color: Color) -> Control:
+	var progress := Control.new()
+	progress.name = node_name
+	progress.position = rect.position
+	progress.size = rect.size
+	progress.clip_contents = true
+	progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(progress)
+	var fill := ColorRect.new()
+	fill.name = "Fill"
+	fill.position = Vector2.ZERO
+	fill.size = rect.size
+	fill.color = fill_color
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	progress.add_child(fill)
+	return progress
+
+func _set_micro_progress(progress: Control, ratio: float) -> void:
+	var fill := progress.get_node_or_null("Fill") as ColorRect
+	if fill != null:
+		fill.size.x = roundf(progress.size.x * clampf(ratio, 0.0, 1.0))
+
+func _micro_style_box(fill_color: Color, border_color: Color, border_width: int, radius: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill_color
+	style.border_color = border_color
+	style.set_border_width_all(border_width)
+	style.set_corner_radius_all(radius)
+	style.anti_aliasing = false
+	style.corner_detail = 1
+	style.content_margin_left = 0
+	style.content_margin_right = 0
+	style.content_margin_top = 0
+	style.content_margin_bottom = 0
+	return style
 
 func _build_enemy_card(enemy_unit: Dictionary, position: Vector2, width: float) -> void:
-	var enemy_host := KWUI.panel(self, Rect2(position, Vector2(width, 205)), Color("#3a312ef5"), Color("#895344"))
+	var enemy_host := Panel.new()
+	enemy_host.name = "EnemyCard_%d" % int(enemy_unit.get("unit_id", -1))
+	enemy_host.position = position
+	enemy_host.size = Vector2(width, 205)
+	enemy_host.add_theme_stylebox_override("panel", KWUI.style_box(Color("#11191700"), Color.TRANSPARENT, 0, 0))
+	# Figma 333:1383：立绘在 86×205 卡片内以 (-12,34)、110×165 显示。
 	unit_hosts[int(enemy_unit.get("unit_id", -1))] = enemy_host
 	enemy_host.clip_contents = true
-	_add_enemy_silhouette(enemy_host)
-	KWUI.panel(enemy_host, Rect2(1, 149, width - 2, 56), Color("#070a0ddc"), Color.TRANSPARENT).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var enemy_name := KWUI.combat_button(enemy_host, str(enemy_unit.get("name", "敌人")), Rect2(3, 145, width - 6, 18), 9 if str(enemy_unit.get("name", "")).length() > 6 else 10)
-	enemy_name.name = "Name"
-	enemy_name.disabled = true
-	enemy_name.add_theme_stylebox_override("normal", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
-	enemy_name.add_theme_stylebox_override("disabled", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
-	enemy_name.add_theme_color_override("font_disabled_color", Color8(235, 230, 207))
-	KWUI.label(enemy_host, "敌", Rect2(2, 164, 12, 12), 8, Color("#dbb57a"), HORIZONTAL_ALIGNMENT_CENTER).name = "Race"
-	var bar_width := width - 24.0
-	var enemy_bar := ProgressBar.new()
-	enemy_bar.name = "Hp"
-	enemy_bar.position = Vector2(17, 169)
-	enemy_bar.size = Vector2(bar_width, 8)
-	enemy_bar.show_percentage = false
-	enemy_bar.add_theme_stylebox_override("background", KWUI.style_box(Color("#151012"), Color("#7d4949"), 2, 1))
-	enemy_bar.add_theme_stylebox_override("fill", KWUI.style_box(Color("#be4636"), Color("#ef9b72"), 2, 0))
-	enemy_host.add_child(enemy_bar)
-	KWUI.label(enemy_host, "", Rect2(17, 168, bar_width, 10), 7, Color("#f5efd8"), HORIZONTAL_ALIGNMENT_CENTER).name = "HpValue"
-	_combat_progress(enemy_host, "Action", Vector2(17, 180), Color("#0c1113"), Color("#4bccd0"), Vector2(bar_width, 5))
-	KWUI.label(enemy_host, "", Rect2(3, 186, width - 6, 14), 7, Color("#dbc482"), HORIZONTAL_ALIGNMENT_CENTER).name = "Status"
+	add_child(enemy_host)
+	if ResourceLoader.exists(FIGMA_ENEMY_PORTRAIT_PATH):
+		var portrait := KWUI.texture(enemy_host, FIGMA_ENEMY_PORTRAIT_PATH, Rect2(FIGMA_ENEMY_PORTRAIT_POSITION, FIGMA_ENEMY_PORTRAIT_SIZE))
+		portrait.name = "Portrait"
+		portrait.stretch_mode = TextureRect.STRETCH_SCALE
+	else:
+		_add_enemy_silhouette(enemy_host)
+	_build_unit_info(enemy_host, enemy_unit, int(enemy_unit.get("unit_id", -1)), false)
+
+func _add_status_bar() -> void:
+	# Figma 使用系统状态栏而非游戏 HUD；用轻量几何图形复刻信号、Wi‑Fi 和电池。
+	KWUI.label(self, "9:41", Rect2(16, 4, 45, 22), 13, Color("#e5e8da"))
+	var signal_group := Node2D.new()
+	signal_group.position = Vector2(292, 11)
+	add_child(signal_group)
+	for index in 4:
+		var bar := ColorRect.new()
+		bar.position = Vector2(index * 4, 7 - index * 2)
+		bar.size = Vector2(2.5, 4 + index * 2)
+		bar.color = Color("#d7ded1")
+		signal_group.add_child(bar)
+	var wifi := Line2D.new()
+	wifi.width = 1.5
+	wifi.default_color = Color("#d7ded1")
+	wifi.points = PackedVector2Array([Vector2(309, 12), Vector2(314, 9), Vector2(319, 12)])
+	add_child(wifi)
+	var wifi_dot := ColorRect.new()
+	wifi_dot.position = Vector2(313, 15)
+	wifi_dot.size = Vector2(2.5, 2.5)
+	wifi_dot.color = Color("#d7ded1")
+	add_child(wifi_dot)
+	var battery := Panel.new()
+	battery.position = Vector2(332, 8)
+	battery.size = Vector2(26, 14)
+	battery.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	battery.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, Color("#d7ded1"), 2, 1))
+	add_child(battery)
+	var battery_fill := ColorRect.new()
+	battery_fill.position = Vector2(335, 11)
+	battery_fill.size = Vector2(19, 8)
+	battery_fill.color = Color("#d7ded1")
+	battery_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(battery_fill)
+
+func _build_pause_overlay() -> void:
+	pause_overlay = Control.new()
+	pause_overlay.name = "PauseOverlay"
+	pause_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	pause_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	pause_overlay.z_index = 220
+	pause_overlay.visible = false
+	add_child(pause_overlay)
+	var shade := ColorRect.new()
+	shade.color = Color("#030609a6")
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	pause_overlay.add_child(shade)
+	var panel := KWUI.panel(pause_overlay, Rect2(74, 333, 227, 118), Color("#111917f5"), Color("#80623a"))
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	KWUI.label(panel, "战斗已暂停", Rect2(14, 20, 199, 34), 20, Color("#edddad"), HORIZONTAL_ALIGNMENT_CENTER)
+	KWUI.label(panel, "点击右上角“继续”恢复战斗", Rect2(14, 62, 199, 25), 11, Color("#abb8a6"), HORIZONTAL_ALIGNMENT_CENTER)
+
+func _toggle_combat_pause() -> void:
+	if finished:
+		return
+	_set_combat_paused(not combat_paused)
+
+func _set_combat_paused(paused: bool) -> void:
+	combat_paused = paused and not finished
+	if is_instance_valid(pause_overlay):
+		pause_overlay.visible = combat_paused
+	if is_instance_valid(pause_button):
+		pause_button.text = "继续" if combat_paused else "暂停"
+	_set_presentation_tweens_paused(combat_paused)
+
+func _set_presentation_tweens_paused(paused: bool) -> void:
+	for index in range(active_presentation_tweens.size() - 1, -1, -1):
+		var tween := active_presentation_tweens[index]
+		if not tween.is_valid():
+			active_presentation_tweens.remove_at(index)
+		elif paused:
+			tween.pause()
+		else:
+			tween.play()
+
+func _register_presentation_tween(tween: Tween) -> void:
+	for index in range(active_presentation_tweens.size() - 1, -1, -1):
+		if not active_presentation_tweens[index].is_valid():
+			active_presentation_tweens.remove_at(index)
+	active_presentation_tweens.append(tween)
+	if combat_paused:
+		tween.pause()
 
 func _build_loot_overlay() -> void:
 	loot_overlay = Control.new()
+	loot_overlay.z_index = 300
 	loot_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	loot_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	loot_overlay.visible = false
@@ -274,6 +707,8 @@ func _build_loot_overlay() -> void:
 	leave.pressed.connect(_leave_loot)
 
 func _process(delta: float) -> void:
+	if combat_paused:
+		return
 	_update_animated_portraits(delta)
 	if finished: return
 	timer_accum += delta
@@ -300,8 +735,8 @@ func _update_animated_portraits(delta: float) -> void:
 			elapsed -= frame_duration
 			if frame_index + 1 < frames.size():
 				frame_index += 1
-				if str(animation.get("mode", PORTRAIT_IDLE_MODE)) == SHI_YAN_CAST_A_MODE \
-						and frame_index == int(animation.get("hit_frame", SHI_YAN_CAST_A_HIT_FRAME)) \
+				if bool(animation.get("hit_enabled", false)) \
+						and frame_index == int(animation.get("hit_frame", HERO_ANIMATION_ACTION_HIT_FRAME)) \
 						and not bool(animation.get("hit_fired", false)):
 					animation["hit_fired"] = true
 					_spawn_target_hit_vfx(int(animation.get("target_unit_id", -1)))
@@ -329,6 +764,56 @@ func _sheet_frames(sheet: Texture2D, columns: int, rows: int) -> Array[Texture2D
 		frame.region = Rect2(Vector2(index % columns, floori(index / columns)) * frame_size, frame_size)
 		frames.append(frame)
 	return frames
+
+func _hero_action_names(hero_id: String) -> Array[String]:
+	var sheet_map: Dictionary = HERO_ANIMATION_SHEETS.get(hero_id, {})
+	var names: Array[String] = []
+	for action_name in sheet_map.keys():
+		if str(action_name) != "idle":
+			names.append(str(action_name))
+	return names
+
+func _load_hero_animation_frames(hero_id: String, action_name: String) -> Array[Texture2D]:
+	var sheet_map: Dictionary = HERO_ANIMATION_SHEETS.get(hero_id, {})
+	var file_name := str(sheet_map.get(action_name, ""))
+	if file_name.is_empty():
+		return []
+	var path := "res://assets/camp/ui/expedition/animations/%s/%s" % [hero_id, file_name]
+	if not ResourceLoader.exists(path):
+		return []
+	var sheet := load(path) as Texture2D
+	if sheet == null or Vector2i(sheet.get_width(), sheet.get_height()) != HERO_ANIMATION_SHEET_SIZE:
+		return []
+	return _sheet_frames(sheet, HERO_ANIMATION_COLUMNS, HERO_ANIMATION_ROWS)
+
+func _hero_portrait_scale(hero_id: String) -> float:
+	return float(HERO_PORTRAIT_SCALES.get(hero_id, 1.0))
+
+func _hero_portrait_display_size(hero_id: String) -> Vector2:
+	return HERO_ANIMATION_DISPLAY_SIZE * _hero_portrait_scale(hero_id)
+
+func _hero_portrait_display_position(hero_id: String) -> Vector2:
+	var display_size := _hero_portrait_display_size(hero_id)
+	# 水平居中，纵向按当前确认的视觉底边对齐。
+	return Vector2(
+		(HERO_ANIMATION_DISPLAY_SIZE.x - display_size.x) * 0.5,
+		HERO_PORTRAIT_VISUAL_BOTTOM - display_size.y
+	)
+
+func _hero_action_for_skill(hero_id: String, skill_id: String, healing: bool) -> String:
+	if hero_id == "shi_yan":
+		return "defense" if skill_id == "tiao_xin" else "attack"
+	if hero_id == "lu_qing":
+		if skill_id == "ling_neng_zhen_dang":
+			return "lei_ji"
+		if healing or skill_id == "ning_shuang_hu":
+			return "heal"
+		return "attack"
+	if hero_id == "bai_ling":
+		return "heal" if healing or skill_id == "qing_xin_jue" else "attack"
+	if hero_id == "mo_yan":
+		return "hui_jian" if skill_id == "tou_ren" else "fei_jian"
+	return ""
 
 func _step(ticks: int) -> void:
 	combat_ticks += ticks
@@ -445,6 +930,7 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 		var amount := KWCombatResolver.heal_amount(actor, target, skill)
 		target["hp"] = mini(int(target["max_hp"]), int(target["hp"]) + amount)
 		_show_log("%s 使用回春术，%s 恢复 %d 点生命" % [actor["name"], target["name"], amount])
+		_play_unit_action(actor, skill_id, target, false)
 		return
 	var targets := _targets_for_skill(actor, skill)
 	if skill.get("damageKind", "none") == "none":
@@ -452,6 +938,7 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 		for target in targets:
 			_apply_skill_status(actor, target, skill)
 		_show_log("%s 使用 %s" % [actor["name"], _skill_name(skill, skill_id)])
+		_play_unit_action(actor, skill_id, targets.front() if not targets.is_empty() else actor, false)
 		return
 	if targets.is_empty():
 		if actor.get("side") == "ally": _finish_victory()
@@ -467,9 +954,9 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 		_apply_damage(target, damage, actor, str(skill.get("damageKind", "physical")), true)
 		if not target.get("dead", false):
 			_apply_skill_status(actor, target, skill)
-	# 战斗数值已经结算；Cast A 和命中特效只消费这次结果，不参与判伤或重算。
+	# 战斗数值已经结算；人物动作和命中特效只消费这次结果，不参与判伤或重算。
 	if actor.get("side") == "ally" and not first_target.is_empty():
-		_play_shi_yan_cast_a(actor, first_target)
+		_play_unit_action(actor, skill_id, first_target, true)
 	_show_log("%s 使用 %s，造成 %d 点伤害" % [actor["name"], _skill_name(skill, skill_id), total_damage])
 
 func _living_units(side: String) -> Array:
@@ -523,38 +1010,46 @@ func _outgoing_damage_percent(actor: Dictionary) -> int:
 			percent += int(ally.get("mechanics", {}).get("allyDamageAuraPercent", 0))
 	return percent
 
-func _play_shi_yan_cast_a(actor: Dictionary, target: Dictionary) -> void:
-	var hero: Dictionary = actor.get("hero", {})
-	if str(hero.get("definitionId", "")) != "hero_wu_xiu_01":
+func _hero_id_for_actor(actor: Dictionary) -> String:
+	var definition_id := str(actor.get("hero", {}).get("definitionId", ""))
+	if definition_id == "hero_wu_xiu_01": return "shi_yan"
+	if definition_id == "hero_fa_xiu_01": return "lu_qing"
+	if definition_id == "hero_yi_xiu_01": return "bai_ling"
+	if definition_id == "hero_qian_xiu_01": return "mo_yan"
+	return ""
+
+func _play_unit_action(actor: Dictionary, skill_id: String, target: Dictionary, hit_enabled: bool) -> void:
+	var hero_id := _hero_id_for_actor(actor)
+	if hero_id.is_empty():
+		return
+	var healing := bool(KWCombatResolver.skill_by_id(Game.combat_config, skill_id).get("healing", false)) or skill_id == "hui_chun_shu"
+	var action_name := _hero_action_for_skill(hero_id, skill_id, healing)
+	if action_name.is_empty():
 		return
 	for index in animated_portraits.size():
 		var animation: Dictionary = animated_portraits[index]
 		if int(animation.get("unit_id", -1)) != int(actor.get("unit_id", -1)):
 			continue
-		var cast_a_frames: Array = animation.get("cast_a_frames", [])
+		var action_frames: Array = animation.get("action_frames", {}).get(action_name, [])
 		var portrait := animation.get("node") as TextureRect
-		if portrait == null or cast_a_frames.size() != 8:
+		if portrait == null or action_frames.size() != HERO_ANIMATION_FRAME_COUNT:
 			return
-		animation["frames"] = cast_a_frames
-		animation["frame_duration"] = 1.0 / SHI_YAN_CAST_A_FPS
+		animation["frames"] = action_frames
+		animation["frame_duration"] = 1.0 / HERO_ANIMATION_FPS
 		animation["elapsed"] = 0.0
 		animation["frame_index"] = 0
 		animation["loop"] = false
-		animation["mode"] = SHI_YAN_CAST_A_MODE
+		animation["mode"] = HERO_ANIMATION_MODE
+		animation["action_name"] = action_name
+		animation["hit_enabled"] = hit_enabled and not target.is_empty()
 		animation["target_unit_id"] = int(target.get("unit_id", -1))
-		animation["hit_frame"] = SHI_YAN_CAST_A_HIT_FRAME
+		animation["hit_frame"] = HERO_ANIMATION_ACTION_HIT_FRAME
 		animation["hit_fired"] = false
 		animation["idle_display_position"] = portrait.position
 		animation["idle_display_size"] = portrait.size
-		var cast_texture_size: Vector2 = cast_a_frames[0].get_size()
-		var cast_presentation_scale := SHI_YAN_CAST_A_WIDE_PRESENTATION_SCALE if cast_texture_size.x > 172.0 else 1.0
-		var cast_display_size := cast_texture_size / SHI_YAN_HD_TEXTURE_SCALE * cast_presentation_scale
-		var portrait_mask := portrait.get_parent() as Control
-		var mask_origin := portrait_mask.position if portrait_mask != null else Vector2.ZERO
-		var vertical_offset := SHI_YAN_CAST_A_WIDE_VERTICAL_OFFSET if cast_texture_size.x > 172.0 else 0.0
-		portrait.position = Vector2((86.0 - cast_display_size.x) * 0.5, vertical_offset) - mask_origin
-		portrait.size = cast_display_size
-		portrait.texture = cast_a_frames[0]
+		portrait.position = _hero_portrait_display_position(hero_id)
+		portrait.size = _hero_portrait_display_size(hero_id)
+		portrait.texture = action_frames[0]
 		portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		animated_portraits[index] = animation
 		return
@@ -648,11 +1143,13 @@ func _spawn_target_hit_vfx(target_unit_id: int) -> void:
 	shi_yan_cast_a_hit_count += 1
 
 	var shake := create_tween()
+	_register_presentation_tween(shake)
 	shake.tween_property(host, "position:x", base_position.x + 2.0, 0.03)
 	shake.tween_property(host, "position:x", base_position.x - 2.0, 0.04)
 	shake.tween_property(host, "position:x", base_position.x + 1.0, 0.03)
 	shake.tween_property(host, "position:x", base_position.x, 0.04)
 	var effect_tween := create_tween().set_parallel(true)
+	_register_presentation_tween(effect_tween)
 	effect_tween.tween_property(burst, "scale", Vector2(1.22, 1.22), TARGET_HIT_VFX_DURATION)
 	effect_tween.tween_property(layer, "modulate:a", 0.0, TARGET_HIT_VFX_DURATION).set_delay(0.04)
 	effect_tween.finished.connect(_finish_target_hit_vfx.bind(target_unit_id, layer))
@@ -782,30 +1279,81 @@ func _apply_forced_boss_shields(target: Dictionary, previous_hp: int) -> void:
 func _refresh() -> void:
 	escape_button.visible = not finished and _escape_available()
 	KWUI.set_combat_button_disabled(escape_button, finished)
+	if is_instance_valid(pause_button):
+		pause_button.visible = not finished
 	if is_instance_valid(tick_label): tick_label.text = "战斗 %.1f 秒" % (float(combat_ticks) / 20.0)
 	for unit in units:
 		var host: Panel = unit_hosts.get(int(unit["unit_id"]))
 		if not is_instance_valid(host): continue
-		var bar: ProgressBar = host.get_node_or_null("Hp")
-		var hp_value: Label = host.get_node_or_null("HpValue")
-		var action: ProgressBar = host.get_node_or_null("Action")
-		var status: Label = host.get_node_or_null("Status")
-		if bar: bar.value = float(unit["hp"]) / float(unit["max_hp"]) * 100.0
-		if hp_value: hp_value.text = "%d/%d" % [int(unit["hp"]), int(unit["max_hp"])]
+		var info := host.get_node_or_null("InfoOverlay") as Control
+		var ui_root: Node = info if info != null else host
+		var bar: Control = ui_root.get_node_or_null("Hp")
+		var hp_value: Control = ui_root.get_node_or_null("HpValue")
+		var action: Control = ui_root.get_node_or_null("Action")
+		if bar is ProgressBar:
+			bar.value = float(unit["hp"]) / float(unit["max_hp"]) * 100.0
+		elif bar:
+			_set_micro_progress(bar, float(unit["hp"]) / float(unit["max_hp"]))
+		if hp_value is Label:
+			hp_value.text = "%d/%d" % [int(unit["hp"]), int(unit["max_hp"])]
+		elif hp_value:
+			var hp_text := hp_value.get_node_or_null("Text") as Label
+			if hp_text:
+				hp_text.text = "%d/%d" % [int(unit["hp"]), int(unit["max_hp"])]
 		if action:
 			var action_max := maxi(1, int(unit.get("action_max", unit["timer"])))
-			action.value = clampf(float(action_max - int(unit["timer"])) / float(action_max) * 100.0, 0.0, 100.0)
-		if status:
-			var status_parts: Array[String] = []
-			for active_status in unit.get("statuses", []).slice(0, 3): status_parts.append("[%s]" % str(active_status.get("kind", "")))
-			status.text = "".join(status_parts)
+			var action_ratio := clampf(float(action_max - int(unit["timer"])) / float(action_max), 0.0, 1.0)
+			if action is ProgressBar:
+				action.value = action_ratio * 100.0
+			else:
+				_set_micro_progress(action, action_ratio)
+		_refresh_unit_status_badges(info, unit)
 		host.modulate = Color(1, 1, 1, 0.34) if bool(unit.get("dead", false)) else Color.WHITE
-		if unit["side"] == "ally":
-			var name_label: Button = host.get_node_or_null("Name")
-			if name_label:
-				name_label.text = "%s · 阵亡" % unit["name"] if bool(unit.get("dead", false)) else "%s · %s" % [unit["name"], "自" if unit["auto"] else "手"]
+		var name_label: Button = ui_root.get_node_or_null("Name")
+		if name_label:
+			name_label.text = str(unit["name"])
+			var name_color := HERO_NAME_AUTO_COLOR if unit["side"] == "ally" and bool(unit.get("auto", true)) else HERO_NAME_MANUAL_COLOR
+			name_label.add_theme_color_override("font_color", name_color)
+			name_label.add_theme_color_override("font_hover_color", name_color)
+			name_label.add_theme_color_override("font_pressed_color", name_color)
+			name_label.add_theme_color_override("font_disabled_color", name_color)
 	if is_instance_valid(log_label): log_label.text = log_lines.back() if not log_lines.is_empty() else ""
 	_refresh_skill_panel()
+
+func _refresh_unit_status_badges(info: Control, unit: Dictionary) -> void:
+	if info == null:
+		return
+	var container := info.get_node_or_null("StatusContainer") as Control
+	if container == null:
+		return
+	var tokens: Array[String] = []
+	if int(unit.get("shield", 0)) > 0:
+		tokens.append("盾")
+	var status_labels := {
+		"gather_spirit": "聚",
+		"haste": "速",
+		"slow": "缓",
+		"stun": "晕",
+		"silence": "封",
+		"poison": "毒",
+		"bleed": "血",
+		"core_exposed": "裂",
+	}
+	for active_status in unit.get("statuses", []):
+		var label_text := str(status_labels.get(str(active_status.get("kind", "")), ""))
+		if label_text.is_empty() or tokens.has(label_text):
+			continue
+		tokens.append(label_text)
+		if tokens.size() >= 2:
+			break
+	for index in 2:
+		var badge := container.get_node_or_null("Badge%d" % (index + 1)) as Panel
+		if badge == null:
+			continue
+		badge.visible = index < tokens.size()
+		var badge_text := badge.get_node_or_null("Text") as Label
+		if badge_text != null:
+			badge_text.text = tokens[index] if index < tokens.size() else ""
 
 func _refresh_skill_panel() -> void:
 	if not is_instance_valid(skill_panel): return
@@ -820,6 +1368,11 @@ func _refresh_skill_panel() -> void:
 	skill_panel.visible = true
 	var skills: Array = ready.get("skills", [])
 	var cooldowns: Dictionary = ready.get("cooldowns", {})
+	var selected_index := -1
+	for index in mini(skill_buttons.size(), skills.size()):
+		if int(cooldowns.get(str(skills[index]), 0)) <= 0:
+			selected_index = index
+			break
 	for index in skill_buttons.size():
 		var button: Button = skill_buttons[index]
 		if index >= skills.size():
@@ -829,8 +1382,19 @@ func _refresh_skill_panel() -> void:
 		var skill_id := str(skills[index])
 		var definition := KWCombatResolver.skill_by_id(Game.combat_config, skill_id)
 		var cooldown := int(cooldowns.get(skill_id, 0))
-		button.text = "%s\n冷却" % Game.text(definition.get("nameKey", skill_id)) if cooldown > 0 else Game.text(definition.get("nameKey", skill_id))
-		KWUI.set_combat_button_disabled(button, cooldown > 0)
+		var skill_name := Game.text(definition.get("nameKey", skill_id))
+		var name_label := button.get_node_or_null("Name/Text") as Label
+		var glyph_label := button.get_node_or_null("Icon/Glyph/Text") as Label
+		var effect_label := button.get_node_or_null("Effect/Text") as Label
+		if name_label != null:
+			name_label.text = skill_name
+		if glyph_label != null:
+			glyph_label.text = _skill_glyph(skill_id, skill_name)
+		if effect_label != null:
+			effect_label.text = "冷却" if cooldown > 0 else _skill_effect_text(definition)
+			effect_label.add_theme_color_override("font_color", SKILL_COLOR_SECONDARY if cooldown > 0 else _skill_effect_color(definition))
+		button.disabled = cooldown > 0
+		_apply_skill_item_state(button, index == selected_index, cooldown > 0)
 
 func _escape_available() -> bool:
 	var escape_percent := int(current_encounter.get("escapeEnemyHpPercent", 35))
@@ -844,6 +1408,7 @@ func _escape_available() -> bool:
 
 func _finish_victory() -> void:
 	if finished: return
+	_set_combat_paused(false)
 	finished = true
 	_persist_ally_unit_states()
 	victory_result = Game.finish_encounter_victory(current_encounter)
@@ -853,10 +1418,12 @@ func _finish_victory() -> void:
 		return
 	for message in victory_result.get("progressMessages", []):
 		_show_log(str(message))
+	_refresh()
 	_show_loot_overlay()
 
 func _finish_defeat() -> void:
 	if finished: return
+	_set_combat_paused(false)
 	finished = true
 	Game._finish_expedition(true)
 	_show_outcome(false)

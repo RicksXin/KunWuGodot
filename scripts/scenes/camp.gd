@@ -8,8 +8,9 @@ const RESOURCE_ICONS := {
 const VIEW_SIZE := Vector2(375, 817)
 const TOP_HUD_RECT := Rect2(0, 44, 375, 132)
 const BOTTOM_HUD_RECT := Rect2(0, 745, 375, 48)
-const SHI_YAN_IDLE_HD2X_SHEET_SIZE := Vector2i(688, 1640)
-const SHI_YAN_IDLE_STANDARD_FPS := 8.0
+const HERO_ANIMATION_SHEET_SIZE := Vector2i(688, 1192)
+const HERO_ANIMATION_FRAME_COUNT := 16
+const HERO_ANIMATION_FPS := 8.0
 const BUILDINGS := [
 	# 名称牌和状态标记使用建筑中心为原点的 Godot 本地像素偏移。
 	{"id": "yi_shi_dian", "name": "议事殿", "x": 426, "y": 153, "w": 247, "h": 165, "name_offset": Vector2(2.166667, 67.055556), "badge_offset": Vector2(33.409722, 57.197917)},
@@ -675,26 +676,24 @@ func _add_expedition_hero_card(parent: Control, rect: Rect2, portrait_id: String
 	art_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(art_clip)
 	var portrait := KWUI.texture(art_clip, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_id, Rect2(-9.25, -7.2, 64, 153.2))
-	if portrait_id == "shi_yan" or portrait_id == "lu_qing" or portrait_id == "mo_yan":
-		var sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [portrait_id, portrait_id]
-		var sheet: Texture2D = load(sheet_path)
-		if sheet:
-			var use_hd2x_idle := portrait_id == "shi_yan" and Vector2i(sheet.get_width(), sheet.get_height()) == SHI_YAN_IDLE_HD2X_SHEET_SIZE
-			var idle_rows := 4 if use_hd2x_idle else 2
-			var frames := _sheet_frames(sheet, 4, idle_rows)
-			portrait.texture = frames[0]
-			animated_portraits.append({
-				"node": portrait,
-				"frames": frames,
-				"frame_duration": 1.0 / SHI_YAN_IDLE_STANDARD_FPS if use_hd2x_idle else 1.0 / 6.0,
-				"elapsed": 0.0,
-				"frame_index": 0
-			})
-			# 卡片继续用自己的 45.5×139.3 Mask 居中裁切；石岩批准的
-			# HD2x 图集按 86×205 逻辑槽显示，旧图集仍保持 86×149。
-			portrait.position = Vector2(-20.25, -4.88)
-			portrait.size = Vector2(86, 205) if use_hd2x_idle else Vector2(86, 149)
-			if use_hd2x_idle:
+	var sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [portrait_id, portrait_id]
+	if ResourceLoader.exists(sheet_path):
+		var sheet := load(sheet_path) as Texture2D
+		if sheet != null and Vector2i(sheet.get_width(), sheet.get_height()) == HERO_ANIMATION_SHEET_SIZE:
+			var frames := _sheet_frames(sheet, 4, 4)
+			if frames.size() == HERO_ANIMATION_FRAME_COUNT:
+				portrait.texture = frames[0]
+				animated_portraits.append({
+					"node": portrait,
+					"frames": frames,
+					"frame_duration": 1.0 / HERO_ANIMATION_FPS,
+					"elapsed": 0.0,
+					"frame_index": 0
+				})
+				# 卡片仍用自己的 45.5×139.3 Mask 居中裁切；运行时帧统一
+				# 为 172×298 @2x，显示为 86×149。
+				portrait.position = Vector2(-20.25, -4.88)
+				portrait.size = Vector2(86, 149)
 				portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	portrait.stretch_mode = TextureRect.STRETCH_SCALE
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
