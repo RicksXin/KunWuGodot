@@ -37,6 +37,7 @@ var panorama_drag_start := Vector2.ZERO
 var panorama_scroll_start := 0
 var ignore_building_until_msec := 0
 var expedition_draft: Dictionary = {}
+var party_selection_draft: Array = []
 var animated_portraits: Array[Dictionary] = []
 
 func _ready() -> void:
@@ -615,9 +616,10 @@ func _open_expedition() -> void:
 	KWUI.label(body, "传送阵 · 昆吾山外缘", Rect2(89.5, 76, 180, 16), 12, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
 	var portraits := ["shi_yan", "lu_qing", "bai_ling", "mo_yan"]
 	var heroes: Array = Game.party_heroes()
-	for index in mini(portraits.size(), heroes.size()):
-		var hero: Dictionary = heroes[index] if heroes[index] is Dictionary else {}
-		_add_expedition_hero_card(body, Rect2(31 + index * 74.5, 98, 71, 163), portraits[index], hero)
+	for index in 4:
+		var hero: Dictionary = heroes[index] if index < heroes.size() and heroes[index] is Dictionary else {}
+		var hero_portrait := _hero_portrait_id(hero, portraits[index])
+		_add_expedition_hero_card(body, Rect2(31 + index * 74.5, 98, 71, 163), hero_portrait, hero)
 	var edit_party := _camp_button(body, "编辑队伍", Rect2(48, 273, 72, 28), false, 10)
 	edit_party.pressed.connect(_open_hero_selection)
 	for index in 3:
@@ -653,6 +655,8 @@ func _open_expedition() -> void:
 
 func _add_expedition_hero_card(parent: Control, rect: Rect2, portrait_id: String, hero: Dictionary) -> void:
 	var card := Control.new()
+	card.name = "ExpeditionHeroCard%d" % parent.find_children("ExpeditionHeroCard*", "Control", false, false).size()
+	card.set_meta("unassigned", hero.is_empty())
 	card.position = rect.position
 	card.size = rect.size
 	card.clip_contents = true
@@ -669,6 +673,13 @@ func _add_expedition_hero_card(parent: Control, rect: Rect2, portrait_id: String
 	var card_frame := KWUI.texture(card, "res://assets/camp/ui/expedition/ui_expedition_hero_card_frame.png", Rect2(0, 0, 71, 163))
 	card_frame.stretch_mode = TextureRect.STRETCH_SCALE
 	card_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if hero.is_empty():
+		var silhouette := KWUI.texture(card, "res://assets/camp/ui/expedition/ui_expedition_hero_empty_silhouette.png", Rect2(12.75, 12.4, 45.5, 118))
+		silhouette.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		silhouette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var empty_label := KWUI.label(card, "未上阵", Rect2(0, 121, 71, 18), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		empty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		return
 	var art_clip := Control.new()
 	art_clip.position = Vector2(12.75, 12.4)
 	art_clip.size = Vector2(45.5, 139.3)
@@ -746,6 +757,10 @@ func _adjust_expedition_item(item_id: String, delta: int, available: int, burden
 	_open_expedition()
 
 func _open_hero_selection() -> void:
+	party_selection_draft = Game.get_party_preset().get("slots", []).filter(func(id): return id != null and not str(id).is_empty())
+	_render_hero_selection()
+
+func _render_hero_selection() -> void:
 	_close_modal()
 	modal = Control.new()
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -763,12 +778,14 @@ func _open_hero_selection() -> void:
 	panel_art.stretch_mode = TextureRect.STRETCH_SCALE
 	panel_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	KWUI.label(modal, "选择你的修士", Rect2(131.5, 116, 112, 16), 12, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
-	KWUI.label(modal, "4 / 4", Rect2(286, 115, 42, 18), 14, Color("#b58a42"), HORIZONTAL_ALIGNMENT_CENTER)
+	KWUI.label(modal, "%d / 4" % party_selection_draft.size(), Rect2(286, 115, 42, 18), 14, Color("#b58a42"), HORIZONTAL_ALIGNMENT_CENTER)
 	var portraits := ["shi_yan", "lu_qing", "bai_ling", "mo_yan"]
 	var heroes: Array = Game.profile.get("roster", [])
 	for index in mini(4, heroes.size()):
 		var hero: Dictionary = heroes[index]
-		var selected := true
+		var hero_portrait := _hero_portrait_id(hero, portraits[index])
+		var hero_id := str(hero.get("instanceId", ""))
+		var selected := party_selection_draft.has(hero_id)
 		var row := Button.new()
 		row.position = Vector2(43.5, 150 + index * 75)
 		row.size = Vector2(288, 67)
@@ -796,7 +813,26 @@ func _open_hero_selection() -> void:
 		avatar.add_child(avatar_clip)
 		# 头像裁切容器取同一张整身立绘的头肩安全区，
 		# 不把整张人物缩成一枚小图标。
-		var portrait := KWUI.texture(avatar_clip, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portraits[index], Rect2(-21, -3.5, 64, 153))
+		var portrait := KWUI.texture(avatar_clip, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % hero_portrait, Rect2(-21, -3.5, 64, 153))
+		portrait.name = "SelectionPortrait_%s" % hero_portrait
+		var sheet_path := "res://assets/camp/ui/expedition/animations/%s/%s_idle_sheet.png" % [hero_portrait, hero_portrait]
+		if ResourceLoader.exists(sheet_path):
+			var sheet := load(sheet_path) as Texture2D
+			if sheet != null and Vector2i(sheet.get_width(), sheet.get_height()) == HERO_ANIMATION_SHEET_SIZE:
+				# Head/shoulder crops from the same idle frame used by preparation cards.
+				var head_regions := {
+					"shi_yan": Rect2(52, 12, 60, 64),
+					"lu_qing": Rect2(62, 18, 60, 64),
+					"bai_ling": Rect2(43, 27, 60, 64),
+					"mo_yan": Rect2(49, 17, 60, 64),
+				}
+				var head := AtlasTexture.new()
+				head.atlas = sheet
+				head.region = head_regions.get(hero_portrait, Rect2(56, 16, 60, 64))
+				portrait.texture = head
+				portrait.position = Vector2.ZERO
+				portrait.size = avatar_clip.size
+				portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var realm_key := "realm." + str(hero.get("realmId", ""))
@@ -806,13 +842,38 @@ func _open_hero_selection() -> void:
 		for value in hero.get("attributes", {}).values(): rating += int(value)
 		KWUI.label(row, "Lv.%d · 战力%d" % [int(hero.get("level", 1)), rating], Rect2(64, 27, 132, 16), 10, Color("#91a49e")).mouse_filter = Control.MOUSE_FILTER_IGNORE
 		KWUI.label(row, "灵息%d" % int(hero.get("stamina", 0)), Rect2(64, 46, 118, 14), 10, Color("#91a49e")).mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var select := _camp_button(row, "取消 · %d" % (index + 1) if selected else "选择", Rect2(204, 17, 72, 28), selected, 10)
-		select.pressed.connect(_show_feedback.bind("当前演示队伍固定为四名修士", 0))
-		row.pressed.connect(_show_feedback.bind("当前演示队伍固定为四名修士", 0))
-	var complete := _camp_button(modal, "完成  4/4", Rect2(121.5, 633, 132, 44), true, 14)
-	complete.pressed.connect(_open_expedition)
+		var select := _camp_button(row, "取消 · %d" % (party_selection_draft.find(hero_id) + 1) if selected else "选择", Rect2(204, 17, 72, 28), selected, 10)
+		select.name = "ToggleParty_" + hero_id
+		select.pressed.connect(_toggle_party_member.bind(hero_id))
+		row.pressed.connect(_toggle_party_member.bind(hero_id))
+	var complete := _camp_button(modal, "完成  %d/4" % party_selection_draft.size(), Rect2(121.5, 633, 132, 44), true, 14)
+	complete.name = "ConfirmPartySelection"
+	complete.disabled = party_selection_draft.is_empty()
+	complete.pressed.connect(_save_party_selection)
 	var back := _camp_button(modal, "返回", Rect2(121.5, 685, 132, 44), false, 14)
 	back.pressed.connect(_open_expedition)
+
+func _toggle_party_member(hero_id: String) -> void:
+	if party_selection_draft.has(hero_id):
+		party_selection_draft.erase(hero_id)
+	elif party_selection_draft.size() < 4:
+		party_selection_draft.append(hero_id)
+	_render_hero_selection()
+
+func _save_party_selection() -> void:
+	var result := Game.update_party_members(party_selection_draft)
+	if result.get("ok", false):
+		_open_expedition()
+	else:
+		_show_feedback(str(result.get("message", "队伍保存失败")), 2)
+
+func _hero_portrait_id(hero: Dictionary, fallback: String) -> String:
+	var name_key := str(hero.get("nameKey", ""))
+	if name_key.begins_with("hero."):
+		var candidate := name_key.trim_prefix("hero.")
+		if ResourceLoader.exists("res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % candidate):
+			return candidate
+	return fallback
 
 func _open_map_selection() -> void:
 	_close_modal()
@@ -955,7 +1016,6 @@ func _open_settings() -> void:
 		var debug := _camp_button(body, "打开调试面板", Rect2(55, 365, 235, 48), false, 14)
 		debug.name = "OpenDebugPanelButton"
 		debug.pressed.connect(_open_debug_panel)
-	KWUI.label(body, "迁移版保留源项目内部资源 ID 与七维字段，存档采用可读 JSON。", Rect2(30, 445, 285, 80), 11, KWUI.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _open_debug_panel() -> void:
 	if not OS.is_debug_build():

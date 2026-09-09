@@ -18,7 +18,7 @@ const PORTRAIT_IDLE_MODE := "idle"
 const TARGET_HIT_VFX_DURATION := 0.22
 const HERO_CANVAS_WIDTH := 375.0 / 4.0
 const HERO_CARD_SIZE := Vector2(HERO_CANVAS_WIDTH, 205)
-const HERO_CARD_START := Vector2(0, 492)
+const HERO_CARD_START := Vector2(0, 572)
 const HERO_CARD_STEP_X := HERO_CANVAS_WIDTH
 const HERO_INFO_POSITION := Vector2(0, 149)
 const HERO_INFO_SIZE := Vector2(HERO_CANVAS_WIDTH, 56)
@@ -241,17 +241,18 @@ func _build_scene() -> void:
 		host.add_child(frame_overlay)
 	_build_skill_picker()
 	log_label = KWUI.label(self, "", Rect2(35, 395, 305, 28), 11, Color("#d4d9c6"), HORIZONTAL_ALIGNMENT_CENTER)
-	# 安全区位于所有卡片之上，主页指示条也与 Figma 手机稿一致。
+	# 底部遮罩从队伍卡片下沿开始，避免整体下移后遮挡姓名与行动条。
 	var safe_area := ColorRect.new()
 	safe_area.name = "BottomSafeArea"
-	safe_area.position = Vector2(0, 763)
-	safe_area.size = Vector2(375, 54)
+	var safe_area_top := maxf(763.0, HERO_CARD_START.y + HERO_CARD_SIZE.y)
+	safe_area.position = Vector2(0, safe_area_top)
+	safe_area.size = Vector2(375, 817.0 - safe_area_top)
 	safe_area.color = Color("#071016f2")
 	safe_area.mouse_filter = Control.MOUSE_FILTER_STOP
 	safe_area.z_index = 240
 	add_child(safe_area)
 	var home_indicator := ColorRect.new()
-	home_indicator.position = Vector2(127, 795)
+	home_indicator.position = Vector2(127, (safe_area.size.y - 4.0) * 0.5)
 	home_indicator.size = Vector2(121, 4)
 	home_indicator.color = Color("#d1d2c5b8")
 	home_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE

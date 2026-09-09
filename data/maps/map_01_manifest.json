@@ -1,17 +1,23 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "mapId": "map_01",
   "status": "formal",
   "scenePath": "res://scenes/map.tscn",
   "layoutScenePath": "res://scenes/maps/map_01.tscn",
-  "mapDataPath": "res://data/maps/map_01_formal.json",
+  "mapDataPath": "res://data/maps/map_01.json",
   "combatDataPath": "res://data/config/combat_map01_formal.json",
   "backgroundPath": "res://assets/maps/map_01/map01_background.png",
-  "backgroundSha256": "9a7979e2bdd8beecbfc10705955ee4b5b96c4f7646e296c4d10ccd92c8ae0618",
-  "renderMode": "hd_background_json_grid",
+  "backgroundSha256": "30e1da30a8456083d5fe9e5ce46ed90e7e50a7b7635aec4c72f691bee49e1062",
+  "renderMode": "hd_background_continuous_json",
   "artStatus": "approved",
-  "width": 28,
-  "height": 64,
-  "logicalTileSize": 48,
-  "embeddedVersion": "map01-formal"
+  "embeddedVersion": "map01-hd-final-v2",
+  "regionsPath": "res://data/maps/map_01_regions.json",
+  "worldSize": [
+    897,
+    1938.5411681914145
+  ],
+  "backgroundSize": [
+    2488,
+    5692
+  ]
 }

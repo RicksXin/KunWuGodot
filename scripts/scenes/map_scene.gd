@@ -1,877 +1,380 @@
-extends Control
+extends Node2D
 
-const PORTRAIT_CONTENT_SIZE := Vector2i(375, 817)
-const LANDSCAPE_CONTENT_SIZE := Vector2i(817, 375)
-const MAP_VIEW_RECT := Rect2(0, 48, 817, 327)
-const MAP_GESTURE_RECT := Rect2(0, 48, 817, 279)
-const MAP_ZOOM_MIN := 0.5
-const MAP_ZOOM_MAX := 1.5
-const MAP_ZOOM_STEP := 0.05
-const MAP_DRAG_THRESHOLD := 5.0
+const Navigation = preload("res://scripts/maps/map_navigation.gd")
+const Actor = preload("res://scripts/maps/map_actor.gd")
+const DATA_PATH := "res://data/maps/map_01.json"
+const VIEW := Vector2i(817, 375)
+const DEFAULT_ZOOM := 1.2
+const NORMAL_MIN_ZOOM := 1.0
+const NORMAL_MAX_ZOOM := 1.5
+const DEBUG_MIN_ZOOM := 0.14
+const DEBUG_MAX_ZOOM := 2.2
+const MAP_VISIBLE_SIZE := Vector2(817, 287)
+const ACTOR_VISUAL_SCALE := 0.65
 
-var map_canvas: Control
-var map_scroll: ScrollContainer
-var map_content: Control
-var map_base_size := Vector2.ZERO
-var map_zoom := 1.0
-var zoom_slider: HSlider
-var zoom_value_label: Label
-var map_dragging := false
-var map_drag_moved := false
-var map_drag_start := Vector2.ZERO
-var map_drag_scroll_start := Vector2.ZERO
-var map_touch_positions: Dictionary = {}
-var map_touch_pan_index := -1
-var map_touch_pan_start := Vector2.ZERO
-var map_touch_scroll_start := Vector2.ZERO
-var map_pinch_distance := 0.0
-var title_position_label: Label
-var burden_label: Label
-var grain_label: Label
-var objective_label: Label
+var navigation: RefCounted
+var expedition_ui: Control
+var fog: Node2D
+var object_nodes: Dictionary = {}
+var proximity_object: Dictionary = {}
+var interact_button: Button
+var stats_label: Label
+var definition: Dictionary
+var actor: Node2D
+var camera: Camera2D
+var route := PackedVector2Array()
+var show_routes := false
+var zoom_level := DEFAULT_ZOOM
+var touch_direction := Vector2.ZERO
+var held_directions: Dictionary = {}
+var location_label: Label
 var hint_label: Label
-var rest_button: Button
-var return_button: Button
-var movement_buttons: Dictionary = {}
-var grain_warning: Panel
-var grain_warning_label: Label
-var rest_overlay: Control
-var rest_chance_label: Label
-var rest_food_label: Label
-var rest_heal_label: Label
-var replenish_button: Button
-var heal_button: Button
-var backpack_overlay: Control
-var backpack_grid: Control
-var backpack_empty_label: Label
-var entry_return_overlay: Control
-var event_overlay: Control
-var object_panel: Panel
-var object_kind_label: Label
-var object_title_label: Label
-var object_label: Label
-var event_buttons: Dictionary = {}
-var choice_buttons: Array[Button] = []
-var current_action_choices: Array = []
-var current_object: Dictionary = {}
-var toast_panel: Panel
-var toast_label: Label
-var toast_serial := 0
-var previous_content_scale_size := PORTRAIT_CONTENT_SIZE
-var previous_window_size := Vector2i.ZERO
-var previous_window_position := Vector2i.ZERO
-var previous_screen_orientation := DisplayServer.SCREEN_PORTRAIT
-var restore_window_geometry := false
-
+var zoom_label: Label
+var hint_time := 0.0
+var visited: Dictionary = {}
+var previous_content := Vector2i.ZERO
+var previous_size := Vector2i.ZERO
+var previous_position := Vector2i.ZERO
+var previous_orientation := DisplayServer.SCREEN_PORTRAIT
+var returning := false
+var edit_walkable := false
+var edit_erase := false
+var edit_radius := 28.0
+var show_map_annotations := false
+var annotation_overlay: Node2D
 
 func _enter_tree() -> void:
-	var window := get_window()
-	previous_content_scale_size = window.content_scale_size
-	if previous_content_scale_size == Vector2i.ZERO:
-		previous_content_scale_size = PORTRAIT_CONTENT_SIZE
-	window.content_scale_size = LANDSCAPE_CONTENT_SIZE
+	previous_content = get_window().content_scale_size
+	get_window().content_scale_size = VIEW
 	if OS.has_feature("mobile"):
-		previous_screen_orientation = DisplayServer.screen_get_orientation()
+		previous_orientation = DisplayServer.screen_get_orientation()
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
-	elif DisplayServer.get_name() != "headless" and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_WINDOWED:
-		previous_window_size = DisplayServer.window_get_size()
-		previous_window_position = DisplayServer.window_get_position()
-		var screen := DisplayServer.window_get_current_screen()
-		var usable := DisplayServer.screen_get_usable_rect(screen)
-		var max_scale := minf(
-			float(maxi(1, usable.size.x - 40)) / float(LANDSCAPE_CONTENT_SIZE.x),
-			float(maxi(1, usable.size.y - 40)) / float(LANDSCAPE_CONTENT_SIZE.y)
-		)
-		var preferred_scale := maxf(
-			float(previous_window_size.x) / float(PORTRAIT_CONTENT_SIZE.x),
-			float(previous_window_size.y) / float(PORTRAIT_CONTENT_SIZE.y)
-		)
-		var target_scale := minf(maxf(0.75, preferred_scale), maxf(0.5, minf(2.0, max_scale)))
-		var target_size := Vector2i(
-			roundi(LANDSCAPE_CONTENT_SIZE.x * target_scale),
-			roundi(LANDSCAPE_CONTENT_SIZE.y * target_scale)
-		)
-		DisplayServer.window_set_size(target_size)
-		DisplayServer.window_set_position(usable.position + (usable.size - target_size) / 2)
-		restore_window_geometry = true
-	# Scene changes and the embedded game view can apply their own window
-	# geometry after _enter_tree(). Re-assert the device/window orientation on
-	# the next frame so the whole game surface is landscape, not only the map
-	# content canvas.
-	if DisplayServer.get_name() != "headless":
-		call_deferred("_ensure_landscape_device")
-
-func _ensure_landscape_device() -> void:
-	if DisplayServer.get_name() == "headless":
-		return
-	DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
-	var window := get_window()
-	if not is_instance_valid(window) or OS.has_feature("mobile"):
-		return
-	if DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_WINDOWED:
-		return
-	var size := DisplayServer.window_get_size()
-	if size.y <= size.x:
-		return
-	# Standalone desktop runs can be resized by the launcher/editor between
-	# _enter_tree() and the deferred callback. Rotate that final geometry while
-	# preserving its area, then center it on the current screen.
-	var target_size := Vector2i(size.y, size.x)
-	var screen := DisplayServer.window_get_current_screen()
-	var usable := DisplayServer.screen_get_usable_rect(screen)
-	if target_size.x > usable.size.x or target_size.y > usable.size.y:
-		var scale := minf(float(usable.size.x) / float(target_size.x), float(usable.size.y) / float(target_size.y))
-		target_size = Vector2i(maxi(1, floori(target_size.x * scale)), maxi(1, floori(target_size.y * scale)))
-	DisplayServer.window_set_size(target_size)
-	DisplayServer.window_set_position(usable.position + (usable.size - target_size) / 2)
-
+	elif DisplayServer.get_name() != "headless":
+		previous_size = DisplayServer.window_get_size()
+		previous_position = DisplayServer.window_get_position()
+		if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_WINDOWED:
+			var usable := DisplayServer.screen_get_usable_rect()
+			var scale_factor := minf(1.5, minf((usable.size.x - 40.0) / VIEW.x, (usable.size.y - 40.0) / VIEW.y))
+			var target := Vector2i(Vector2(VIEW) * scale_factor)
+			DisplayServer.window_set_size(target)
+			DisplayServer.window_set_position(usable.position + (usable.size - target) / 2)
 
 func _exit_tree() -> void:
-	var window := get_window()
-	if is_instance_valid(window):
-		window.content_scale_size = previous_content_scale_size
+	Game.save_profile()
+	get_window().content_scale_size = previous_content
 	if OS.has_feature("mobile"):
-		DisplayServer.screen_set_orientation(previous_screen_orientation)
-	elif restore_window_geometry and DisplayServer.get_name() != "headless":
-		DisplayServer.window_set_size(previous_window_size)
-		DisplayServer.window_set_position(previous_window_position)
+		DisplayServer.screen_set_orientation(previous_orientation)
+	elif DisplayServer.get_name() != "headless" and previous_size != Vector2i.ZERO:
+		DisplayServer.window_set_size(previous_size)
+		DisplayServer.window_set_position(previous_position)
 
 func _ready() -> void:
 	if Game.profile.get("expedition") == null:
-		call_deferred("_go_camp")
+		get_tree().change_scene_to_file("res://scenes/camp.tscn")
 		return
-	_build_scene()
-	_refresh()
+	definition = Game.get_map_definition()
+	navigation = Game.get_world_navigation()
+	Game.ensure_world_position()
+	var layout: Node2D = load("res://scenes/maps/map_01.tscn").instantiate()
+	add_child(layout)
+	var background: Sprite2D = layout.get_node("HDBackground")
+	background.centered = false
+	background.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	background.scale = navigation.world_size / background.texture.get_size()
+	background.z_index = -10
+	if OS.is_debug_build():
+		annotation_overlay = Node2D.new()
+		annotation_overlay.set_script(load("res://scripts/maps/map_annotations_overlay.gd"))
+		annotation_overlay.call("setup", background)
+		annotation_overlay.visible = false
+		add_child(annotation_overlay)
+	actor = Node2D.new()
+	actor.name = "Traveler"
+	actor.set_script(Actor)
+	actor.scale = Vector2.ONE * ACTOR_VISUAL_SCALE
+	actor.position = Game.expedition_world_position()
+	actor.z_index = 2
+	add_child(actor)
+	camera = Camera2D.new()
+	camera.name = "FollowCamera"
+	camera.position = actor.position
+	camera.zoom = Vector2.ONE * zoom_level
+	add_child(camera)
+	_build_hud()
+	_build_expedition()
+	_follow_camera(1.0, true)
+	set_process_unhandled_input(true)
 
-func _go_camp() -> void:
-	get_tree().change_scene_to_file("res://scenes/camp.tscn")
+func _build_hud() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "HUD"
+	add_child(layer)
+	var hud := Control.new()
+	hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(hud)
+	var top := KWUI.panel(hud, Rect2(0,0,817,44), Color("#101c20e8"), Color("#56605b"))
+	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	location_label = KWUI.label(hud,"万修古道 · 山脚",Rect2(18,6,230,30),16,Color("#e2dcc7"))
+	var routes_button := KWUI.button(hud,"路线",Rect2(544,6,62,30),12)
+	routes_button.name = "ToggleRoutes"
+	routes_button.pressed.connect(func(): show_routes = not show_routes; queue_redraw())
+	if OS.is_debug_build():
+		var edit := KWUI.button(hud,"编辑道路",Rect2(474,6,66,30),12)
+		edit.name = "ToggleWalkableEditor"
+		edit.pressed.connect(func(): edit_walkable = not edit_walkable; _hint("编辑模式：Shift 拖拽禁行，普通拖拽恢复；红区不可覆盖" if edit_walkable else "已退出道路编辑") ; queue_redraw())
+		var annotations := KWUI.button(hud, "碰撞层", Rect2(334,6,66,30), 12)
+		annotations.name = "ToggleMapAnnotations"
+		annotations.pressed.connect(func(): show_map_annotations = not show_map_annotations; annotation_overlay.visible = show_map_annotations; _hint("已显示高清碰撞/调节层" if show_map_annotations else "已隐藏高清碰撞/调节层"))
+		var save_edit := KWUI.button(hud,"保存",Rect2(404,6,66,30),12)
+		save_edit.name = "SaveWalkableEditor"
+		save_edit.pressed.connect(_save_walkable_edit)
+	var rest := KWUI.button(hud,"休整",Rect2(615,6,90,30),12)
+	rest.pressed.connect(func(): expedition_ui.call("_open_rest"))
+	var back := KWUI.button(hud,"归营",Rect2(714,6,90,30),12)
+	back.name = "ReturnToCamp"
+	back.pressed.connect(func(): expedition_ui.call("request_return"))
+	var bottom := KWUI.panel(hud,Rect2(0,331,817,44),Color("#101c20e8"),Color("#56605b"))
+	bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hint_label = KWUI.label(hud,"WASD / 方向键行走 · 点击古道寻路",Rect2(16,339,398,26),12,Color("#d4d6c5"))
+	for index in 4:
+		var direction: Vector2 = [Vector2.LEFT,Vector2.UP,Vector2.DOWN,Vector2.RIGHT][index]
+		var button := KWUI.button(hud,["←","↑","↓","→"][index],Rect2(421 + index * 42,336,38,33),16)
+		button.focus_mode = Control.FOCUS_NONE
+		button.button_down.connect(func(): held_directions[index] = direction)
+		button.button_up.connect(func(): held_directions.erase(index))
+	var minus := KWUI.button(hud,"−",Rect2(623,337,32,30),16)
+	minus.pressed.connect(func(): _set_zoom(zoom_level - 0.15))
+	zoom_label = KWUI.label(hud,"%d%%" % roundi(zoom_level * 100),Rect2(660,339,58,26),12,Color("#d4d6c5"),HORIZONTAL_ALIGNMENT_CENTER)
+	var plus := KWUI.button(hud,"+",Rect2(724,337,32,30),16)
+	plus.pressed.connect(func(): _set_zoom(zoom_level + 0.15))
+	var center := KWUI.button(hud,"◎",Rect2(764,337,38,30),16)
+	center.pressed.connect(func(): _follow_camera(1.0,true))
+	for label in [location_label,hint_label,zoom_label]:
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-func _build_scene() -> void:
-	var active_map := Game.get_map_definition()
-	var bg := ColorRect.new()
-	bg.color = Color("#081217")
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
-	# 野外探索使用独立 817×375 横屏布局；营地和战斗保持 375×817。
-	var top := KWUI.panel(self, Rect2(0, 0, 817, 48), Color("#141b22f8"), Color("#607770"))
-	var info := KWUI.panel(top, Rect2(5, 3, 247, 42), Color("#1c242afa"), Color("#607770"))
-	var map_name := Game.text(str(active_map.get("nameKey", "")), str(active_map.get("name", Game.get_active_map_id())))
-	title_position_label = KWUI.label(info, "%s（--,--）" % map_name, Rect2(6, 1, 235, 19), 13, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	burden_label = KWUI.label(info, "负重 --/--", Rect2(7, 21, 112, 18), 11, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	grain_label = KWUI.label(info, "灵粮：---", Rect2(124, 21, 116, 18), 11, Color("#dbcb84"), HORIZONTAL_ALIGNMENT_CENTER)
-	var task := KWUI.panel(top, Rect2(257, 3, 285, 42), Color("#1c242afa"), Color("#607770"))
-	objective_label = KWUI.label(task, _objective_text(active_map), Rect2(8, 2, 269, 38), 11, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	var actions := KWUI.panel(top, Rect2(547, 3, 264, 42), Color("#1c242afa"), Color("#607770"))
-	rest_button = KWUI.map_button(actions, "休整", Rect2(4, 3, 48, 36), 10)
-	rest_button.pressed.connect(_open_rest)
-	return_button = KWUI.map_button(actions, "归营", Rect2(56, 3, 48, 36), 10)
-	return_button.pressed.connect(_return_with_talisman)
-	var party := KWUI.map_button(actions, "队伍", Rect2(108, 3, 48, 36), 10)
-	party.pressed.connect(_show_feedback.bind("当前四人小队状态正常", 0))
-	var backpack := KWUI.map_button(actions, "背包", Rect2(160, 3, 48, 36), 10)
-	backpack.pressed.connect(_open_backpack)
-	var settings := KWUI.map_button(actions, "设置", Rect2(212, 3, 48, 36), 10)
-	settings.pressed.connect(_show_feedback.bind("地图设置尚未开放", 1))
-	KWUI.panel(self, MAP_VIEW_RECT, Color("#111e22"), Color("#4c6e65"))
-	map_scroll = ScrollContainer.new()
-	map_scroll.position = MAP_VIEW_RECT.position
-	map_scroll.size = MAP_VIEW_RECT.size
-	map_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
-	map_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
-	# Runtime owns panning so mouse drag, single-touch drag and pinch can share one
-	# deterministic scroll path instead of competing with ScrollContainer's touch drag.
-	map_scroll.scroll_deadzone = 1000000
-	add_child(map_scroll)
-	map_content = Control.new()
-	map_content.name = "MapContent"
-	map_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	map_scroll.add_child(map_content)
-	map_canvas = Control.new()
-	map_canvas.name = "MapCanvas"
-	map_canvas.set_script(load("res://scripts/scenes/map_canvas.gd"))
-	var logical_tile_size := float(active_map.get("visual", {}).get("logicalTileSize", 48))
-	map_base_size = Vector2(int(active_map.get("activeWidth", 15)) * logical_tile_size, int(active_map.get("activeHeight", 15)) * logical_tile_size)
-	# Keep a stable maximum-size scroll extent. Runtime panning is clamped to the
-	# current scaled map bounds, so the unused extent can never be dragged into
-	# view, while zooming no longer waits for a container layout refresh.
-	var maximum_content_size := map_base_size * MAP_ZOOM_MAX
-	map_content.custom_minimum_size = maximum_content_size
-	map_content.size = maximum_content_size
-	map_canvas.custom_minimum_size = map_base_size
-	map_canvas.size = map_base_size
-	map_content.add_child(map_canvas)
-	map_canvas.cell_clicked.connect(_on_cell_clicked)
-	call_deferred("_center_map")
-	grain_warning = KWUI.panel(self, Rect2(220, 52, 377, 32), Color("#5b271ff5"), Color("#cf764aff"))
-	grain_warning.z_index = 150
-	grain_warning.visible = false
-	grain_warning_label = KWUI.label(grain_warning, "", Rect2(10, 2, 357, 27), 11, Color("#ffdca4"), HORIZONTAL_ALIGNMENT_CENTER)
-	var bottom := KWUI.panel(self, Rect2(0, 327, 817, 48), Color("#05090ceb"), Color("#607770"))
-	var left := KWUI.map_button(bottom, "←", Rect2(8, 2, 44, 44), 15)
-	left.pressed.connect(_move.bind(-1, 0))
-	movement_buttons["-1:0"] = left
-	var down := KWUI.map_button(bottom, "↓", Rect2(56, 2, 44, 44), 15)
-	down.pressed.connect(_move.bind(0, -1))
-	movement_buttons["0:-1"] = down
-	var up := KWUI.map_button(bottom, "↑", Rect2(104, 2, 44, 44), 15)
-	up.pressed.connect(_move.bind(0, 1))
-	movement_buttons["0:1"] = up
-	var right := KWUI.map_button(bottom, "→", Rect2(152, 2, 44, 44), 15)
-	right.pressed.connect(_move.bind(1, 0))
-	movement_buttons["1:0"] = right
-	zoom_value_label = KWUI.label(bottom, "缩放 100%", Rect2(213, 5, 82, 38), 11, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
-	zoom_slider = HSlider.new()
-	zoom_slider.name = "MapZoomSlider"
-	zoom_slider.position = Vector2(295, 4)
-	zoom_slider.size = Vector2(205, 40)
-	zoom_slider.min_value = MAP_ZOOM_MIN
-	zoom_slider.max_value = MAP_ZOOM_MAX
-	zoom_slider.step = MAP_ZOOM_STEP
-	zoom_slider.value = map_zoom
-	zoom_slider.focus_mode = Control.FOCUS_NONE
-	zoom_slider.mouse_default_cursor_shape = Control.CURSOR_HSIZE
-	zoom_slider.add_theme_stylebox_override("slider", _zoom_track_style())
-	bottom.add_child(zoom_slider)
-	zoom_slider.value_changed.connect(_on_zoom_slider_changed)
-	hint_label = KWUI.label(bottom, "归营符 0 · 休整 1", Rect2(515, 4, 290, 40), 12, Color("#99a9a2"), HORIZONTAL_ALIGNMENT_CENTER)
-	_build_rest_overlay()
-	_build_backpack_overlay()
-	_build_entry_return_overlay()
-	_build_event_overlay()
-	toast_panel = KWUI.panel(self, Rect2(226, 274, 365, 46), Color("#182c31ee"), KWUI.TEAL)
-	toast_panel.z_index = 300
-	toast_panel.visible = false
-	toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	toast_label = KWUI.label(toast_panel, "", Rect2(8, 2, 349, 40), 12, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		held_directions.clear()
+		route.clear()
 
-func _make_overlay() -> Control:
-	var overlay := Control.new()
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.z_index = 200
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.visible = false
-	add_child(overlay)
-	var shade := ColorRect.new()
-	shade.color = Color("#05080bb4")
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.add_child(shade)
-	return overlay
-
-func _build_rest_overlay() -> void:
-	rest_overlay = _make_overlay()
-	var card := KWUI.panel(rest_overlay, Rect2(190, 52, 437, 270), Color("#1b191dfc"), Color("#607770"))
-	KWUI.label(card, "野外休整", Rect2(18, 18, 401, 34), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	rest_chance_label = KWUI.label(card, "剩余休整次数：--", Rect2(24, 63, 389, 25), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	rest_food_label = KWUI.label(card, "野外食材：--", Rect2(24, 94, 389, 42), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	rest_heal_label = KWUI.label(card, "运功疗伤：--", Rect2(24, 139, 389, 30), 13, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	replenish_button = KWUI.map_button(card, "补充灵粮", Rect2(42, 202, 108, 48), 13)
-	replenish_button.pressed.connect(_replenish_rest)
-	heal_button = KWUI.map_button(card, "运功疗伤", Rect2(164, 202, 108, 48), 13)
-	heal_button.pressed.connect(_heal_rest)
-	var continue_button := KWUI.map_button(card, "结束休整", Rect2(286, 202, 108, 48), 13)
-	continue_button.pressed.connect(_continue_rest)
-
-func _build_backpack_overlay() -> void:
-	backpack_overlay = _make_overlay()
-	var card := KWUI.panel(backpack_overlay, Rect2(180, 20, 457, 335), Color("#1b191dfc"), Color("#607770"))
-	KWUI.label(card, "本次入山所得", Rect2(18, 15, 421, 36), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	backpack_grid = Control.new()
-	backpack_grid.position = Vector2(22, 55)
-	backpack_grid.size = Vector2(413, 210)
-	card.add_child(backpack_grid)
-	backpack_empty_label = KWUI.label(card, "尚未获得临时战利品", Rect2(22, 55, 413, 210), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var close := KWUI.map_button(card, "关闭", Rect2(165.5, 274, 126, 48), 14)
-	close.pressed.connect(func(): backpack_overlay.visible = false)
-
-func _build_entry_return_overlay() -> void:
-	entry_return_overlay = _make_overlay()
-	var card := KWUI.panel(entry_return_overlay, Rect2(220, 90, 377, 195), Color("#1b191dfc"), Color("#607770"))
-	KWUI.label(card, "返回入口传送阵", Rect2(20, 23, 337, 34), 19, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	KWUI.label(card, "是否结束本次入山并返回营地？", Rect2(20, 64, 337, 42), 14, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
-	var confirm := KWUI.map_button(card, "确认归营", Rect2(45.5, 129, 132, 48), 14)
-	confirm.pressed.connect(_return_camp)
-	var cancel := KWUI.map_button(card, "取消", Rect2(199.5, 129, 132, 48), 14)
-	cancel.pressed.connect(func(): entry_return_overlay.visible = false)
-
-func _build_event_overlay() -> void:
-	event_overlay = _make_overlay()
-	object_panel = KWUI.panel(event_overlay, Rect2(117, 5, 583, 365), Color("#1b191dfc"), Color("#9b5b48"))
-	object_kind_label = KWUI.label(object_panel, "奇遇", Rect2(20, 15, 543, 22), 12, Color("#aec0b1"), HORIZONTAL_ALIGNMENT_CENTER)
-	object_title_label = KWUI.label(object_panel, "事件标题", Rect2(20, 36, 543, 34), 20, Color("#e8e0be"), HORIZONTAL_ALIGNMENT_CENTER)
-	var object_info := KWUI.panel(object_panel, Rect2(20, 76, 543, 148), Color("#14161af5"), Color("#607770"))
-	object_label = KWUI.label(object_info, "", Rect2(16, 11, 511, 126), 14, Color("#e0dac2"), HORIZONTAL_ALIGNMENT_LEFT)
-	object_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	KWUI.label(object_panel, "可用行动", Rect2(20, 230, 543, 24), 13, Color("#aec0b1"), HORIZONTAL_ALIGNMENT_CENTER)
-	var definitions := [
-		["engage", "迎战", Callable(self, "_engage")],
-		["inspect", "探灵", Callable(self, "_inspect_object")],
-		["talk", "交谈", Callable(self, "_talk_object")],
-		["operate", "处理", Callable(self, "_resolve_object")],
-		["small_talk", "闲谈", Callable(self, "_small_talk_object")],
-		["leave", "离开", Callable(self, "_close_event")]
-	]
-	for definition in definitions:
-		var button := KWUI.map_button(object_panel, str(definition[1]), Rect2(0, 260, 92, 46), 14)
-		button.visible = false
-		button.pressed.connect(definition[2])
-		event_buttons[str(definition[0])] = button
-	for index in 6:
-		var choice_button := KWUI.map_button(object_panel, "选择", Rect2(0, 260, 144, 46), 12)
-		choice_button.visible = false
-		choice_button.pressed.connect(_choose_object_action.bind(index))
-		choice_buttons.append(choice_button)
-
-func _center_map() -> void:
-	if not is_instance_valid(map_scroll):
+func _physics_process(delta: float) -> void:
+	if not is_instance_valid(actor):
 		return
-	_set_map_scroll(_player_map_center() - map_scroll.size / 2.0)
-
-func _player_map_center() -> Vector2:
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	var position: Dictionary = expedition.get("position", {"x": 2, "y": 2})
-	var active_map := Game.get_map_definition()
-	var logical_tile_size := float(active_map.get("visual", {}).get("logicalTileSize", 48))
-	var tile_center_x := (float(position.get("x", 2)) + 0.5) * logical_tile_size * map_zoom
-	var screen_y := int(active_map.get("activeHeight", 15)) - 1 - int(position.get("y", 2))
-	var tile_center_y := (float(screen_y) + 0.5) * logical_tile_size * map_zoom
-	return Vector2(tile_center_x, tile_center_y) + (map_canvas.position if is_instance_valid(map_canvas) else Vector2.ZERO)
-
-func _input(event: InputEvent) -> void:
-	if _map_input_blocked():
-		_cancel_map_gesture()
+	if expedition_ui.call("_map_input_blocked") or Game.profile.get("expedition") == null:
+		actor.set("walking", false)
 		return
-	if event is InputEventMagnifyGesture:
-		if _map_view_has_point(event.position):
-			_set_map_zoom(map_zoom * event.factor, _map_view_local(event.position))
-			_cancel_canvas_click()
-			get_viewport().set_input_as_handled()
-		return
-	if event is InputEventPanGesture:
-		if _map_view_has_point(event.position):
-			_set_map_scroll(_current_map_scroll() + event.delta * 32.0)
-			_cancel_canvas_click()
-			get_viewport().set_input_as_handled()
-		return
-	if event is InputEventMouseButton:
-		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and _map_view_has_point(event.position):
-			if event.ctrl_pressed or event.meta_pressed:
-				var factor := 1.1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.1
-				_set_map_zoom(map_zoom * factor, _map_view_local(event.position))
-			else:
-				var wheel_direction := -1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0
-				_set_map_scroll(_current_map_scroll() + Vector2(0, wheel_direction * 96.0))
-			_cancel_canvas_click()
-			get_viewport().set_input_as_handled()
-			return
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed and _map_view_has_point(event.position):
-				map_dragging = true
-				map_drag_moved = false
-				map_drag_start = event.position
-				map_drag_scroll_start = _current_map_scroll()
-			elif not event.pressed:
-				map_dragging = false
-			return
-	if event is InputEventMouseMotion and map_dragging:
-		var drag_delta: Vector2 = event.position - map_drag_start
-		if drag_delta.length() >= MAP_DRAG_THRESHOLD:
-			map_drag_moved = true
-		if map_drag_moved:
-			_set_map_scroll(map_drag_scroll_start - drag_delta)
-		return
-	if event is InputEventScreenTouch:
-		_handle_map_touch(event)
-		return
-	if event is InputEventScreenDrag:
-		_handle_map_touch_drag(event)
-
-func _handle_map_touch(event: InputEventScreenTouch) -> void:
-	if event.pressed:
-		if not _map_view_has_point(event.position):
-			return
-		map_touch_positions[event.index] = event.position
-		if map_touch_positions.size() == 1:
-			_start_touch_pan(event.index, event.position)
-		elif map_touch_positions.size() == 2:
-			map_touch_pan_index = -1
-			map_pinch_distance = _touch_pair_distance()
-			_cancel_canvas_click()
-		return
-	map_touch_positions.erase(event.index)
-	if map_touch_positions.size() == 1:
-		var remaining_index := int(map_touch_positions.keys()[0])
-		_start_touch_pan(remaining_index, map_touch_positions[remaining_index])
-	else:
-		map_touch_pan_index = -1
-		map_pinch_distance = 0.0
-
-func _handle_map_touch_drag(event: InputEventScreenDrag) -> void:
-	if not map_touch_positions.has(event.index):
-		return
-	map_touch_positions[event.index] = event.position
-	if map_touch_positions.size() >= 2:
-		var distance := _touch_pair_distance()
-		if map_pinch_distance > 0.0 and distance > 0.0:
-			_set_map_zoom(map_zoom * distance / map_pinch_distance, _map_view_local(_touch_pair_center()))
-		map_pinch_distance = distance
-		_cancel_canvas_click()
-		return
-	if event.index == map_touch_pan_index:
-		var drag_delta: Vector2 = event.position - map_touch_pan_start
-		if drag_delta.length() >= MAP_DRAG_THRESHOLD:
-			_set_map_scroll(map_touch_scroll_start - drag_delta)
-
-func _start_touch_pan(index: int, position: Vector2) -> void:
-	map_touch_pan_index = index
-	map_touch_pan_start = position
-	map_touch_scroll_start = _current_map_scroll()
-	map_pinch_distance = 0.0
-
-func _touch_pair_distance() -> float:
-	var keys := map_touch_positions.keys()
-	if keys.size() < 2:
-		return 0.0
-	return (map_touch_positions[keys[0]] as Vector2).distance_to(map_touch_positions[keys[1]] as Vector2)
-
-func _touch_pair_center() -> Vector2:
-	var keys := map_touch_positions.keys()
-	if keys.size() < 2:
-		return MAP_VIEW_RECT.get_center()
-	return ((map_touch_positions[keys[0]] as Vector2) + (map_touch_positions[keys[1]] as Vector2)) * 0.5
-
-func _on_zoom_slider_changed(value: float) -> void:
-	_set_map_zoom(value, map_scroll.size * 0.5 if is_instance_valid(map_scroll) else Vector2.ZERO)
-
-func _set_map_zoom(value: float, _focus_in_view: Vector2) -> void:
-	if not is_instance_valid(map_canvas) or not is_instance_valid(map_content):
-		return
-	var next_zoom := clampf(snappedf(value, MAP_ZOOM_STEP), MAP_ZOOM_MIN, MAP_ZOOM_MAX)
-	map_zoom = next_zoom
-	map_canvas.scale = Vector2.ONE * map_zoom
-	var scaled_map_size := map_base_size * map_zoom
-	map_canvas.position = Vector2(
-		maxf(0.0, (map_scroll.size.x - scaled_map_size.x) * 0.5),
-		maxf(0.0, (map_scroll.size.y - scaled_map_size.y) * 0.5)
-	)
-	if is_instance_valid(zoom_slider):
-		zoom_slider.set_value_no_signal(map_zoom)
-	if is_instance_valid(zoom_value_label):
-		zoom_value_label.text = "缩放 %d%%" % roundi(map_zoom * 100.0)
-	# Zoom always follows the party rather than the cursor or slider. At map
-	# edges ScrollContainer clamps the target, keeping the player visible while
-	# centering as closely as the available content allows.
-	_set_map_scroll(_player_map_center() - map_scroll.size / 2.0)
-
-func _set_map_scroll(value: Vector2) -> void:
-	if not is_instance_valid(map_scroll):
-		return
-	var scaled_map_size := map_base_size * map_zoom
-	var max_x := maxi(0, ceili(scaled_map_size.x - map_scroll.size.x))
-	var max_y := maxi(0, ceili(scaled_map_size.y - map_scroll.size.y))
-	map_scroll.scroll_horizontal = clampi(roundi(value.x), 0, max_x)
-	map_scroll.scroll_vertical = clampi(roundi(value.y), 0, max_y)
-
-func _current_map_scroll() -> Vector2:
-	if not is_instance_valid(map_scroll):
-		return Vector2.ZERO
-	return Vector2(map_scroll.scroll_horizontal, map_scroll.scroll_vertical)
-
-func _map_view_has_point(position: Vector2) -> bool:
-	return MAP_GESTURE_RECT.has_point(position)
-
-func _map_view_local(position: Vector2) -> Vector2:
-	return position - MAP_VIEW_RECT.position
-
-func _cancel_canvas_click() -> void:
-	if is_instance_valid(map_canvas) and map_canvas.has_method("cancel_pending_click"):
-		map_canvas.call("cancel_pending_click")
-
-func _cancel_map_gesture() -> void:
-	map_dragging = false
-	map_touch_positions.clear()
-	map_touch_pan_index = -1
-	map_pinch_distance = 0.0
-	_cancel_canvas_click()
-
-func _zoom_track_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("#263832")
-	style.border_color = Color("#84977e")
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.content_margin_top = 3
-	style.content_margin_bottom = 3
-	return style
-
-func _unhandled_input(event: InputEvent) -> void:
-	if _map_input_blocked(): return
-	if event.is_action_pressed("move_up"): _move(0, 1)
-	elif event.is_action_pressed("move_down"): _move(0, -1)
-	elif event.is_action_pressed("move_left"): _move(-1, 0)
-	elif event.is_action_pressed("move_right"): _move(1, 0)
-
-func _move(dx: int, dy: int) -> void:
-	if _map_input_blocked(): return
-	var previous: Dictionary = Game.profile.get("expedition", {}).get("position", {}).duplicate(true)
-	var result := Game.move_expedition(dx, dy)
-	if not result.get("ok", false):
-		_show_feedback(result.get("message", "当前无法移动"), 2)
-		return
+	var direction := Input.get_vector("move_left","move_right","move_up","move_down")
+	for held in held_directions.values():
+		direction += held
+	direction = direction.limit_length()
+	var old_position := actor.position
+	var distance := float(definition["speed"]) * minf(delta,0.1)
+	if direction.length_squared() > 0.01:
+		route.clear()
+		actor.position = navigation.move(actor.position,direction * distance)
+	elif not route.is_empty():
+		var target := route[0]
+		var offset := (target - actor.position).limit_length(distance)
+		actor.position = navigation.move(actor.position,offset)
+		if actor.position.distance_to(target) < 1.0:
+			route.remove_at(0)
+		elif actor.position.distance_to(old_position) < 0.001:
+			route.clear()
+			_hint("前方无法通行，请选择其他古道。")
+	var candidate := actor.position
+	actor.position = old_position
+	var result: Dictionary = Game.move_world(candidate - old_position)
 	if result.get("wiped", false):
 		Game._finish_expedition(true)
-		_show_feedback("断粮阵亡，队伍已返回营地", 3)
-		await get_tree().create_timer(1.0).timeout
 		get_tree().change_scene_to_file("res://scenes/camp.tscn")
 		return
-	_refresh()
-	_center_map()
-	var active_map := Game.get_map_definition()
-	var entry := {"x": int(active_map.get("entryX", 2)), "y": int(active_map.get("entryY", 2))}
-	var arrived: Dictionary = result.get("position", {})
-	if arrived == entry and previous != entry:
-		entry_return_overlay.visible = true
-		return
-	var object: Dictionary = result.get("object", {})
-	if not object.is_empty():
-		var object_key := Game.map_object_key(Game.get_active_map_id(), str(object.get("id", "")))
-		var was_completed := bool(Game.profile.get("completedMapObjects", {}).get(object_key, false))
-		if not was_completed and object.get("kind") == "story_event" and object.get("choices", []).is_empty():
-			Game.resolve_object(object)
-		if not was_completed: _show_object(object)
+	actor.position = Game.expedition_world_position()
+	var moved := actor.position - old_position
+	actor.set("walking",moved.length_squared() > 0.001)
+	if moved.length_squared() > 0.001:
+		actor.set("facing",moved.normalized())
+		queue_redraw()
+	_follow_camera(delta)
+	hint_time = maxf(0,hint_time - delta)
+	_update_landmarks()
+	refresh_state()
 
-func _on_cell_clicked(x: int, y: int) -> void:
-	if _map_input_blocked(): return
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	var pos: Dictionary = expedition.get("position", {})
-	var dx := x - int(pos.get("x", x))
-	var dy := y - int(pos.get("y", y))
-	if absi(dx) + absi(dy) != 1:
-		_show_feedback("请选择相邻格", 1)
-		return
-	_move(dx, dy)
-
-func _refresh() -> void:
-	if not is_instance_valid(map_canvas): return
-	map_canvas.call("refresh")
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	var position: Dictionary = expedition.get("position", {})
-	var x := int(position.get("x", 0))
-	var y := int(position.get("y", 0))
-	var active_map := Game.get_map_definition()
-	title_position_label.text = "%s（%d,%d）" % [Game.text(str(active_map.get("nameKey", "")), str(active_map.get("name", Game.get_active_map_id()))), x, y]
-	var carried: Dictionary = expedition.get("carriedItems", {})
-	var burden := int(expedition.get("remainingGrain", 0)) * Game.item_weight("spiritGrain")
-	for item_id in carried: burden += int(carried[item_id]) * Game.item_weight(str(item_id))
-	var temporary_loot: Dictionary = expedition.get("temporaryLoot", {})
-	for item_id in temporary_loot:
-		burden += int(temporary_loot[item_id]) * Game.item_weight(str(item_id))
-	var limit := Game.expedition_burden_limit(Game.party_heroes())
-	burden_label.text = "负重 %d/%d" % [burden, limit]
-	var grain := int(expedition.get("remainingGrain", 0))
-	var depletion_steps := int(expedition.get("grainDepletionSteps", 0))
-	if grain > 0:
-		grain_label.text = "灵粮：%d" % grain
-		grain_label.add_theme_color_override("font_color", Color("#dbcb84"))
-		grain_warning.visible = false
-	else:
-		var stages := ["断粮", "气血亏空", "步履维艰", "生机将绝"]
-		var stage_index := clampi(depletion_steps, 0, stages.size() - 1)
-		var step_limit := int(Game.expedition_config.get("field", {}).get("grainDepletionStepLimit", 4))
-		grain_label.text = stages[stage_index]
-		grain_label.add_theme_color_override("font_color", Color("#ed895b"))
-		grain_warning.visible = true
-		grain_warning_label.text = "警告：灵粮已尽，护体灵息仅可支撑 %d 步" % maxi(0, step_limit - depletion_steps)
-	hint_label.text = "归营符 %d · 休整 %d" % [int(Game.profile.get("inventory", {}).get("return_talisman", 0)), int(expedition.get("restUsesRemaining", 0))]
-	var resting := bool(expedition.get("isResting", false))
-	if is_instance_valid(rest_button): KWUI.set_map_button_disabled(rest_button, resting or int(expedition.get("restUsesRemaining", 0)) <= 0)
-	if is_instance_valid(return_button): KWUI.set_map_button_disabled(return_button, resting)
-	if is_instance_valid(rest_overlay): rest_overlay.visible = resting
-	for key in movement_buttons:
-		var move_button: Button = movement_buttons[key]
-		var parts := str(key).split(":")
-		var dx := int(parts[0])
-		var dy := int(parts[1])
-		KWUI.set_map_button_disabled(move_button, resting or not _can_move(dx, dy))
-	_refresh_rest_overlay()
-	_refresh_backpack_overlay()
-
-func _can_move(dx: int, dy: int) -> bool:
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	if expedition.is_empty() or bool(expedition.get("isResting", false)): return false
-	var position: Dictionary = expedition.get("position", {})
-	var tile := Game.tile_at(int(position.get("x", 0)) + dx, int(position.get("y", 0)) + dy)
-	if not bool(tile.get("walkable", false)): return false
-	if int(expedition.get("remainingGrain", 0)) > 0: return true
-	return int(expedition.get("grainDepletionSteps", 0)) < int(Game.expedition_config.get("field", {}).get("grainDepletionStepLimit", 4))
-
-func _map_input_blocked() -> bool:
-	return (is_instance_valid(rest_overlay) and rest_overlay.visible) \
-		or (is_instance_valid(backpack_overlay) and backpack_overlay.visible) \
-		or (is_instance_valid(entry_return_overlay) and entry_return_overlay.visible) \
-		or (is_instance_valid(event_overlay) and event_overlay.visible)
-
-func _show_object(object: Dictionary) -> void:
-	current_object = object
-	event_overlay.visible = true
-	var completed: bool = bool(Game.profile.get("completedMapObjects", {}).get(Game.map_object_key(Game.get_active_map_id(), str(object.get("id", ""))), false))
-	object_kind_label.text = _event_kind(object)
-	object_title_label.text = str(object.get("title", "地图事件"))
-	object_label.text = str(object.get("description", ""))
-	for choice_button in choice_buttons:
-		choice_button.visible = false
-		KWUI.set_map_button_disabled(choice_button, false)
-	current_action_choices = []
-	if not object.get("choices", []).is_empty() and not completed:
-		for key in event_buttons:
-			event_buttons[key].visible = false
-		current_action_choices = Game.available_map_object_actions(object)
-		var unavailable_notes: Array[String] = []
-		var displayed_count := mini(current_action_choices.size(), choice_buttons.size() - 1)
-		for index in displayed_count:
-			var action: Dictionary = current_action_choices[index]
-			var button: Button = choice_buttons[index]
-			button.visible = true
-			button.text = str(action.get("label", action.get("id", "行动")))
-			KWUI.set_map_button_disabled(button, not bool(action.get("enabled", true)))
-			if not bool(action.get("enabled", true)):
-				unavailable_notes.append("%s：%s" % [button.text, str(action.get("unavailableText", "条件尚未满足"))])
-		var leave_index := displayed_count
-		choice_buttons[leave_index].visible = true
-		choice_buttons[leave_index].text = "离开"
-		current_action_choices.insert(leave_index, {"id": "__leave__", "enabled": true})
-		_layout_action_buttons(choice_buttons.filter(func(button): return button.visible))
-		if not unavailable_notes.is_empty():
-			object_label.text = "%s\n\n%s" % [object_label.text, "\n".join(unavailable_notes)]
-		return
-	var actions: Array = object.get("eventActions", [])
-	if actions.is_empty():
-		if _is_combat_kind(str(object.get("kind", ""))): actions = ["engage", "inspect", "leave"]
-		elif object.get("kind") == "treasure_chest": actions = ["operate", "leave"]
-		else: actions = ["leave"]
-	if completed: actions = ["leave"]
-	var visible_buttons: Array[Button] = []
-	for key in event_buttons:
-		var event_button: Button = event_buttons[key]
-		event_button.visible = false
-		KWUI.set_map_button_disabled(event_button, false)
-	for action in actions:
-		var key := str(action)
-		if not event_buttons.has(key): continue
-		var event_button: Button = event_buttons[key]
-		visible_buttons.append(event_button)
-		event_button.visible = true
-		if key == "operate": event_button.text = str(object.get("operationLabel", "处理"))
-		elif key == "engage": event_button.text = "迎战"
-		elif key == "inspect": event_button.text = "探灵"
-		elif key == "talk": event_button.text = "交谈"
-		elif key == "small_talk": event_button.text = "闲谈"
-		elif key == "leave": event_button.text = "离开"
-	_layout_action_buttons(visible_buttons)
-
-func _layout_action_buttons(buttons: Array) -> void:
-	var widest_button := 0.0
-	for button: Button in buttons:
-		widest_button = maxf(widest_button, button.size.x)
-	var columns_per_row := 3
-	for index in buttons.size():
-		var button: Button = buttons[index]
-		var row := floori(index / float(columns_per_row))
-		var count := mini(columns_per_row, buttons.size() - row * columns_per_row)
-		var column := index - row * columns_per_row
-		var spacing := button.size.x + 10.0
-		var total_width := count * button.size.x + (count - 1) * 10.0
-		var x := (object_panel.size.x - total_width) * 0.5 + column * spacing
-		var y := 260.0 + row * 51.0
-		button.position = Vector2(x, y)
-
-func _choose_object_action(index: int) -> void:
-	if index < 0 or index >= current_action_choices.size():
-		return
-	var action: Dictionary = current_action_choices[index]
-	if str(action.get("id", "")) == "__leave__":
-		var leave_action: Variant = current_object.get("leaveAction", {})
-		if leave_action is Dictionary and not leave_action.is_empty():
-			var result := Game.resolve_map_object_action(current_object, str(leave_action.get("id", "")))
-			_show_feedback(str(result.get("message", "")), 0 if bool(result.get("ok", false)) else 2)
-			if not bool(result.get("ok", false)):
-				return
-			_refresh()
-		_close_event()
-		return
-	if not bool(action.get("enabled", true)):
-		_show_feedback(str(action.get("unavailableText", "条件尚未满足")), 1)
-		return
-	var result := Game.resolve_map_object_action(current_object, str(action.get("id", "")))
-	_show_feedback(str(result.get("message", "")), 0 if bool(result.get("ok", false)) else 2)
-	if not bool(result.get("ok", false)):
-		return
-	if bool(result.get("startEncounter", false)):
-		_close_event()
-		get_tree().change_scene_to_file("res://scenes/combat.tscn")
-		return
-	_refresh()
-	if bool(result.get("positionChanged", false)):
-		_center_map()
-	if bool(result.get("completed", false)) or bool(action.get("closeAfter", false)):
-		_close_event()
-	else:
-		_show_object(current_object)
-
-func _event_kind(object: Dictionary) -> String:
-	var kind := str(object.get("kind", ""))
-	match kind:
-		"enemy_group": return "敌情"
-		"elite_enemy": return "精英敌情"
-		"boss": return "首领敌情"
-		"treasure_chest": return "遗物"
-		"npc": return "人物"
-		"resource", "resource_node": return "资源点"
-		"landmark_event": return "地标事件"
-		"story_event": return "剧情事件"
-		"dungeon": return "局部副本"
-		"shortcut": return "捷径"
-		"map_exit": return "地图出口"
-		_: return "奇遇"
-
-func _is_combat_kind(kind: String) -> bool:
-	return kind in ["enemy_group", "elite_enemy", "boss"] or kind.begins_with("boss_")
-
-func _objective_text(active_map: Dictionary) -> String:
-	var fallback := str(active_map.get("objectiveText", "探索地图并完成当前目标"))
-	var objective := Game.text(str(active_map.get("objectiveTextKey", "")), fallback)
-	return objective if objective.begins_with("主线：") else "主线：%s" % objective
-
-func _close_event() -> void:
-	if is_instance_valid(event_overlay): event_overlay.visible = false
-	current_action_choices = []
-	current_object = {}
-
-func _resolve_object() -> void:
-	if current_object.is_empty(): return
-	var position: Dictionary = Game.profile["expedition"]["position"]
-	var object := current_object if not current_object.is_empty() else Game.object_at(int(position["x"]), int(position["y"]))
-	_show_feedback(Game.resolve_object(object), 0)
-	_close_event()
-	_refresh()
-
-func _inspect_object() -> void:
-	if current_object.is_empty(): return
-	var lens := int(Game.profile.get("expedition", {}).get("carriedItems", {}).get("lens", 0))
-	if lens <= 0:
-		_show_feedback("未携带探灵镜，无法探查敌情", 1)
-		return
-	var result := str(current_object.get("inspectionText", "炼气后期傀物；护甲坚实，灵抗偏低，行动迟缓。"))
-	object_label.text = "%s\n\n探灵结果：%s" % [str(current_object.get("description", "")), result]
-
-func _talk_object() -> void:
-	if current_object.is_empty(): return
-	object_label.text = "%s\n\n%s" % [str(current_object.get("description", "")), str(current_object.get("dialogueText", "对方暂未回应，这段剧情尚待接入。"))]
-
-func _small_talk_object() -> void:
-	if current_object.is_empty(): return
-	object_label.text = "%s\n\n%s" % [str(current_object.get("description", "")), str(current_object.get("smallTalkText", "你与对方闲谈片刻，并未获得新的线索。"))]
-
-func _engage() -> void:
-	var result := Game.begin_encounter(current_object)
-	if not result.get("ok", false):
-		_show_feedback(result.get("message", "当前无法进入战斗"), 2)
-		return
-	_close_event()
-	get_tree().change_scene_to_file("res://scenes/combat.tscn")
-
-func _open_rest() -> void:
-	var result := Game.enter_rest()
-	_show_feedback(result.get("message", ""), 0 if result.get("ok", false) else 1)
-	_refresh()
-	if result.get("ok", false): rest_overlay.visible = true
-
-func _replenish_rest() -> void:
-	var result := Game.replenish_rest()
-	_show_feedback(result.get("message", ""), 0 if result.get("ok", false) else 1)
-	_refresh()
-
-func _heal_rest() -> void:
-	var result := Game.heal_rest()
-	_show_feedback(result.get("message", ""), 0 if result.get("ok", false) else 1)
-	_refresh()
-
-func _continue_rest() -> void:
-	var result := Game.continue_rest()
-	_show_feedback(result.get("message", ""), 0 if result.get("ok", false) else 1)
-	_refresh()
-	if result.get("ok", false): rest_overlay.visible = false
-
-func _refresh_rest_overlay() -> void:
-	if not is_instance_valid(rest_overlay) or not rest_overlay.visible: return
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	var field: Dictionary = Game.expedition_config.get("field", {})
-	rest_chance_label.text = "后续剩余休整：%d 次" % int(expedition.get("restUsesRemaining", 0))
-	var food_text: Array[String] = []
-	for food in field.get("foodItems", []):
-		var food_id := str(food.get("itemId", ""))
-		var amount := int(expedition.get("temporaryLoot", {}).get(food_id, 0))
-		food_text.append("%s ×%d" % [Game.text(str(food.get("nameKey", food_id)), food_id), amount])
-	rest_food_label.text = "野外食材：%s" % "  ·  ".join(food_text)
-	var healing_percent := int(field.get("healingPercent", 25))
-	rest_heal_label.text = "运功疗伤：本次已使用" if bool(expedition.get("restHealingUsed", false)) else "运功疗伤：恢复 %d%% 最大生命" % healing_percent
-	KWUI.set_map_button_disabled(replenish_button, int(expedition.get("remainingGrain", 0)) >= int(expedition.get("grainCapacity", 0)) or not _has_rest_food(expedition, field))
-	KWUI.set_map_button_disabled(heal_button, bool(expedition.get("restHealingUsed", false)))
-
-func _has_rest_food(expedition: Dictionary, field: Dictionary) -> bool:
-	for food in field.get("foodItems", []):
-		if int(expedition.get("temporaryLoot", {}).get(str(food.get("itemId", "")), 0)) > 0: return true
-	return false
-
-func _open_backpack() -> void:
-	_refresh_backpack_overlay()
-	backpack_overlay.visible = true
-
-func _refresh_backpack_overlay() -> void:
-	if not is_instance_valid(backpack_grid): return
-	for child in backpack_grid.get_children(): child.queue_free()
-	var expedition: Dictionary = Game.profile.get("expedition", {})
-	var entries: Array = []
-	for item_id in expedition.get("temporaryLoot", {}):
-		var amount := int(expedition["temporaryLoot"][item_id])
-		if amount > 0: entries.append([str(item_id), amount])
-	backpack_empty_label.visible = entries.is_empty()
-	var columns := 7
-	for index in mini(21, entries.size()):
-		var entry: Array = entries[index]
-		var column := index % columns
-		var row := floori(index / float(columns))
-		var slot := KWUI.panel(backpack_grid, Rect2(6.5 + column * 56, 15 + row * 56, 48, 48), Color("#1f2225"), Color("#7e775b"))
-		var item_id := str(entry[0])
-		var icon_path := ""
-		if item_id == "pickaxe": icon_path = "res://assets/camp/ui/expedition/icon_expedition_pickaxe.png"
-		elif item_id == "lens": icon_path = "res://assets/camp/ui/expedition/icon_expedition_lens.png"
-		if not icon_path.is_empty():
-			var icon := KWUI.texture(slot, icon_path, Rect2(12, 7, 24, 24))
-			icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+func _follow_camera(delta: float, instant := false) -> void:
+	# Reserve the top/bottom HUD; center any axis smaller than the visible area.
+	var half_view := MAP_VISIBLE_SIZE / zoom_level / 2.0
+	var target := actor.position
+	for axis in 2:
+		if navigation.world_size[axis] <= half_view[axis] * 2.0:
+			target[axis] = navigation.world_size[axis] / 2.0
 		else:
-			var symbol := "肉" if item_id == "beast_meat" else "饼" if item_id == "bigu_cake" else "物"
-			KWUI.label(slot, symbol, Rect2(0, 7, 48, 26), 16, Color("#e0d3a8"), HORIZONTAL_ALIGNMENT_CENTER)
-		var badge := KWUI.panel(slot, Rect2(14, 31, 25, 16), Color("#080a0cee"), Color("#c4b789"))
-		KWUI.label(badge, "×%d" % int(entry[1]), Rect2(0, 0, 23, 14), 9, Color("#fff4cc"), HORIZONTAL_ALIGNMENT_CENTER)
+			target[axis] = clampf(target[axis],half_view[axis],navigation.world_size[axis] - half_view[axis])
+	camera.position = target if instant else camera.position.lerp(target,1.0 - exp(-9.0 * delta))
+	camera.force_update_scroll()
 
-func _return_camp() -> void:
-	var result := Game.return_to_camp()
-	if result.get("ok", false):
-		entry_return_overlay.visible = false
-		get_tree().change_scene_to_file("res://scenes/camp.tscn")
-	else: _show_feedback(result.get("message", "请先返回入口"), 2)
+func _set_zoom(value: float) -> void:
+	var minimum := DEBUG_MIN_ZOOM if OS.is_debug_build() else NORMAL_MIN_ZOOM
+	var maximum := DEBUG_MAX_ZOOM if OS.is_debug_build() else NORMAL_MAX_ZOOM
+	zoom_level = clampf(value,minimum,maximum)
+	camera.zoom = Vector2.ONE * zoom_level
+	zoom_label.text = "%d%%" % roundi(zoom_level * 100)
+	_follow_camera(1.0,true)
 
-func _return_with_talisman() -> void:
-	var result := Game.return_with_talisman()
-	if result.get("ok", false): get_tree().change_scene_to_file("res://scenes/camp.tscn")
-	else: _show_feedback(result.get("message", "没有归营符"), 2)
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_instance_valid(expedition_ui) or expedition_ui.call("_map_input_blocked"):
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			expedition_ui.call("request_return")
+		elif event.keycode == KEY_TAB:
+			show_routes = not show_routes
+			queue_redraw()
+	elif event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_set_zoom(zoom_level + 0.1)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_set_zoom(zoom_level - 0.1)
+		elif event.button_index == MOUSE_BUTTON_LEFT:
+			_edit_or_path(get_global_mouse_position(), event.shift_pressed)
+	elif event is InputEventMouseMotion and edit_walkable and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		navigation.paint(get_global_mouse_position(), edit_radius, Input.is_key_pressed(KEY_SHIFT)); route.clear(); queue_redraw()
+	elif event is InputEventScreenTouch and event.pressed:
+		_request_path(get_canvas_transform().affine_inverse() * event.position)
 
-func _show_feedback(message: String, severity: int = 0) -> void:
-	toast_serial += 1
-	var current := toast_serial
-	toast_panel.visible = true
-	toast_panel.add_theme_stylebox_override("panel", KWUI.style_box(Color("#182c31ee"), KWUI.RED if severity >= 2 else KWUI.TEAL, 6, 1))
-	toast_label.text = message
-	await get_tree().create_timer(2.4).timeout
-	if current == toast_serial: toast_panel.visible = false
+func _edit_or_path(target: Vector2, erase := false) -> void:
+	if edit_walkable and OS.is_debug_build():
+		navigation.paint(target, edit_radius, erase)
+		route.clear()
+		_hint("已编辑：Shift 禁行，普通点击恢复原始通行范围")
+		queue_redraw()
+	else:
+		_request_path(target)
+
+func _save_walkable_edit() -> void:
+	var file := FileAccess.open("user://map01_debug_restrictions.json", FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(navigation.painted_walkable))
+		_hint("已保存 Debug 可行走区域")
+
+func _request_path(target: Vector2) -> void:
+	route = navigation.path(actor.position,target)
+	if route.is_empty():
+		_hint("这里是山岩或断崖，请点击石路。")
+	else:
+		_hint("正在沿古道前行 · 按方向键可接管")
+	queue_redraw()
+
+func _hint(message: String) -> void:
+	hint_label.text = message
+	hint_time = 3.0
+
+func _update_landmarks() -> void:
+	var closest: Dictionary = {}
+	var nearest := INF
+	for landmark in definition["landmarks"]:
+		var distance := actor.position.distance_to(Navigation.point(landmark["point"]))
+		if distance < nearest:
+			nearest = distance
+			closest = landmark
+	if nearest < 85:
+		location_label.text = "万修古道 · " + str(closest["name"])
+		if not visited.has(closest["name"]):
+			visited[closest["name"]] = true
+			_hint(str(closest["hint"]))
+	else:
+		location_label.text = "万修古道 · 山间石径"
+	if hint_time <= 0:
+		hint_label.text = "WASD / 方向键行走 · 点击古道寻路"
+
+func _draw() -> void:
+	if not is_instance_valid(actor):
+		return
+	if show_routes:
+		# Show the same grid used by click navigation, not the retired corridor sketch.
+		for y in navigation.graph.region.size.y:
+			var start := -1
+			for x in range(navigation.graph.region.size.x + 1):
+				var walkable: bool = x < navigation.graph.region.size.x and not navigation.graph.is_point_solid(Vector2i(x, y))
+				if walkable and start < 0:
+					start = x
+				elif not walkable and start >= 0:
+					draw_rect(Rect2(Vector2(start - 0.5, y - 0.5) * navigation.step, Vector2(x - start, 1) * navigation.step), Color(0.4, 0.85, 0.7, 0.22))
+					start = -1
+	if not route.is_empty():
+		var points := PackedVector2Array([actor.position])
+		points.append_array(route)
+		draw_polyline(points,Color(0.79,0.82,0.64,0.5),1.3,true)
+		draw_arc(route[-1],7,0,TAU,24,Color("#d5d6ac"),1.4,true)
+
+func _build_expedition() -> void:
+	fog = Node2D.new()
+	fog.set_script(load("res://scripts/maps/map_fog.gd"))
+	fog.set("definition", definition)
+	fog.z_index = 8
+	add_child(fog)
+	var layer := CanvasLayer.new()
+	layer.layer = 5
+	add_child(layer)
+	expedition_ui = Control.new()
+	expedition_ui.set_script(load("res://scripts/scenes/expedition_ui.gd"))
+	expedition_ui.set("world",self)
+	expedition_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(expedition_ui)
+	stats_label = KWUI.label(expedition_ui,"",Rect2(12,47,300,22),11,Color("#e2dcc7"))
+	stats_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var pack := KWUI.button(expedition_ui,"背包",Rect2(714,48,90,28),12)
+	pack.pressed.connect(func(): expedition_ui.call("_open_backpack"))
+	interact_button = KWUI.button(expedition_ui,"互动",Rect2(312,286,192,36),12)
+	interact_button.pressed.connect(_interact)
+	for object in definition.objects:
+		var host := Node2D.new()
+		host.position = Vector2(object.x,object.y)
+		host.z_index = 5
+		var texture_path: String = definition.visual.markerTextures.get(object.kind, definition.visual.markerTextures.get("resource", ""))
+		var sprite := Sprite2D.new()
+		sprite.texture = load(texture_path)
+		sprite.scale = Vector2.ONE * (22.0 / maxf(sprite.texture.get_width(),sprite.texture.get_height()))
+		host.add_child(sprite)
+		add_child(host)
+		object_nodes[object.id] = host
+		for endpoint in object.get("activationPoints",[]):
+			var extra := sprite.duplicate() as Sprite2D
+			extra.position = Vector2(endpoint[0],endpoint[1])
+			extra.z_index = 5
+			add_child(extra)
+	refresh_state()
+
+func refresh_state() -> void:
+	if not is_instance_valid(stats_label) or Game.profile.get("expedition") == null: return
+	var expedition: Dictionary = Game.profile.expedition
+	stats_label.text = "灵粮 %d · 休整 %d · WASD行走" % [expedition.remainingGrain, expedition.restUsesRemaining]
+	proximity_object = {}
+	var nearest := INF
+	for object in definition.objects:
+		var point := Vector2(object.x,object.y)
+		var completed := bool(Game.profile.completedMapObjects.get(Game.map_object_key("map_01",object.id),false))
+		object_nodes[object.id].visible = Game.is_revealed(int(point.x),int(point.y)) and not completed
+		var targets: Array = [[object.x,object.y]] + object.get("activationPoints",[])
+		for target in targets:
+			var at := Vector2(target[0],target[1])
+			var distance := actor.position.distance_to(at)
+			if not completed and distance < float(object.get("interactionRadius",24)) and distance < nearest and navigation.segment_clear(actor.position,at):
+				nearest = distance
+				proximity_object = object
+
+	interact_button.visible = not proximity_object.is_empty() and not expedition_ui.call("_map_input_blocked")
+	if interact_button.visible: interact_button.text = str(proximity_object.get("title","互动"))
+	fog.queue_redraw()
+
+func _interact() -> void:
+	if proximity_object.is_empty(): return
+	route.clear()
+	held_directions.clear()
+	expedition_ui.call("_show_object",proximity_object)
+	refresh_state()
+
+func sync_saved_position() -> void:
+	route.clear()
+	actor.position = Game.expedition_world_position()
+	_follow_camera(1.0,true)
+	refresh_state()

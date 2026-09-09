@@ -73,6 +73,7 @@ func table(table_name: String) -> Variant:
 	return runtime_tables.get(table_name, {})
 
 func map_by_id(map_id: String) -> Dictionary:
+	if map_id == "map_01": return _load_json("res://data/maps/map_01.json")
 	return runtime_tables.get("maps", {}).get(map_id, {})
 
 func default_map_id() -> String:
@@ -86,7 +87,7 @@ func default_map_id() -> String:
 
 func _embedded_runtime_tables() -> Dictionary:
 	var map_manifest: Dictionary = _load_json("res://data/maps/map_01_manifest.json")
-	var map_data_path := str(map_manifest.get("mapDataPath", "res://data/maps/map_01_formal.json"))
+	var map_data_path := str(map_manifest.get("mapDataPath", "res://data/maps/map_01.json"))
 	var combat_data_path := str(map_manifest.get("combatDataPath", "res://data/config/combat_map01_formal.json"))
 	var map_data: Dictionary = _load_json(map_data_path)
 	return {

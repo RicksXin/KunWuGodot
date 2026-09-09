@@ -5,7 +5,7 @@
 - Editable layout: `res://scenes/maps/map_01.tscn`
 - Visual background: `res://assets/maps/map_01/map01_background.png`
 - Runtime adapter: `res://scripts/maps/map01_runtime.gd`
-- Map and coordinate fact source: `res://data/maps/map_01_formal.json`
+- Map and coordinate fact source: `res://data/maps/map_01.json`
 - Combat payload: `res://data/config/combat_map01_formal.json`
 - Manifest: `res://data/maps/map_01_manifest.json`
 - Validation: `res://tools/validate_map01_formal.gd`

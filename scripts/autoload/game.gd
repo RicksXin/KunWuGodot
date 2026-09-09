@@ -22,6 +22,8 @@ var map_definition: Dictionary = {}
 var asset_definitions: Dictionary = {}
 var loaded_from_save := false
 var suppress_profile_writes := false
+var world_navigation: RefCounted
+var world_navigation_signature := ""
 var debug_combat_return_to_settings := false
 
 func _ready() -> void:
@@ -35,6 +37,7 @@ func _ready() -> void:
 	var saved_expedition: Variant = profile.get("expedition")
 	debug_combat_return_to_settings = saved_expedition is Dictionary and bool(saved_expedition.get("debugReturnToSettings", false))
 	map_definition = get_map_definition()
+	ensure_world_position()
 	settle_production()
 	settle_stamina()
 
@@ -503,6 +506,30 @@ func get_party_preset(preset_id: String = "") -> Dictionary:
 		if str(preset.get("presetId", "")) == target_id: return preset
 	return {}
 
+func update_party_members(member_ids: Array) -> Dictionary:
+	if profile.get("expedition") != null:
+		return {"ok": false, "message": "探索进行中，不能修改出战队伍"}
+	if member_ids.is_empty() or member_ids.size() > 4:
+		return {"ok": false, "message": "请选择 1 至 4 名修士"}
+	var slots: Array = []
+	for id in member_ids:
+		var exists := false
+		for hero in profile.get("roster", []):
+			if hero is Dictionary and hero.get("instanceId") == id:
+				exists = true
+		if not exists or slots.has(id):
+			return {"ok": false, "message": "修士不存在或重复选择"}
+		slots.append(id)
+	var preset := get_party_preset()
+	if preset.is_empty():
+		return {"ok": false, "message": "队伍预设不存在"}
+	# Preserve four explicit slots so legacy normalization cannot refill vacancies.
+	slots.resize(4)
+	preset["slots"] = slots
+	save_profile()
+	state_changed.emit()
+	return {"ok": true}
+
 func party_heroes(preset_id: String = "") -> Array:
 	var ids: Array = []
 	var expedition: Variant = profile.get("expedition")
@@ -652,8 +679,13 @@ func _restore_hero_to_party_presets(hero_id: String) -> void:
 func get_map_definition(map_id: String = "") -> Dictionary:
 	var target_id := map_id if not map_id.is_empty() else get_active_map_id()
 	var configured: Dictionary = map_definitions.get(target_id, {})
+	if target_id == "map_01" and configured.get("positionVersion",0) != 2:
+		configured = _load_json("res://data/maps/map_01.json")
+		map_definitions[target_id] = configured
 	if configured.is_empty():
 		return {}
+	if int(configured.get("positionVersion",0)) == 2:
+		return configured
 	var resolved := configured.duplicate(true)
 	var configured_visual: Variant = configured.get("visual")
 	var visual: Dictionary = configured_visual.duplicate(true) if configured_visual is Dictionary else {}
@@ -780,9 +812,9 @@ func check_map_object_requirements(requirements: Dictionary) -> Dictionary:
 	var required_position: Variant = requirements.get("expeditionPositionEquals", {})
 	if required_position is Dictionary and not required_position.is_empty():
 		var current_position: Dictionary = expedition.get("position", {}) if expedition.get("position") is Dictionary else {}
-		if int(current_position.get("x", -1)) != int(required_position.get("x", -2)) \
-			or int(current_position.get("y", -1)) != int(required_position.get("y", -2)):
-			return {"ok": false, "message": str(requirements.get("failureText", "队伍不在对应的地图位置"))}
+		if Vector2(float(current_position.get("x",-1)),float(current_position.get("y",-1))).distance_to(Vector2(float(required_position.get("x",-2)),float(required_position.get("y",-2)))) > 24:
+			return {"ok":false,"message":str(requirements.get("failureText","队伍不在对应的地图位置"))}
+
 	for item_id in requirements.get("minCarriedItems", {}):
 		if int(expedition.get("carriedItems", {}).get(item_id, 0)) < int(requirements["minCarriedItems"][item_id]):
 			return {"ok": false, "message": str(requirements.get("failureText", "本次入山未携带所需工具"))}
@@ -1087,7 +1119,7 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 	profile["expedition"] = {
 		"mapId": target_map_id, "partyPresetId": preset_id, "partyMemberIds": ids,
 		"encounterId": "", "mapObjectId": "", "debugReturnToSettings": false,
-		"position": entry, "remainingGrain": grain, "grainCapacity": grain,
+		"position": entry, "positionVersion": 2, "distanceRemainder": 0.0, "remainingGrain": grain, "grainCapacity": grain,
 		"grainDepletionSteps": 0, "carriedItems": {"pickaxe": pickaxe, "lens": lens}, "restUsesRemaining": int(map_rule.get("restCount", 1)),
 		"isResting": false, "restHealingUsed": false,
 		"revealedTiles": _reveal([], entry, discovery_radius), "temporaryLoot": {},
@@ -1097,83 +1129,120 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 	save_profile()
 	return {"ok": true}
 
+func get_world_navigation() -> RefCounted:
+	var map_data := get_map_definition()
+	var active: Array = []
+	for blocker in map_data.get("dynamicBlockers", []):
+		if map_state_value(str(blocker.stateKey), null) != blocker.get("passValue", true):
+			active.append(blocker)
+	var signature := str(map_data.get("id", "")) + JSON.stringify(active)
+	if world_navigation == null:
+		world_navigation = load("res://scripts/maps/map_navigation.gd").new()
+		world_navigation.setup(map_data)
+	if signature != world_navigation_signature:
+		world_navigation.set_dynamic_blockers(active)
+		world_navigation_signature = signature
+	return world_navigation
+
+func expedition_world_position() -> Vector2:
+	var expedition: Variant = profile.get("expedition")
+	if not expedition is Dictionary: return Vector2.ZERO
+	var position: Dictionary = expedition.get("position", {})
+	return Vector2(float(position.get("x",450)),float(position.get("y",1890)))
+
+func ensure_world_position() -> void:
+	var expedition: Variant = profile.get("expedition")
+	if not expedition is Dictionary or get_map_definition().is_empty(): return
+	var map_data := get_map_definition()
+	if int(expedition.get("positionVersion",0)) != 2:
+		var previous: Dictionary = expedition.get("position",{})
+		var key := "%d:%d" % [int(previous.get("x",0)),int(previous.get("y",0))]
+		var target: Array = map_data.get("legacyPositionMap",{}).get(key,map_data.spawn)
+		expedition["position"] = {"x":target[0],"y":target[1]}
+		expedition["positionVersion"] = 2
+		expedition["distanceRemainder"] = 0.0
+		# Old revealed cells cannot be interpreted as pixel cells. Preserve completed
+		# objects and all resources; re-reveal around migrated position.
+		expedition["revealedTiles"] = []
+	var nav := get_world_navigation()
+	if not nav.can_walk(expedition_world_position()):
+		var spawn: Array = map_data.spawn
+		expedition["position"] = {"x":spawn[0],"y":spawn[1]}
+	expedition["revealedTiles"] = _reveal(expedition.get("revealedTiles",[]),expedition.position,int(get_expedition_map_rule().get("discoveryRadius",2)))
+
 func tile_at(x: int, y: int) -> Dictionary:
-	var active_map := get_map_definition()
-	var rows: Array = active_map.get("terrainRows", [])
-	var width := int(active_map.get("activeWidth", 15))
-	var height := int(active_map.get("activeHeight", 15))
-	if x < 0 or y < 0 or x >= width or y >= height: return {"walkable": false, "cost": 0, "symbol": "#"}
-	var row_index := height - 1 - y
-	if row_index < 0 or row_index >= rows.size(): return {"walkable": false, "cost": 0, "symbol": "#"}
-	var row: String = str(rows[row_index])
-	var symbol := row.substr(x, 1)
-	if symbol == "#": return {"walkable": false, "cost": 0, "symbol": symbol}
-	for blocker in active_map.get("dynamicBlockers", []):
-		if int(blocker.get("x", -1)) != x or int(blocker.get("y", -1)) != y:
-			continue
-		var state_value: Variant = map_state_value(str(blocker.get("stateKey", "")), null)
-		if state_value != blocker.get("passValue", true):
-			return {"walkable": false, "cost": 0, "symbol": symbol, "blockerId": str(blocker.get("id", ""))}
-	var grain_per_step := int(get_expedition_map_rule().get("grainPerStep", 1))
-	return {"walkable": true, "cost": grain_per_step * 2 if symbol == "~" else 0 if symbol == "E" else grain_per_step, "symbol": symbol}
+	var walkable: bool = get_world_navigation().can_walk(Vector2(x,y))
+	return {"walkable":walkable,"cost":int(get_expedition_map_rule().get("grainPerStep",1)),"symbol":"." if walkable else "#"}
 
 func move_expedition(dx: int, dy: int) -> Dictionary:
+	# Compatibility API for directional commands; positions now use world pixels.
+	if absi(dx)+absi(dy) != 1: return {"ok":false,"message":"只能指定一个移动方向"}
+	return move_world(Vector2(dx,dy) * float(get_map_definition().get("grainDistance",48)))
+
+func move_world(delta: Vector2) -> Dictionary:
 	var expedition: Variant = profile.get("expedition")
-	if expedition == null: return {"ok": false, "message": "当前没有探索进度"}
-	if bool(expedition.get("isResting", false)): return {"ok": false, "message": "请先结束休整"}
-	var from: Dictionary = expedition["position"]
-	if absi(dx) + absi(dy) != 1: return {"ok": false, "message": "只能移动到相邻格"}
-	var to := {"x": int(from["x"]) + dx, "y": int(from["y"]) + dy}
-	var tile := tile_at(to["x"], to["y"])
-	if not tile["walkable"]: return {"ok": false, "message": "前方被残禁封锁"}
-	var grain := int(expedition["remainingGrain"])
-	var cost := int(tile["cost"])
-	if grain > 0: grain = maxi(0, grain - mini(grain, cost))
-	else:
-		expedition["grainDepletionSteps"] = int(expedition.get("grainDepletionSteps", 0)) + 1
-		var step_limit := int(expedition_config.get("field", {}).get("grainDepletionStepLimit", 4))
-		if expedition["grainDepletionSteps"] >= step_limit:
-			return {"ok": true, "position": to, "wiped": true, "message": "灵粮耗尽，队伍在断粮中覆灭"}
-	expedition["position"] = to
-	expedition["remainingGrain"] = grain
-	expedition["revealedTiles"] = _reveal(expedition.get("revealedTiles", []), to, int(get_expedition_map_rule().get("discoveryRadius", 2)))
-	save_profile()
-	var object := object_at(to["x"], to["y"])
-	return {"ok": true, "position": to, "wiped": false, "object": object}
+	if not expedition is Dictionary: return {"ok":false,"message":"当前没有探索进度"}
+	if bool(expedition.get("isResting",false)): return {"ok":false,"message":"请先结束休整"}
+	if delta.is_zero_approx(): return {"ok":true}
+	var nav := get_world_navigation()
+	var position := expedition_world_position()
+	var unit := float(get_map_definition().get("grainDistance",48))
+	var remainder := float(expedition.get("distanceRemainder",0.0))
+	var charged := false
+	var samples := maxi(1,ceili(delta.length()/2.0))
+	for i in samples:
+		var next: Vector2 = nav.move(position,delta/float(samples))
+		remainder += next.distance_to(position)
+		position = next
+		while remainder >= unit:
+			remainder -= unit
+			charged = true
+			if int(expedition.remainingGrain)>0:
+				expedition.remainingGrain = maxi(0,int(expedition.remainingGrain)-int(get_expedition_map_rule().get("grainPerStep",1)))
+			else:
+				expedition.grainDepletionSteps = int(expedition.get("grainDepletionSteps",0))+1
+				if int(expedition.grainDepletionSteps)>=int(expedition_config.get("field",{}).get("grainDepletionStepLimit",4)):
+					expedition.position = {"x":position.x,"y":position.y}
+					return {"ok":true,"wiped":true,"message":"灵粮耗尽，队伍在断粮中覆灭"}
+	var previous := expedition_world_position()
+	expedition.position = {"x":position.x,"y":position.y}
+	expedition.distanceRemainder = remainder
+	if previous.distance_to(position)>0.001:
+		expedition.revealedTiles = _reveal(expedition.get("revealedTiles",[]),expedition.position,int(get_expedition_map_rule().get("discoveryRadius",2)))
+	if charged: save_profile()
+	return {"ok":true,"position":expedition.position,"wiped":false,"object":object_at(roundi(position.x),roundi(position.y))}
 
 func object_at(x: int, y: int) -> Dictionary:
-	for object in get_map_definition().get("objects", []):
-		if int(object.get("x", -1)) == x and int(object.get("y", -1)) == y:
-			return object
-		for raw_cell in object.get("activationCells", []):
-			if raw_cell is Array and raw_cell.size() >= 2 \
-				and int(raw_cell[0]) == x and int(raw_cell[1]) == y:
-				return object
+	var point := Vector2(x,y)
+	for object in get_map_definition().get("objects",[]):
+		var targets: Array = [[object.x,object.y]] + object.get("activationPoints",[])
+		for p in targets:
+			var target := Vector2(float(p[0]),float(p[1]))
+			if point.distance_to(target) <= float(object.get("interactionRadius",24)) and get_world_navigation().segment_clear(point,target): return object
+
 	return {}
 
 func _reveal(previous: Array, center: Dictionary, radius: int) -> Array:
 	var result := previous.duplicate()
-	var active_map := get_map_definition()
-	var width := int(active_map.get("activeWidth", 15))
-	var height := int(active_map.get("activeHeight", 15))
-	for y in range(maxi(0, int(center["y"]) - radius), mini(height, int(center["y"]) + radius + 1)):
-		for x in range(maxi(0, int(center["x"]) - radius), mini(width, int(center["x"]) + radius + 1)):
-			if (x - int(center["x"])) * (x - int(center["x"])) + (y - int(center["y"])) * (y - int(center["y"])) <= radius * radius:
-				var key := "%d:%d" % [x, y]
+	var map_data := get_map_definition()
+	var cell := float(map_data.get("fogCellSize",48))
+	var pos := Vector2(float(center.x),float(center.y))/cell
+	var size: Array = map_data.get("worldSize",[897,1939])
+	for y in range(maxi(0,floori(pos.y)-radius),mini(ceili(float(size[1])/cell),floori(pos.y)+radius+1)):
+		for x in range(maxi(0,floori(pos.x)-radius),mini(ceili(float(size[0])/cell),floori(pos.x)+radius+1)):
+			if Vector2(x+0.5,y+0.5).distance_to(pos)<=radius+0.5:
+				var key := "%d:%d" % [x,y]
 				if not result.has(key): result.append(key)
 	return result
 
-func is_visible(x: int, y: int) -> bool:
-	var expedition: Variant = profile.get("expedition")
-	if expedition == null: return false
-	var center: Dictionary = expedition["position"]
-	var radius := int(get_expedition_map_rule().get("discoveryRadius", 2))
-	return (x - int(center["x"])) * (x - int(center["x"])) + (y - int(center["y"])) * (y - int(center["y"])) <= radius * radius
+func is_visible(x: int,y: int) -> bool:
+	return expedition_world_position().distance_to(Vector2(x,y)) <= float(get_expedition_map_rule().get("discoveryRadius",2))*float(get_map_definition().get("fogCellSize",48))
 
-func is_revealed(x: int, y: int) -> bool:
+func is_revealed(x: int,y: int) -> bool:
 	var expedition: Variant = profile.get("expedition")
-	if expedition == null: return false
-	return str("%d:%d" % [x, y]) in expedition.get("revealedTiles", [])
+	if not expedition is Dictionary: return false
+	var cell := float(get_map_definition().get("fogCellSize",48))
+	return "%d:%d" % [floori(x/cell),floori(y/cell)] in expedition.get("revealedTiles",[])
 
 func begin_encounter(object: Dictionary) -> Dictionary:
 	var expedition: Variant = profile.get("expedition")
@@ -1214,7 +1283,7 @@ func return_to_camp() -> Dictionary:
 	var pos: Dictionary = expedition["position"]
 	var active_map := get_map_definition()
 	var entry := {"x": int(active_map.get("entryX", 2)), "y": int(active_map.get("entryY", 2))}
-	if pos != entry: return {"ok": false, "message": "请先返回入口传送阵"}
+	if Vector2(float(pos.x),float(pos.y)).distance_to(Vector2(entry.x,entry.y)) > 28: return {"ok": false, "message": "请先返回入口传送阵"}
 	_finish_expedition(false)
 	return {"ok": true}
 

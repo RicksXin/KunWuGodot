@@ -20,7 +20,7 @@ const REQUIRED_JSON_PATHS := [
 	"res://data/config/expedition_preparation.json",
 	"res://data/config/ling_pu_config.json",
 	"res://data/config/combat_map01_formal.json",
-	"res://data/maps/map_01_formal.json",
+	"res://data/maps/map_01.json",
 	"res://data/maps/map_01_manifest.json",
 	"res://data/maps/map_02_manifest.json"
 ]
@@ -170,20 +170,20 @@ func _validate_realm_ranges() -> void:
 		_fail("realm ranges do not end at maxLevel")
 
 func _validate_map_files() -> void:
-	var map_document: Variant = _read_json("res://data/maps/map_01_formal.json")
+	var map_document: Variant = _read_json("res://data/maps/map_01.json")
 	if map_document is Dictionary:
 		if str(map_document.get("id", "")) != "map_01":
 			_fail("formal map id must be map_01")
-		if int(map_document.get("activeWidth", 0)) != 28 or int(map_document.get("activeHeight", 0)) != 64:
-			_fail("formal map size must be 28x64")
+		if map_document.get("worldSize", []) != [897,1938.5411681914145]:
+			_fail("formal map world size mismatch")
 		var visual: Variant = map_document.get("visual")
 		if not visual is Dictionary:
 			_fail("formal map visual object is missing")
 		else:
 			_validate_res_path(str(visual.get("scenePath", "")), "formal map scenePath")
 			_validate_res_path(str(visual.get("backgroundPath", "")), "formal map backgroundPath")
-			if int(visual.get("logicalTileSize", 0)) != 48:
-				_fail("formal map logicalTileSize must be 48")
+			if visual.get("renderMode", "") != "hd_background_continuous_json":
+				_fail("formal map must use continuous JSON navigation")
 	_validate_manifest("res://data/maps/map_01_manifest.json", true)
 	_validate_manifest("res://data/maps/map_02_manifest.json", false)
 

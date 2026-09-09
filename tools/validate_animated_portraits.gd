@@ -98,7 +98,7 @@ func _validate_combat_ally_info_ui(combat: Node) -> void:
 			continue
 		if host.get_node_or_null("SelectedGlow") != null:
 			_fail("combat hero %d must not contain the obsolete blue selection frame" % (index + 1))
-		var expected_position := Vector2(index * COMBAT_CANVAS_WIDTH, 492)
+		var expected_position := Vector2(index * COMBAT_CANVAS_WIDTH, 572)
 		_check_control_rect(host, expected_position, COMBAT_CARD_SIZE, "combat hero card %d" % (index + 1))
 		var debug_background := host.get_node_or_null("PortraitMask/PortraitCanvasDebug") as ColorRect
 		if debug_background == null:

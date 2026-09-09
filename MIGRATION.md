@@ -9,8 +9,8 @@
 |---|---|---|
 | `Boot.scene` / `AppRoot` | `scenes/boot.tscn` + `Game` | 启动、配置加载、场景切换 |
 | `Camp.scene` | `scenes/camp.tscn` + `camp.gd` | 营地横滑、建筑与固定 HUD |
-| `Map.scene` / `TiledMap` | `scenes/map.tscn` + `map_canvas.gd` + `map_overlay.gd` | `817×375` 横屏探索页、迷雾、Marker、拖动与缩放；离开时恢复竖屏 |
-| Map01 布局与内容 | `data/maps/map_01_formal.json` | 唯一移动、阻挡、对象坐标、互动与地图文案事实源 |
+| `Map.scene` / `TiledMap` | `scenes/map.tscn` + `scripts/scenes/map_scene.gd` + `scripts/maps/map_navigation.gd` | `817×375` 横屏探索页、迷雾、Marker、拖动与缩放；离开时恢复竖屏 |
+| Map01 布局与内容 | `data/maps/map_01.json` + `data/maps/map_01_regions.json` | 高清连续移动、碰撞、对象、互动与地图文案事实源 |
 | Map01 视觉 | `scenes/maps/map_01.tscn` + `assets/maps/map_01/map01_background.png` | 唯一正式高清背景；不承载碰撞或对象坐标 |
 | 战斗 | `scenes/combat.tscn` + `combat.gd` + `combat_resolver.gd` | `CombatCommand → 结算器 → CombatEvent → 表现层` |
 | 后台发布配置 | `ConfigRepository` | 远端整批校验、缓存与内置正式配置回退 |
@@ -18,7 +18,7 @@
 ## 当前唯一正式 Map01
 
 - ID：`map_01`；显示名：破禁山麓·万修之门。
-- 边界：`28×64`；逻辑格：`48×48`；背景：`1344×3072`。
+- 边界：`897×1938.541` 世界坐标；底图：`2488×5692`；碰撞：36 个 JSON 多边形。
 - 入口：`(13,6)`；基础可走格 `834`；阻挡格 `958`。
 - 正式对象 `31`；地图战斗 Marker `13`；遭遇定义 `14`；动态阻挡 `7`。
 - 三灯、暗道、双向阶梯、Boss 门禁和出口继续由正式 JSON 与 `Game.mapStates` 表达。

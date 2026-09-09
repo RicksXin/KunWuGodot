@@ -1,6 +1,6 @@
 extends SceneTree
 
-const FORMAL_MAP_PATH := "res://data/maps/map_01_formal.json"
+const FORMAL_MAP_PATH := "res://data/maps/map_01.json"
 const FORMAL_COMBAT_PATH := "res://data/config/combat_map01_formal.json"
 const FORMAL_SCENE := "res://scenes/maps/map_01.tscn"
 

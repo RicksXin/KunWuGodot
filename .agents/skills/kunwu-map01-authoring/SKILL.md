@@ -9,7 +9,7 @@ description: Safely edit, inspect, or validate the sole formal KunWuGodot Map01:
 
 Read `../../../AGENTS.md`, `../../../README.md`, `../../../MIGRATION.md`, and
 [`references/map01-contract.md`](references/map01-contract.md) before editing. There is one
-formal Map01 only. Treat `data/maps/map_01_formal.json` as the sole movement, blocker,
+formal Map01 only. Treat `data/maps/map_01.json` as the sole movement, blocker,
 object-coordinate, interaction, and map-copy fact source. Treat
 `scenes/maps/map_01.tscn` and `assets/maps/map_01/map01_background.png` as visual-only.
 
