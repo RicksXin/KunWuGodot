@@ -22,15 +22,17 @@ const HERO_CARD_START := Vector2(0, 572)
 const HERO_CARD_STEP_X := HERO_CANVAS_WIDTH
 const HERO_INFO_POSITION := Vector2(0, 149)
 const HERO_INFO_SIZE := Vector2(HERO_CANVAS_WIDTH, 56)
-# 信息层控件到 y=205；人物画布视觉底边按当前战斗页微调到 y=190，
-# 避免绿色调试底压住姓名栏下沿。
-const HERO_PORTRAIT_VISUAL_BOTTOM := HERO_INFO_POSITION.y + 41.0
+# 公共站立线整体上移 20px（卡片内 y=176.8）。
+const HERO_PORTRAIT_FOOT_LINE := HERO_INFO_POSITION.y + 27.8
+# 172×298 源帧内的固定脚底锚点；同一人物所有动作共享，保留自然抬脚。
+const HERO_PORTRAIT_FOOT_Y := {"shi_yan": 256.0, "lu_qing": 276.0, "bai_ling": 253.0, "mo_yan": 275.0}
 # 四张人物画布横向铺满 375px；纵向统一以人物画布底边对齐卡片与
 # 信息面板的可见底边，不再把下方透明留白当作面板内容。
 const HERO_ANIMATION_DISPLAY_SIZE := Vector2(HERO_CANVAS_WIDTH, 149)
 # 白灵序列帧的透明留白较多，保持同一画布后视觉主体会偏小；仅放大主体，
 # 不改变四列画布的宽度和位置契约。
 const HERO_PORTRAIT_SCALES := {"bai_ling": 1.08}
+const HERO_PORTRAIT_GLOBAL_SCALE := 1.2
 const HERO_NAME_AUTO_COLOR := Color("#be883a")
 const HERO_NAME_MANUAL_COLOR := Color("#e8dcbb")
 const SKILL_PICKER_POSITION := Vector2(117.5, 491)
@@ -60,6 +62,11 @@ var combat_ticks := 0
 var finished := false
 var skill_panel: Control
 var skill_buttons: Array[Button] = []
+var pending_skill_id := ""
+var pending_actor_id := -1
+var target_picker: Control
+var target_hint: Label
+var target_buttons: Dictionary = {}
 var outcome_overlay: Control
 var outcome_panel: Panel
 var loot_overlay: Control
@@ -72,6 +79,11 @@ var escape_button: Button
 var pause_button: Button
 var pause_overlay: Control
 var combat_paused := false
+var debug_skip_button: Button
+
+func _is_endless_test_battle() -> bool:
+	return OS.is_debug_build() and Game.debug_combat_return_to_settings
+
 var active_presentation_tweens: Array[Tween] = []
 var animated_portraits: Array[Dictionary] = []
 var active_target_hit_vfx: Dictionary = {}
@@ -114,11 +126,14 @@ func _build_units() -> void:
 	for enemy_index in current_encounter.get("enemies", []).size():
 		var enemy: Dictionary = current_encounter.get("enemies", [])[enemy_index]
 		var enemy_timer := int(enemy.get("initialActionTimer", 45))
+		var enemy_hp := int(enemy.get("maxHp", 1))
+		if _is_endless_test_battle():
+			enemy_hp = maxi(1000000, enemy_hp * 1000)
 		units.append({
 			"unit_id": 100 + enemy_index,
 			"name": Game.text(str(enemy.get("nameKey", "")), str(enemy.get("name", "敌人"))),
 			"side": "enemy", "enemy": enemy,
-			"hp": int(enemy.get("maxHp", 1)), "max_hp": int(enemy.get("maxHp", 1)),
+			"hp": enemy_hp, "max_hp": enemy_hp,
 			"attrs": enemy.get("attributes", {}).duplicate(true), "skills": enemy.get("skillIds", []).duplicate(),
 			"timer": enemy_timer, "action_max": enemy_timer, "auto": true, "dead": false,
 			"shield": 0, "cooldowns": {}, "statuses": [], "ai_index": 0,
@@ -162,6 +177,12 @@ func _build_scene() -> void:
 	pause.z_index = 230
 	pause.pressed.connect(_toggle_combat_pause)
 	pause_button = pause
+	if _is_endless_test_battle():
+		debug_skip_button = KWUI.combat_button(self, "跳过", Rect2(230, 27, 64, 32), 11)
+		debug_skip_button.name = "DebugSkipButton"
+		debug_skip_button.process_mode = Node.PROCESS_MODE_ALWAYS
+		debug_skip_button.z_index = 230
+		debug_skip_button.pressed.connect(_skip_test_battle)
 	var enemy_units := units.filter(func(unit): return unit.get("side") == "enemy")
 	var enemy_card_width := 86.0
 	var enemy_gap := 8.0
@@ -170,7 +191,12 @@ func _build_scene() -> void:
 	for enemy_index in enemy_units.size():
 		_build_enemy_card(enemy_units[enemy_index], Vector2(enemy_start_x + enemy_index * (enemy_card_width + enemy_gap), FIGMA_ENEMY_CARD_Y), enemy_card_width)
 	# 四张修士卡片横向铺满 375px，每张宽度为 375 / 4 = 93.75px。
-	for index in 4:
+	var portrait_order := ["shi_yan", "lu_qing", "bai_ling", "mo_yan"]
+	var ally_units := units.filter(func(unit): return unit.get("side") == "ally")
+	ally_units.sort_custom(func(left, right): return portrait_order.find(_hero_id_for_actor(left)) < portrait_order.find(_hero_id_for_actor(right)))
+	for index in ally_units.size():
+		var ally: Dictionary = ally_units[index]
+		var unit_id := int(ally["unit_id"])
 		var host := Panel.new()
 		host.name = "HeroCard_%d" % (index + 1)
 		host.position = HERO_CARD_START + Vector2(index * HERO_CARD_STEP_X, 0)
@@ -180,8 +206,8 @@ func _build_scene() -> void:
 		# 三种动作共用一张固定 172×298 @2x 画布，运行时显示为 93.75×149；
 		# 卡牌式战斗只允许原地表演，不通过扩大画布制造位移。
 		host.clip_contents = true
-		unit_hosts[index + 1] = host
-		var portrait_path: String = str(["shi_yan", "lu_qing", "bai_ling", "mo_yan"][index])
+		unit_hosts[unit_id] = host
+		var portrait_path := _hero_id_for_actor(ally)
 		var portrait_mask := Control.new()
 		portrait_mask.name = "PortraitMask"
 		# 立绘裁切区覆盖整张卡片；人物画布位于信息面板后方，信息层负责
@@ -193,15 +219,6 @@ func _build_scene() -> void:
 		host.add_child(portrait_mask)
 		var portrait_display_position := _hero_portrait_display_position(portrait_path)
 		var portrait_display_size := _hero_portrait_display_size(portrait_path)
-		# 临时视觉标记：绿色区域表示人物序列帧的实际显示画布，
-		# 用于确认人物位置、裁切边界和脚底对齐。
-		var canvas_debug_background := ColorRect.new()
-		canvas_debug_background.name = "PortraitCanvasDebug"
-		canvas_debug_background.position = portrait_display_position
-		canvas_debug_background.size = portrait_display_size
-		canvas_debug_background.color = Color("#32b76866")
-		canvas_debug_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		portrait_mask.add_child(canvas_debug_background)
 		var portrait := KWUI.texture(portrait_mask, "res://assets/camp/ui/expedition/portrait_hero_%s_expedition.png" % portrait_path, Rect2(portrait_display_position, portrait_display_size))
 		var idle_frames := _load_hero_animation_frames(portrait_path, "idle")
 		if not idle_frames.is_empty():
@@ -216,7 +233,7 @@ func _build_scene() -> void:
 					action_frames[action_name] = frames
 			animated_portraits.append({
 				"node": portrait,
-				"unit_id": index + 1,
+				"unit_id": unit_id,
 				"frames": idle_frames,
 				"idle_frames": idle_frames,
 				"action_frames": action_frames,
@@ -229,7 +246,7 @@ func _build_scene() -> void:
 			})
 		portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_build_unit_info(host, units[index].get("hero", {}), index + 1, true)
+		_build_unit_info(host, ally.get("hero", {}), unit_id, true)
 		# 保留前景层级，使序列帧始终位于修士框内容之下；同时兼容现有动画验证。
 		var frame_overlay := Panel.new()
 		frame_overlay.name = "FrameOverlay"
@@ -240,6 +257,7 @@ func _build_scene() -> void:
 		frame_overlay.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0))
 		host.add_child(frame_overlay)
 	_build_skill_picker()
+	_build_target_picker()
 	log_label = KWUI.label(self, "", Rect2(35, 395, 305, 28), 11, Color("#d4d9c6"), HORIZONTAL_ALIGNMENT_CENTER)
 	# 底部遮罩从队伍卡片下沿开始，避免整体下移后遮挡姓名与行动条。
 	var safe_area := ColorRect.new()
@@ -274,6 +292,8 @@ func _build_scene() -> void:
 	# Godot 的 Control 命中顺序还受场景树顺序影响。暂停遮罩覆盖全屏，
 	# 因此把暂停按钮移到最后，确保暂停后“继续”不会被遮罩抢走点击。
 	move_child(pause_button, get_child_count() - 1)
+	if is_instance_valid(debug_skip_button):
+		move_child(debug_skip_button, get_child_count() - 1)
 
 func _build_skill_picker() -> void:
 	# Figma 358:1393：技能选择是一条 140×46 的透明浮层，不使用旧版
@@ -788,17 +808,18 @@ func _load_hero_animation_frames(hero_id: String, action_name: String) -> Array[
 	return _sheet_frames(sheet, HERO_ANIMATION_COLUMNS, HERO_ANIMATION_ROWS)
 
 func _hero_portrait_scale(hero_id: String) -> float:
-	return float(HERO_PORTRAIT_SCALES.get(hero_id, 1.0))
+	return HERO_PORTRAIT_GLOBAL_SCALE * float(HERO_PORTRAIT_SCALES.get(hero_id, 1.0))
 
 func _hero_portrait_display_size(hero_id: String) -> Vector2:
 	return HERO_ANIMATION_DISPLAY_SIZE * _hero_portrait_scale(hero_id)
 
 func _hero_portrait_display_position(hero_id: String) -> Vector2:
 	var display_size := _hero_portrait_display_size(hero_id)
-	# 水平居中，纵向按当前确认的视觉底边对齐。
+	# 扣除源帧脚下透明留白，再按实际脚底对齐；不逐帧追踪包围盒。
+	var foot_y := float(HERO_PORTRAIT_FOOT_Y.get(hero_id, HERO_ANIMATION_FRAME_SIZE.y))
 	return Vector2(
 		(HERO_ANIMATION_DISPLAY_SIZE.x - display_size.x) * 0.5,
-		HERO_PORTRAIT_VISUAL_BOTTOM - display_size.y
+		HERO_PORTRAIT_FOOT_LINE - display_size.y * foot_y / float(HERO_ANIMATION_FRAME_SIZE.y)
 	)
 
 func _hero_action_for_skill(hero_id: String, skill_id: String, healing: bool) -> String:
@@ -858,12 +879,8 @@ func _auto_action(unit: Dictionary) -> void:
 	_resolve_command(unit, skill_id)
 
 func _choose_skill(skill_index: int) -> void:
-	if finished: return
-	var ready_unit: Dictionary = {}
-	for unit in units:
-		if unit["side"] == "ally" and not unit["dead"] and not unit["auto"] and int(unit["timer"]) <= 0:
-			ready_unit = unit
-			break
+	if finished or combat_paused: return
+	var ready_unit := _manual_ready_actor()
 	if ready_unit.is_empty(): return
 	var skills: Array = ready_unit.get("skills", [])
 	if skill_index < 0 or skill_index >= skills.size(): return
@@ -872,7 +889,100 @@ func _choose_skill(skill_index: int) -> void:
 	if int(cooldowns.get(skill_id, 0)) > 0:
 		_show_log("%s 尚在冷却" % Game.text(KWCombatResolver.skill_by_id(Game.combat_config, skill_id).get("nameKey", skill_id)))
 		return
+	var skill := KWCombatResolver.skill_by_id(Game.combat_config, skill_id)
+	if KWCombatResolver.requires_manual_target(skill):
+		pending_actor_id = int(ready_unit["unit_id"])
+		pending_skill_id = skill_id
+		_refresh_skill_panel()
+		return
+	_clear_target_selection()
 	_resolve_command(ready_unit, skill_id)
+	_refresh()
+
+func _manual_ready_actor() -> Dictionary:
+	# 选目标期间绑定施法者，避免另一名修士就绪后抢走技能栏。
+	if pending_actor_id >= 0:
+		for unit in units:
+			if int(unit["unit_id"]) == pending_actor_id and _is_manual_ready(unit):
+				return unit
+		_clear_target_selection()
+	for unit in units:
+		if _is_manual_ready(unit):
+			return unit
+	return {}
+
+func _is_manual_ready(unit: Dictionary) -> bool:
+	return unit.get("side") == "ally" and not bool(unit.get("dead", false)) and not bool(unit.get("auto", true)) and int(unit.get("timer", 0)) <= 0 and not _has_status(unit, "stun")
+
+func _build_target_picker() -> void:
+	target_picker = Control.new()
+	target_picker.name = "TargetPicker"
+	target_picker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	target_picker.z_index = 170
+	target_picker.visible = false
+	add_child(target_picker)
+	target_hint = KWUI.label(target_picker, "", Rect2(30, 460, 315, 24), 10, SKILL_COLOR_PRIMARY, HORIZONTAL_ALIGNMENT_CENTER)
+	target_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var cancel := KWUI.combat_button(target_picker, "取消选择", Rect2(147.5, 543, 80, 24), 10)
+	cancel.pressed.connect(_cancel_target_selection)
+	for unit_id in unit_hosts:
+		var host := unit_hosts[unit_id] as Control
+		var button := Button.new()
+		button.name = "Target_%s" % unit_id
+		button.position = host.position
+		button.size = host.size
+		button.focus_mode = Control.FOCUS_NONE
+		var empty := StyleBoxEmpty.new()
+		for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+			button.add_theme_stylebox_override(state, empty)
+		button.pressed.connect(_choose_target.bind(int(unit_id)))
+		target_picker.add_child(button)
+		var marker := KWUI.label(button, "点击选择", Rect2(0, 0, host.size.x, 22), 9, SKILL_COLOR_SELECTED, HORIZONTAL_ALIGNMENT_CENTER)
+		marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		target_buttons[unit_id] = button
+
+func _clear_target_selection() -> void:
+	pending_actor_id = -1
+	pending_skill_id = ""
+	if is_instance_valid(target_picker):
+		target_picker.hide()
+
+func _cancel_target_selection() -> void:
+	if combat_paused: return
+	_clear_target_selection()
+	_refresh_skill_panel()
+
+func _refresh_target_selection(actor: Dictionary) -> void:
+	if not is_instance_valid(target_picker): return
+	if finished or actor.is_empty() or pending_skill_id.is_empty():
+		_clear_target_selection()
+		return
+	var skill := KWCombatResolver.skill_by_id(Game.combat_config, pending_skill_id)
+	var candidates := KWCombatResolver.manual_target_candidates(actor, skill, units)
+	if candidates.is_empty() or int(actor.get("cooldowns", {}).get(pending_skill_id, 0)) > 0:
+		_clear_target_selection()
+		return
+	target_picker.show()
+	var friendly := str(skill.get("targetType", "")).begins_with("ALLY")
+	target_hint.text = "%s · %s：请选择%s" % [actor["name"], _skill_name(skill, pending_skill_id), "队友" if friendly else "敌人"]
+	for unit_id in target_buttons:
+		var button: Button = target_buttons[unit_id]
+		button.visible = candidates.any(func(unit): return int(unit["unit_id"]) == int(unit_id))
+		button.position = (unit_hosts[unit_id] as Control).position
+
+func _choose_target(target_unit_id: int) -> void:
+	if finished or combat_paused or pending_skill_id.is_empty(): return
+	var actor := _manual_ready_actor()
+	if actor.is_empty() or pending_skill_id.is_empty(): return
+	var skill := KWCombatResolver.skill_by_id(Game.combat_config, pending_skill_id)
+	var candidates := KWCombatResolver.manual_target_candidates(actor, skill, units)
+	if not candidates.any(func(unit): return int(unit["unit_id"]) == target_unit_id):
+		_refresh_skill_panel()
+		return
+	var skill_id := pending_skill_id
+	_clear_target_selection()
+	_resolve_command(actor, skill_id, target_unit_id)
+	_refresh()
 
 func _toggle_auto(unit_id: int) -> void:
 	for unit in units:
@@ -904,9 +1014,15 @@ func _enemy_action(enemy: Dictionary) -> void:
 	enemy["ai_index"] = int(enemy.get("ai_index", 0)) + 1
 	_resolve_command(enemy, chosen_id)
 
-func _resolve_command(actor: Dictionary, skill_id: String) -> void:
+func _resolve_command(actor: Dictionary, skill_id: String, target_unit_id: int = -1) -> void:
 	var skill := KWCombatResolver.skill_by_id(Game.combat_config, skill_id)
 	if skill.is_empty(): actor["timer"] = 20; return
+	var manual_targets: Array = []
+	if target_unit_id >= 0:
+		manual_targets = KWCombatResolver.manual_target_candidates(actor, skill, units).filter(func(unit): return int(unit["unit_id"]) == target_unit_id)
+		# 无效或已死亡目标不能消耗行动，也不能回退到自动目标。
+		if manual_targets.is_empty() or not _is_manual_ready(actor) or _has_status(actor, "stun"):
+			return
 	if _has_status(actor, "silence") and str(skill.get("damageKind", "none")) in ["magical", "none"]:
 		actor["timer"] = 8
 		_show_log("%s 被封灵，无法施放 %s" % [actor["name"], _skill_name(skill, skill_id)])
@@ -926,14 +1042,17 @@ func _resolve_command(actor: Dictionary, skill_id: String) -> void:
 		var allies := _living_units(str(actor.get("side", "ally")))
 		if allies.is_empty(): return
 		var target: Dictionary = allies[0]
-		for candidate in allies:
-			if float(candidate["hp"]) / candidate["max_hp"] < float(target["hp"]) / target["max_hp"]: target = candidate
+		if not manual_targets.is_empty():
+			target = manual_targets.front()
+		else:
+			for candidate in allies:
+				if float(candidate["hp"]) / candidate["max_hp"] < float(target["hp"]) / target["max_hp"]: target = candidate
 		var amount := KWCombatResolver.heal_amount(actor, target, skill)
 		target["hp"] = mini(int(target["max_hp"]), int(target["hp"]) + amount)
 		_show_log("%s 使用回春术，%s 恢复 %d 点生命" % [actor["name"], target["name"], amount])
 		_play_unit_action(actor, skill_id, target, false)
 		return
-	var targets := _targets_for_skill(actor, skill)
+	var targets := manual_targets if not manual_targets.is_empty() else _targets_for_skill(actor, skill)
 	if skill.get("damageKind", "none") == "none":
 		if targets.is_empty(): targets = [actor]
 		for target in targets:
@@ -1239,6 +1358,11 @@ func _apply_damage(target: Dictionary, damage: int, attacker: Dictionary = {}, d
 		_show_log("%s 金身破碎，核心外露" % target["name"])
 	_apply_forced_boss_shields(target, previous_hp)
 	if target["hp"] <= 0:
+		# Refill only the transient test units, retaining normal damage and skill
+		# feedback while allowing an unlimited presentation test session.
+		if _is_endless_test_battle():
+			target["hp"] = int(target["max_hp"])
+			return
 		target["dead"] = true
 		_show_log("%s 倒下了" % target["name"])
 		if target["side"] == "enemy" and _living_units("enemy").is_empty(): _finish_victory()
@@ -1278,7 +1402,7 @@ func _apply_forced_boss_shields(target: Dictionary, previous_hp: int) -> void:
 	target["forced_shields_used"] = used
 
 func _refresh() -> void:
-	escape_button.visible = not finished and _escape_available()
+	escape_button.visible = not _is_endless_test_battle() and not finished and _escape_available()
 	KWUI.set_combat_button_disabled(escape_button, finished)
 	if is_instance_valid(pause_button):
 		pause_button.visible = not finished
@@ -1358,11 +1482,8 @@ func _refresh_unit_status_badges(info: Control, unit: Dictionary) -> void:
 
 func _refresh_skill_panel() -> void:
 	if not is_instance_valid(skill_panel): return
-	var ready: Dictionary = {}
-	for unit in units:
-		if unit["side"] == "ally" and not unit["dead"] and not unit["auto"] and int(unit["timer"]) <= 0:
-			ready = unit
-			break
+	var ready := _manual_ready_actor()
+	_refresh_target_selection(ready)
 	if ready.is_empty() or finished:
 		skill_panel.visible = false
 		return
@@ -1374,6 +1495,8 @@ func _refresh_skill_panel() -> void:
 		if int(cooldowns.get(str(skills[index]), 0)) <= 0:
 			selected_index = index
 			break
+	if not pending_skill_id.is_empty():
+		selected_index = skills.find(pending_skill_id)
 	for index in skill_buttons.size():
 		var button: Button = skill_buttons[index]
 		if index >= skills.size():
@@ -1515,6 +1638,15 @@ func _current_expedition_burden() -> int:
 
 func _burden_limit() -> int:
 	return Game.expedition_burden_limit(Game.party_heroes())
+
+func _skip_test_battle() -> void:
+	if not _is_endless_test_battle() or finished:
+		return
+	_set_combat_paused(false)
+	finished = true
+	# Skip is an exit, not a victory: no rewards or test damage are persisted.
+	Game.clear_active_encounter()
+	_change_scene_after_combat("res://scenes/camp.tscn")
 
 func _escape() -> void:
 	if finished: return

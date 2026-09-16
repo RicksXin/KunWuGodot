@@ -25,6 +25,58 @@ var suppress_profile_writes := false
 var world_navigation: RefCounted
 var world_navigation_signature := ""
 var debug_combat_return_to_settings := false
+var resource_repository: Node
+var recruitment_config: Node
+
+func get_recruitment_config() -> Node:
+	if not is_instance_valid(recruitment_config):
+		recruitment_config = preload("res://scripts/services/recruitment_config.gd").new()
+		add_child(recruitment_config)
+	return recruitment_config
+
+func recruitment_quote() -> Dictionary:
+	return get_recruitment_config().quote(int(profile.get("camp", {}).get("workerCount", 6)))
+
+func load_recruitment_cache(scope: String) -> Dictionary:
+	var path := "user://recruitment_" + scope + ".json"
+	if scope.length() != 64 or not scope.is_valid_hex_number(false) or not FileAccess.file_exists(path): return {}
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return parsed if parsed is Dictionary else {}
+
+func save_recruitment_cache(scope: String, value: Dictionary) -> void:
+	if suppress_profile_writes or scope.length() != 64 or not scope.is_valid_hex_number(false): return
+	var path := "user://recruitment_" + scope + ".json"
+	var file := FileAccess.open(path + ".tmp", FileAccess.WRITE)
+	if file == null: return
+	file.store_string(JSON.stringify(value))
+	file.close()
+	DirAccess.rename_absolute(path + ".tmp", path)
+
+func get_resource_repository() -> Node:
+	if not is_instance_valid(resource_repository):
+		resource_repository = preload("res://scripts/services/resource_repository.gd").new()
+		add_child(resource_repository)
+	return resource_repository
+
+func load_resource_test_cache(scope: String) -> Dictionary:
+	if OS.get_cmdline_user_args().has("--resource-test-no-cache"): return {}
+	if scope.length() != 64 or not scope.is_valid_hex_number(false): return {}
+	var path := "user://resource_tests/" + scope + ".json"
+	if not FileAccess.file_exists(path): return {}
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return parsed if parsed is Dictionary else {}
+
+func save_resource_test_cache(payload: Dictionary) -> void:
+	if OS.get_cmdline_user_args().has("--resource-test-no-cache"): return
+	var scope := str(payload.get("scope", ""))
+	if scope.length() != 64 or not scope.is_valid_hex_number(false): return
+	DirAccess.make_dir_recursive_absolute("user://resource_tests")
+	var path := "user://resource_tests/" + scope + ".json"
+	var file := FileAccess.open(path + ".tmp", FileAccess.WRITE)
+	if file == null: return
+	file.store_string(JSON.stringify(payload))
+	file.close()
+	DirAccess.rename_absolute(path + ".tmp", path)
 
 func _ready() -> void:
 	# Tool scripts and editor scans are validation contexts, never gameplay.
@@ -239,6 +291,16 @@ func settle_production() -> void:
 	var cycle_seconds := maxi(1, int(ling_pu_config.get("baseCycleSeconds", 30)))
 	var cycles := clampi(int((current - anchor) / float(cycle_seconds)), 0, int(ling_pu_config.get("maxOfflineCycles", 960)))
 	if cycles <= 0: return
+	var forecast := production_forecast(cycles)
+	profile["wallet"] = forecast.balances
+	camp["lastSettledAtUtc"] = anchor + cycles * cycle_seconds
+	profile["camp"] = camp
+	_save_quietly()
+
+func production_forecast(cycles: int = 1) -> Dictionary:
+	# Display and settlement share the same arithmetic, including upkeep and capacity.
+	var camp: Dictionary = profile.get("camp", {})
+	var balances: Dictionary = profile.get("wallet", {}).duplicate(true)
 	var assignment: Dictionary = camp.get("workerAssignments", {})
 	var grain := wallet_value("spiritGrain")
 	var jobs: Array = ling_pu_config.get("jobs", [])
@@ -265,12 +327,11 @@ func settle_production() -> void:
 			var output_asset := str(job.get("outputAssetCode", job_id))
 			var base_stock := wallet_value(output_asset)
 			var next_stock := base_stock + cycles * int(assignment.get(job_id, 0)) * int(job.get("outputPerWorker", 1))
-			profile["wallet"][output_asset] = maxi(base_stock, mini(resource_capacity(output_asset), next_stock))
+			balances[output_asset] = maxi(base_stock, mini(resource_capacity(output_asset), next_stock))
 	var next_grain := maxi(0, grain + grain_produced - upkeep * cycles)
-	profile["wallet"]["spiritGrain"] = maxi(grain, mini(resource_capacity("spiritGrain"), next_grain))
-	camp["lastSettledAtUtc"] = anchor + cycles * cycle_seconds
-	profile["camp"] = camp
-	_save_quietly()
+	# Preserve legacy over-capacity stock without preventing legitimate upkeep deductions.
+	balances["spiritGrain"] = mini(maxi(grain, resource_capacity("spiritGrain")), next_grain)
+	return {"balances": balances, "grainProduced": grain_produced, "grainUpkeep": upkeep * cycles, "shutdown": shutdown}
 
 func settle_stamina() -> void:
 	# 灵息只在营地随现实时间恢复；探索中的离线时间不应计入恢复。
@@ -469,12 +530,15 @@ func adjust_workers(job: String, delta: int) -> bool:
 	save_profile()
 	return true
 
-func recruit_workers() -> bool:
+func recruit_workers(expected_quote: Dictionary = {}) -> bool:
 	settle_production()
-	var cost := int(ling_pu_config.get("recruitSpiritGrainCost", 50))
+	var quote := recruitment_quote()
+	if not quote.get("ok", false): return false
+	if not expected_quote.is_empty() and quote != expected_quote: return false
+	var cost := int(quote.cost)
 	if wallet_value("spiritGrain") < cost: return false
 	profile["wallet"]["spiritGrain"] -= cost
-	profile["camp"]["workerCount"] = int(profile["camp"].get("workerCount", 6)) + int(ling_pu_config.get("workersPerRecruit", 5))
+	profile["camp"]["workerCount"] = int(quote.workerCount) + int(quote.grant)
 	save_profile()
 	return true
 
@@ -682,6 +746,9 @@ func get_map_definition(map_id: String = "") -> Dictionary:
 	if target_id == "map_01" and configured.get("positionVersion",0) != 2:
 		configured = _load_json("res://data/maps/map_01.json")
 		map_definitions[target_id] = configured
+		# Legacy cached maps cannot supply the HD map's encounter IDs. Migrate
+		# the paired combat table too, for both Debug and normal exploration.
+		combat_config = ConfigRepository.formal_map_combat()
 	if configured.is_empty():
 		return {}
 	if int(configured.get("positionVersion",0)) == 2:

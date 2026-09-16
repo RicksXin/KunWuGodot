@@ -1,0 +1,97 @@
+{
+  "status": "trial_spec_not_approved_art",
+  "scope": "议事殿前院、道路、岩壁、石阶",
+  "view": [
+    817,
+    375
+  ],
+  "grid_units": 48,
+  "elevation_step": 40,
+  "camera": {
+    "elevation_degrees": 35,
+    "azimuth_degrees": 15,
+    "projection": "orthographic",
+    "status": "试制基准，非从生成图反推"
+  },
+  "references": [
+    {
+      "path": "art/candidates/camp-orthographic-slice/references/01_style.png",
+      "sha256": "e039f335b17824dc1814a34271042dc53421812d5f4074d871ac56e41935443c"
+    },
+    {
+      "path": "art/candidates/camp-orthographic-slice/references/02_structure.png",
+      "sha256": "f7e98bb9be94be9c4f05ea9eb488646826dfdb46e491c7135e4d6df78ea206e9"
+    },
+    {
+      "path": "art/candidates/camp-orthographic-slice/references/03_council.png",
+      "sha256": "daa4141d385415f55a10d4aff5f0439d897f892dcf2d247106f4ca16affe7a55"
+    }
+  ],
+  "assets": [
+    {
+      "id": "C01",
+      "name": "岩土地面材质",
+      "file": "c01_rock_earth.png",
+      "delivery": [
+        1024,
+        1024
+      ],
+      "alpha": false,
+      "kind": "连续材质参考母图",
+      "runtime": "48×48逻辑格；正俯视材质采样后由地面层统一投影",
+      "priority": 1
+    },
+    {
+      "id": "C02",
+      "name": "风化石铺路材质",
+      "file": "c02_stone_paving.png",
+      "delivery": [
+        1024,
+        1024
+      ],
+      "alpha": false,
+      "kind": "连续材质参考母图",
+      "runtime": "48×48逻辑格；样板道路宽2格；过渡由本地模板制作",
+      "priority": 2
+    },
+    {
+      "id": "C03",
+      "name": "连续岩壁模块",
+      "file": "c03_cliff_front.png",
+      "delivery": [
+        1024,
+        512
+      ],
+      "alpha": true,
+      "kind": "单个崖壁候选",
+      "runtime": "沿+X长度4格192；高差40；顶面厚度12；起点锚在上沿左端",
+      "priority": 3
+    },
+    {
+      "id": "C04",
+      "name": "嵌入山体的石阶",
+      "file": "c04_stairs.png",
+      "delivery": [
+        1024,
+        768
+      ],
+      "alpha": true,
+      "kind": "单个阶梯候选",
+      "runtime": "宽96、进深96、高差40；上口中心(192,432,40)，下口中心(192,528,0)",
+      "priority": 4
+    },
+    {
+      "id": "C05",
+      "name": "议事殿视角校准",
+      "file": "c05_council.png",
+      "delivery": [
+        1024,
+        768
+      ],
+      "alpha": true,
+      "kind": "现有建筑定向改图候选",
+      "runtime": "暂定显示包围框256×192；底面192×144；门口(192,192,40)",
+      "priority": 5
+    }
+  ]
+}

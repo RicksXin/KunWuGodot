@@ -8,19 +8,20 @@ const RESOURCE_ICONS := {
 const VIEW_SIZE := Vector2(375, 817)
 const TOP_HUD_RECT := Rect2(0, 44, 375, 132)
 const BOTTOM_HUD_RECT := Rect2(0, 745, 375, 48)
+const PANORAMA_SCROLL_SCALE := 0.80
 const HERO_ANIMATION_SHEET_SIZE := Vector2i(688, 1192)
 const HERO_ANIMATION_FRAME_COUNT := 16
 const HERO_ANIMATION_FPS := 8.0
 const BUILDINGS := [
 	# 名称牌和状态标记使用建筑中心为原点的 Godot 本地像素偏移。
 	{"id": "yi_shi_dian", "name": "议事殿", "x": 426, "y": 153, "w": 247, "h": 165, "name_offset": Vector2(2.166667, 67.055556), "badge_offset": Vector2(33.409722, 57.197917)},
-	{"id": "ling_pu", "name": "灵源院", "x": 724, "y": 560, "w": 247, "h": 165, "name_offset": Vector2(-2.5, 72.5), "badge_offset": Vector2(26.5, 72.5)},
+	{"id": "ling_pu", "name": "灵源院", "x": 724, "y": 515, "w": 247, "h": 165, "name_offset": Vector2(-2.5, 72.5), "badge_offset": Vector2(26.5, 72.5)},
 	{"id": "zhao_xian_tai", "name": "招贤馆", "x": 252, "y": 358, "w": 247, "h": 165, "name_offset": Vector2(8.5, 67.5), "badge_offset": Vector2(38.409722, 57.197917)},
 	{"id": "bai_bao_ku", "name": "百宝库", "x": 71, "y": 284, "w": 206, "h": 137, "name_offset": Vector2(-10, 58.5), "badge_offset": Vector2(18, 58.5)},
 	{"id": "lian_qi_fang", "name": "炼器坊", "x": 571, "y": 339, "w": 247, "h": 165, "name_offset": Vector2(-27.5, 76.5), "badge_offset": Vector2(0.5, 76.5)},
 	{"id": "jiao_yi_hang", "name": "交易行", "x": 748, "y": 271, "w": 206, "h": 137, "name_offset": Vector2(-13, 54.5), "badge_offset": Vector2(15, 54.5)},
-	{"id": "huan_hun_tan", "name": "还魂殿", "x": 38, "y": 492, "w": 206, "h": 137, "name_offset": Vector2(7, 58.5), "badge_offset": Vector2(35, 58.5)},
-	{"id": "portal", "name": "传送阵", "x": 421, "y": 575, "w": 206, "h": 139, "name_offset": Vector2(0, 49.5), "badge_offset": Vector2.ZERO}
+	{"id": "huan_hun_tan", "name": "还魂殿", "x": 38, "y": 464, "w": 206, "h": 137, "name_offset": Vector2(7, 58.5), "badge_offset": Vector2(35, 58.5)},
+	{"id": "portal", "name": "传送阵", "x": 421, "y": 535, "w": 206, "h": 139, "name_offset": Vector2(0, 49.5), "badge_offset": Vector2.ZERO}
 ]
 
 var resource_labels: Dictionary = {}
@@ -39,20 +40,37 @@ var ignore_building_until_msec := 0
 var expedition_draft: Dictionary = {}
 var party_selection_draft: Array = []
 var animated_portraits: Array[Dictionary] = []
+var ling_pu_live_labels: Dictionary = {}
+var ling_pu_cycle_label: Label
+var resource_notice_baseline: Dictionary = {}
+var resource_notice_queue: Array[String] = []
+var resource_notice_layer: Control
+var resource_notice_label: Label
+var resource_notice_running := false
 
 func _ready() -> void:
 	var reopen_debug_settings := Game.debug_combat_return_to_settings
 	Game.debug_combat_return_to_settings = false
+	resource_notice_baseline = Game.profile.get("wallet", {}).duplicate(true)
 	Game.settle_production()
 	_build_scene()
+	_build_resource_notice()
 	_refresh_hud()
 	Game.state_changed.connect(_refresh_hud)
 	Game.feedback.connect(_show_feedback)
+	Game.get_recruitment_config().changed.connect(_refresh_recruitment_display)
+	var production_refresh := Timer.new()
+	production_refresh.name = "ProductionRefreshTimer"
+	production_refresh.wait_time = 1.0
+	production_refresh.timeout.connect(_refresh_production_display)
+	add_child(production_refresh)
+	production_refresh.start()
 	set_process_input(true)
 	if reopen_debug_settings:
 		call_deferred("_open_settings")
 
 func _process(delta: float) -> void:
+	_check_resource_changes()
 	# TextureRect 不会把 Sprite Sheet 自动当作动画播放。这里逐帧替换
 	# AtlasTexture，确保显示的是图集网格中的单个区域，而不是整张图。
 	for index in range(animated_portraits.size() - 1, -1, -1):
@@ -83,7 +101,22 @@ func _process(delta: float) -> void:
 		animated_portraits[index] = animation
 
 func _input(event: InputEvent) -> void:
-	if is_instance_valid(modal): return
+	if is_instance_valid(modal):
+		panorama_dragging = false
+		return
+	if not is_instance_valid(panorama_scroll): return
+	# 手势与滚轮也由这里处理，避免绕过拖拽倍率进入原生滚动。
+	if event is InputEventPanGesture or (event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT, MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]):
+		if TOP_HUD_RECT.has_point(event.position) or BOTTOM_HUD_RECT.has_point(event.position): return
+		var scroll_delta := 0.0
+		if event is InputEventPanGesture:
+			scroll_delta = event.delta.x
+		elif event.pressed:
+			var direction := -1.0 if event.button_index in [MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_UP] else 1.0
+			scroll_delta = direction * panorama_scroll.get_h_scroll_bar().page / 8.0 * event.factor
+		panorama_scroll.get_h_scroll_bar().value += scroll_delta * PANORAMA_SCROLL_SCALE
+		get_viewport().set_input_as_handled()
+		return
 	var pointer_position := Vector2.ZERO
 	var pressed := false
 	var released := false
@@ -102,7 +135,9 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventScreenDrag:
 		pointer_position = event.position
 		dragged = event.relative.length() > 0.0
-	if TOP_HUD_RECT.has_point(pointer_position) or BOTTOM_HUD_RECT.has_point(pointer_position) or not is_instance_valid(panorama_scroll): return
+	if released:
+		panorama_dragging = false
+	if TOP_HUD_RECT.has_point(pointer_position) or BOTTOM_HUD_RECT.has_point(pointer_position): return
 	if pressed:
 		panorama_dragging = true
 		panorama_drag_moved = false
@@ -111,8 +146,10 @@ func _input(event: InputEvent) -> void:
 	elif panorama_dragging and dragged:
 		var delta_x := pointer_position.x - panorama_drag_start.x
 		if absf(delta_x) > 4.0: panorama_drag_moved = true
-		panorama_scroll.scroll_horizontal = clampi(panorama_scroll_start - int(delta_x), 0, int(panorama_scroll.get_h_scroll_bar().max_value))
-		if panorama_drag_moved: ignore_building_until_msec = Time.get_ticks_msec() + 160
+		panorama_scroll.scroll_horizontal = clampi(panorama_scroll_start - int(delta_x * PANORAMA_SCROLL_SCALE), 0, int(panorama_scroll.get_h_scroll_bar().max_value))
+		if panorama_drag_moved:
+			ignore_building_until_msec = Time.get_ticks_msec() + 160
+			get_viewport().set_input_as_handled()
 	elif released:
 		panorama_dragging = false
 
@@ -165,7 +202,9 @@ func _build_panorama() -> void:
 	viewport.size = VIEW_SIZE
 	viewport.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	viewport.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
-	viewport.follow_focus = true
+	# 保留建筑按钮点击，关闭容器自身的拖拽、惯性与焦点自动横移。
+	viewport.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	viewport.follow_focus = false
 	add_child(viewport)
 	var content := Control.new()
 	content.custom_minimum_size = Vector2(1050, 817)
@@ -189,7 +228,7 @@ func _add_building(parent: Control, info: Dictionary) -> void:
 	var id: String = info["id"]
 	var level := 1 if id == "portal" else int(Game.profile.get("camp", {}).get("buildingLevels", {}).get(id, 0))
 	var has_dead_hero := id == "huan_hun_tan" and not Game.dead_heroes().is_empty()
-	var visually_available := level > 0 or id == "portal" or has_dead_hero
+	var visually_available := level > 0 or id in ["portal", "bai_bao_ku", "jiao_yi_hang", "lian_qi_fang", "huan_hun_tan"] or has_dead_hero
 	var texture_path := "res://assets/camp/buildings/env_camp_%s.png" % ("portal" if id == "portal" else "building_" + id)
 	if not visually_available:
 		var locked_path := texture_path.trim_suffix(".png") + "_locked.png"
@@ -259,21 +298,97 @@ func _build_toast() -> void:
 	toast_label = KWUI.label(toast_panel, "", Rect2(10, 5, 275, 44), 12, KWUI.TEXT, HORIZONTAL_ALIGNMENT_CENTER)
 	toast_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+func _build_resource_notice() -> void:
+	# Transparent scene-local host: only the text is drawn, with no panel or border.
+	resource_notice_layer = Control.new()
+	resource_notice_layer.position = Vector2(36, 600)
+	resource_notice_layer.size = Vector2(303, 64)
+	add_child(resource_notice_layer)
+	resource_notice_layer.name = "ResourceChangeNotice"
+	resource_notice_layer.z_index = 100
+	resource_notice_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	resource_notice_layer.visible = false
+	resource_notice_label = KWUI.label(resource_notice_layer, "", Rect2(0, 0, 303, 40), 18, Color("#181a18"), HORIZONTAL_ALIGNMENT_CENTER)
+	resource_notice_label.name = "ResourceChangeText"
+	resource_notice_label.add_theme_constant_override("outline_size", 2)
+	resource_notice_label.add_theme_color_override("font_outline_color", Color("#e8dcbbd9"))
+	resource_notice_label.add_theme_constant_override("line_spacing", 4)
+	resource_notice_label.add_theme_color_override("font_shadow_color", Color.TRANSPARENT)
+	resource_notice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+func _check_resource_changes() -> void:
+	if not is_instance_valid(resource_notice_layer): return
+	var wallet: Dictionary = Game.profile.get("wallet", {})
+	var codes: Array = resource_notice_baseline.keys()
+	for code in wallet:
+		if not codes.has(code): codes.append(code)
+	var lines: PackedStringArray = []
+	for code in codes:
+		var delta := int(wallet.get(code, 0)) - int(resource_notice_baseline.get(code, 0))
+		if delta == 0: continue
+		lines.append("%s %s%d" % [Game.resource_label(str(code)), "+" if delta > 0 else "", delta])
+	resource_notice_baseline = wallet.duplicate(true)
+	if lines.is_empty(): return
+	resource_notice_queue.append("\n".join(lines))
+	_show_next_resource_notice()
+
+func _show_next_resource_notice() -> void:
+	if resource_notice_running or resource_notice_queue.is_empty(): return
+	resource_notice_running = true
+	resource_notice_label.text = resource_notice_queue.pop_front()
+	resource_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	resource_notice_label.size.y = maxf(24.0, resource_notice_label.get_minimum_size().y)
+	resource_notice_layer.position.y = 600.0
+	resource_notice_layer.modulate.a = 1.0
+	resource_notice_layer.visible = true
+	var float_up := create_tween().set_parallel(true)
+	float_up.tween_property(resource_notice_layer, "position:y", 536.0, 1.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	float_up.tween_property(resource_notice_layer, "modulate:a", 0.0, 1.15).set_delay(0.65)
+	float_up.chain().tween_callback(func():
+		resource_notice_layer.visible = false
+		resource_notice_running = false
+		_show_next_resource_notice())
+
 func _refresh_hud() -> void:
 	Game.settle_production()
 	for id in resource_labels:
 		if is_instance_valid(resource_labels[id]): resource_labels[id].text = str(Game.wallet_value(id))
 	if is_instance_valid(currency_label): currency_label.text = str(Game.wallet_value("immortalCoin"))
+	_check_resource_changes()
+
+func _refresh_production_display() -> void:
+	_refresh_hud()
+	var forecast: Dictionary = Game.production_forecast()
+	for job in ling_pu_live_labels:
+		var labels: Dictionary = ling_pu_live_labels[job]
+		if not is_instance_valid(labels.stock): continue
+		var stock := Game.wallet_value(job)
+		var capacity := Game.resource_capacity(job)
+		labels.stock.text = "%d / %d" % [stock, capacity]
+		var net := int(forecast.balances.get(job, stock)) - stock
+		labels.rate.text = "净变化 %s%d" % ["+" if net > 0 else "", net]
+		labels.rate.modulate = Color("#e5a18c") if net < 0 else Color("#91a49e")
+		labels.rate.tooltip_text = "下一生产周期预计库存变化（含维护与容量限制）"
+		if job == "spiritGrain":
+			labels.rate.tooltip_text += "\n产粮 %d，维护耗粮 %d" % [int(forecast.grainProduced), int(forecast.grainUpkeep)]
+		var workers := int(Game.profile.get("camp", {}).get("workerAssignments", {}).get(job, 0))
+		labels.status.text = "未分配杂役" if workers == 0 else ("库存已满" if stock >= capacity else "岗位运转")
+	if is_instance_valid(ling_pu_cycle_label):
+		var seconds := maxi(1, int(Game.ling_pu_config.get("baseCycleSeconds", 30)))
+		var anchor := int(Game.profile.get("camp", {}).get("lastSettledAtUtc", Game.now()))
+		var remaining := maxi(0, seconds - maxi(0, Game.now() - anchor))
+		ling_pu_cycle_label.text = "每 %d 秒结算一次 · 下次结算 %d 秒" % [seconds, remaining]
 
 func _on_building_pressed(id: String, level: int) -> void:
 	if Time.get_ticks_msec() < ignore_building_until_msec: return
 	match id:
 		"ling_pu": _open_ling_pu()
+		"bai_bao_ku": _open_treasury()
+		"jiao_yi_hang": _open_market()
+		"lian_qi_fang": _open_forge()
 		"portal": _open_expedition()
 		"yi_shi_dian": _open_council()
-		"huan_hun_tan":
-			if level > 0 or not Game.dead_heroes().is_empty(): _open_revive_hall()
-			else: _show_feedback("还魂殿尚未开放", 2)
+		"huan_hun_tan": _open_revive_hall()
 		_:
 			_show_feedback("%s尚未开放" % Game.text("building." + id, id), 1 if level > 0 else 2)
 
@@ -282,6 +397,27 @@ func _on_system_pressed(id: String) -> void:
 	else: _show_feedback("该功能尚未开放", 1)
 
 func _open_revive_hall(status_message: String = "", status_success := true) -> void:
+	var pending := Game.dead_heroes()
+	var cheapest_id := ""
+	var cheapest_cost := 2147483647
+	for hero in pending:
+		var cost := Game.revival_cost(hero)
+		if cost >= 0 and cost < cheapest_cost:
+			cheapest_cost = cost
+			cheapest_id = str(hero.get("instanceId", ""))
+	var show_emergency_design := Game.living_heroes().is_empty() and not cheapest_id.is_empty() and Game.wallet_value("soulCrystal") < cheapest_cost
+	if pending.is_empty() or show_emergency_design:
+		_close_modal()
+		var panel := preload("res://scripts/ui/revive_panel.gd").new()
+		panel.heroes = pending
+		panel.selected_id = cheapest_id
+		panel.status_message = status_message
+		modal = panel
+		add_child(panel)
+		panel.closed.connect(_close_modal)
+		panel.prepare_requested.connect(_open_expedition)
+		panel.emergency_requested.connect(_emergency_revive)
+		return
 	var body := _make_modal("还魂殿")
 	body.name = "ReviveHallBody"
 	var dead: Array = Game.dead_heroes()
@@ -432,6 +568,7 @@ func _add_icon_button(parent: Node, rect: Rect2, path: String, disabled := false
 	return button
 
 func _open_ling_pu() -> void:
+	ling_pu_live_labels.clear()
 	Game.settle_production()
 	var body := _make_modal("灵源院", "res://assets/camp/ui/ling_pu/ui_ling_pu_panel_body.png")
 	body.name = "LingPuPanelBody"
@@ -465,10 +602,11 @@ func _open_ling_pu() -> void:
 		job_icon.modulate = Color.WHITE if opened else Color(0.55, 0.55, 0.55, 0.72)
 		job_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		KWUI.label(body, definition["name"], Rect2(97, row_center - 33, 30, 18), 14, Color("#e8dcbb"))
-		var rate_text := "产量 +%d" % int(assignments.get(job, 0))
-		KWUI.label(body, rate_text, Rect2(142, row_center - 32, 60, 16), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		var rate_label := KWUI.label(body, "", Rect2(140, row_center - 32, 98, 16), 11, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+		rate_label.name = job + "NetRateLabel"
 		var stock_text := "%d / %d" % [Game.wallet_value(job), Game.resource_capacity(job)]
-		KWUI.label(body, stock_text, Rect2(86.5, row_center - 15, 110, 16), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		var stock_label := KWUI.label(body, stock_text, Rect2(86.5, row_center - 15, 110, 16), 11, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		stock_label.name = job + "StockLabel"
 		var resource_config: Dictionary = Game.ling_pu_config.get("resources", {}).get(job, {})
 		var storage_level := int(camp.get("resourceStorageLevels", {}).get(job, 1))
 		var storage_maxed := storage_level >= (resource_config.get("capacities", []) as Array).size()
@@ -482,23 +620,40 @@ func _open_ling_pu() -> void:
 		KWUI.label(body, "%d/%d" % [worker_count, int(camp["workerCount"])], Rect2(258, row_center + 15, 48, 16), 12, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
 		var plus := _add_icon_button(body, Rect2(296, row_center - 1, 48, 48), "res://assets/camp/ui/ling_pu/icon_action_plus.png", assigned >= int(camp["workerCount"]))
 		plus.pressed.connect(_adjust_worker.bind(job, 1))
-		KWUI.label(body, "岗位运转", Rect2(57, row_center + 16, 110, 14), 10, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		var status_label := KWUI.label(body, "岗位运转", Rect2(57, row_center + 16, 110, 14), 10, Color("#91a49e"), HORIZONTAL_ALIGNMENT_CENTER)
+		ling_pu_live_labels[job] = {"stock": stock_label, "status": status_label, "rate": rate_label}
+	ling_pu_cycle_label = KWUI.label(body, "", Rect2(52, 503, 270, 20), 12, Color("#b58a42"), HORIZONTAL_ALIGNMENT_CENTER)
+	ling_pu_cycle_label.name = "ProductionCycleLabel"
+	_refresh_production_display()
 	var recruit := _camp_button(body, "杂役招募", Rect2(42, 558.5, 132, 44), false, 14)
 	recruit.name = "RecruitButton"
 	recruit.pressed.connect(_open_recruit_confirmation)
 	var close := _camp_button(body, "关闭", Rect2(200, 558.5, 132, 44), false, 14)
 	close.name = "CloseButton"
 	close.pressed.connect(_close_modal)
+	_refresh_recruitment_display()
 
 func _adjust_worker(job: String, delta: int) -> void:
 	if not Game.adjust_workers(job, delta): _show_feedback("没有可调整的杂役", 2)
 	_open_ling_pu()
 
-func _recruit_workers() -> void:
-	var cost := int(Game.ling_pu_config.get("recruitSpiritGrainCost", 50))
-	var granted := int(Game.ling_pu_config.get("workersPerRecruit", 5))
-	if Game.recruit_workers(): _show_feedback("已招募 %d 名杂役" % granted, 0)
-	else: _show_feedback("灵粮不足，需要 %d" % cost, 2)
+func _refresh_recruitment_display() -> void:
+	if not is_instance_valid(modal): return
+	var quote: Dictionary = Game.recruitment_quote()
+	var button := modal.find_child("RecruitButton", true, false) as Button
+	if is_instance_valid(button):
+		button.text = "杂役招募" if quote.get("ok", false) else ("已达上限" if str(quote.reason).contains("上限") else "招募配置未就绪")
+		button.tooltip_text = "下一名需要 %d 灵粮" % int(quote.cost) if quote.get("ok", false) else str(quote.reason)
+		button.disabled = not quote.get("ok", false)
+	if is_instance_valid(ling_pu_confirmation) and ling_pu_confirmation.get_meta("kind", "") == "recruit" and ling_pu_confirmation.get_meta("quote", {}) != quote:
+		_open_ling_pu_confirmation("recruit")
+
+func _recruit_workers(expected_quote: Dictionary) -> void:
+	if Game.recruit_workers(expected_quote): _show_feedback("已招募 %d 名杂役" % int(expected_quote.grant), 0)
+	else:
+		var current: Dictionary = Game.recruitment_quote()
+		var reason := str(current.reason) if not current.get("ok", false) else ("招募配置或人数已变化，请重新确认" if current != expected_quote else "灵粮不足，需要 %d" % int(current.cost))
+		_show_feedback(reason, 2)
 	_open_ling_pu()
 
 func _open_recruit_confirmation() -> void:
@@ -518,6 +673,7 @@ func _open_ling_pu_confirmation(kind: String, job := "") -> void:
 	_close_ling_pu_confirmation()
 	ling_pu_confirmation = Control.new()
 	ling_pu_confirmation.name = "LingPuConfirmation"
+	ling_pu_confirmation.set_meta("kind", kind)
 	ling_pu_confirmation.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ling_pu_confirmation.mouse_filter = Control.MOUSE_FILTER_STOP
 	modal.add_child(ling_pu_confirmation)
@@ -535,11 +691,14 @@ func _open_ling_pu_confirmation(kind: String, job := "") -> void:
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var title := "招募杂役"
 	var icon_id := "spiritGrain"
-	var cost := int(Game.ling_pu_config.get("recruitSpiritGrainCost", 50))
+	var recruitment: Dictionary = Game.recruitment_quote()
+	ling_pu_confirmation.set_meta("quote", recruitment.duplicate(true))
+	var cost := int(recruitment.cost)
 	var cost_text := "灵粮%d" % cost
-	var detail_text := "杂役 +%d" % int(Game.ling_pu_config.get("workersPerRecruit", 5))
+	var detail_text := "杂役 +%d" % int(recruitment.grant) if recruitment.get("ok", false) else str(recruitment.reason)
 	var stock := Game.wallet_value("spiritGrain")
 	var confirm_text := "招募"
+	if kind == "recruit" and not recruitment.get("ok", false): cost_text = "—"
 	if kind == "upgrade":
 		var resource: Dictionary = Game.ling_pu_config.get("resources", {}).get(job, {})
 		var levels: Dictionary = Game.profile.get("camp", {}).get("resourceStorageLevels", {})
@@ -562,18 +721,19 @@ func _open_ling_pu_confirmation(kind: String, job := "") -> void:
 	var icon := KWUI.texture(body, "res://assets/camp/ui/top/icon_resource_%s.png" % RESOURCE_ICONS[icon_id], Rect2(148, 71, 32, 32))
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	KWUI.label(body, "需要", Rect2(123, 121, 32, 16), 16, Color("#e8dcbb"), HORIZONTAL_ALIGNMENT_CENTER)
-	KWUI.label(body, cost_text, Rect2(145.5, 119, 70, 20), 16, Color("#b58a42"), HORIZONTAL_ALIGNMENT_CENTER)
+	var cost_label := KWUI.label(body, cost_text, Rect2(145.5, 119, 100, 20), 16, Color("#b58a42"), HORIZONTAL_ALIGNMENT_CENTER)
+	cost_label.name = "RecruitmentCostLabel"
 	var missing := maxi(0, cost - stock)
 	KWUI.label(body, "" if missing <= 0 else "缺少%s %d" % ["灵木" if kind == "upgrade" else "灵粮", missing], Rect2(59, 143, 210, 16), 16, Color("#b94a3e"), HORIZONTAL_ALIGNMENT_CENTER)
 	KWUI.label(body, detail_text, Rect2(59, 198, 210, 20), 16, Color("#6f945f"), HORIZONTAL_ALIGNMENT_CENTER)
 	# 旧 Cocos/Figma 中两颗 Footer 按钮位于 327×266 框体下方，间隔 6px。
 	var confirm := _camp_button(body, confirm_text, Rect2(22, 272, 132, 44), false, 14)
 	confirm.name = "ConfirmButton"
-	confirm.disabled = missing > 0
+	confirm.disabled = missing > 0 or (kind == "recruit" and not recruitment.get("ok", false))
 	if kind == "upgrade":
 		confirm.pressed.connect(_upgrade_storage.bind(job))
 	else:
-		confirm.pressed.connect(_recruit_workers)
+		confirm.pressed.connect(_recruit_workers.bind(recruitment.duplicate(true)))
 	var cancel := _camp_button(body, "取消", Rect2(173, 272, 132, 44), false, 14)
 	cancel.name = "CancelButton"
 	cancel.pressed.connect(_close_ling_pu_confirmation)
@@ -1017,6 +1177,28 @@ func _open_settings() -> void:
 		debug.name = "OpenDebugPanelButton"
 		debug.pressed.connect(_open_debug_panel)
 
+
+	var demo := _camp_button(body, "人物漫游 Demo", Rect2(55, 430, 235, 48), false, 14)
+	demo.name = "OpenCharacterDemoButton"
+	demo.pressed.connect(_open_character_demo)
+	var tilemap_lab := _camp_button(body, "营地 TileMap 实验", Rect2(55, 495, 235, 48), false, 14)
+	tilemap_lab.name = "OpenCampTileMapLabButton"
+	tilemap_lab.pressed.connect(_open_camp_tilemap_lab)
+
+func _open_camp_tilemap_lab() -> void:
+	var lab := preload("res://scenes/prototypes/camp_tilemap_lab.tscn").instantiate()
+	lab.camp = self
+	hide()
+	process_mode = Node.PROCESS_MODE_DISABLED
+	get_tree().root.add_child(lab)
+
+func _open_character_demo() -> void:
+	var demo := preload("res://scenes/character_demo.tscn").instantiate()
+	demo.camp = self
+	hide()
+	process_mode = Node.PROCESS_MODE_DISABLED
+	get_tree().root.add_child(demo)
+
 func _open_debug_panel() -> void:
 	if not OS.is_debug_build():
 		return
@@ -1066,3 +1248,27 @@ func _show_feedback(message: String, severity: int = 0) -> void:
 	toast_label.text = message
 	await get_tree().create_timer(2.4).timeout
 	if current == toast_serial: toast_panel.visible = false
+
+func _open_treasury(design_preview := false) -> void:
+	_close_modal()
+	var treasury := preload("res://scripts/ui/treasury_panel.gd").new()
+	treasury.preview = design_preview
+	modal = treasury
+	add_child(modal)
+	treasury.closed.connect(_close_modal)
+
+func _open_market(design_preview := false) -> void:
+	_close_modal()
+	var market := preload("res://scripts/ui/market_panel.gd").new()
+	market.preview = design_preview
+	modal = market
+	add_child(modal)
+	market.closed.connect(_close_modal)
+
+func _open_forge(design_preview := false) -> void:
+	_close_modal()
+	var forge := preload("res://scripts/ui/forge_panel.gd").new()
+	forge.preview = design_preview
+	modal = forge
+	add_child(modal)
+	forge.closed.connect(_close_modal)

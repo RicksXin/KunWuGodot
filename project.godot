@@ -69,6 +69,7 @@ move_right={
 
 config_base_url=""
 config_channel="development"
+resource_config_base_url="http://127.0.0.1:3100"
 config_request_timeout_seconds=3.0
 
 [rendering]

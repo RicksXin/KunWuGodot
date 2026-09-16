@@ -4,6 +4,8 @@ const Navigation = preload("res://scripts/maps/map_navigation.gd")
 const Actor = preload("res://scripts/maps/map_actor.gd")
 const DATA_PATH := "res://data/maps/map_01.json"
 const VIEW := Vector2i(817, 375)
+const PATH_HOLD_SECONDS := 0.45
+const PATH_HOLD_SLOP := 12.0
 const DEFAULT_ZOOM := 1.2
 const NORMAL_MIN_ZOOM := 1.0
 const NORMAL_MAX_ZOOM := 1.5
@@ -14,6 +16,7 @@ const ACTOR_VISUAL_SCALE := 0.65
 
 var navigation: RefCounted
 var expedition_ui: Control
+var return_platform: Sprite2D
 var fog: Node2D
 var object_nodes: Dictionary = {}
 var proximity_object: Dictionary = {}
@@ -23,6 +26,11 @@ var definition: Dictionary
 var actor: Node2D
 var camera: Camera2D
 var route := PackedVector2Array()
+var path_hold_pointer := -2
+var path_hold_elapsed := 0.0
+var path_hold_screen := Vector2.ZERO
+var path_hold_world := Vector2.ZERO
+var path_touches: Dictionary = {}
 var show_routes := false
 var zoom_level := DEFAULT_ZOOM
 var touch_direction := Vector2.ZERO
@@ -136,7 +144,7 @@ func _build_hud() -> void:
 	back.pressed.connect(func(): expedition_ui.call("request_return"))
 	var bottom := KWUI.panel(hud,Rect2(0,331,817,44),Color("#101c20e8"),Color("#56605b"))
 	bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hint_label = KWUI.label(hud,"WASD / 方向键行走 · 点击古道寻路",Rect2(16,339,398,26),12,Color("#d4d6c5"))
+	hint_label = KWUI.label(hud,"WASD / 方向键行走 · 长按古道寻路",Rect2(16,339,398,26),12,Color("#d4d6c5"))
 	for index in 4:
 		var direction: Vector2 = [Vector2.LEFT,Vector2.UP,Vector2.DOWN,Vector2.RIGHT][index]
 		var button := KWUI.button(hud,["←","↑","↓","→"][index],Rect2(421 + index * 42,336,38,33),16)
@@ -155,6 +163,8 @@ func _build_hud() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_cancel_path_hold()
+		path_touches.clear()
 		held_directions.clear()
 		route.clear()
 
@@ -213,12 +223,59 @@ func _follow_camera(delta: float, instant := false) -> void:
 	camera.force_update_scroll()
 
 func _set_zoom(value: float) -> void:
+	_cancel_path_hold()
 	var minimum := DEBUG_MIN_ZOOM if OS.is_debug_build() else NORMAL_MIN_ZOOM
 	var maximum := DEBUG_MAX_ZOOM if OS.is_debug_build() else NORMAL_MAX_ZOOM
 	zoom_level = clampf(value,minimum,maximum)
 	camera.zoom = Vector2.ONE * zoom_level
 	zoom_label.text = "%d%%" % roundi(zoom_level * 100)
 	_follow_camera(1.0,true)
+
+# Observe cancellation before GUI consumption, so release over HUD cannot leave a hold armed.
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed and not event.canceled: path_touches[event.index] = true
+		else: path_touches.erase(event.index)
+	if path_hold_pointer == -2: return
+	if event is InputEventMouseButton and event.device != -1:
+		if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+			_cancel_path_hold()
+	elif event is InputEventMouseMotion and path_hold_pointer == -1:
+		if event.position.distance_to(path_hold_screen) > PATH_HOLD_SLOP:
+			_cancel_path_hold()
+	elif event is InputEventScreenTouch:
+		if event.index != path_hold_pointer or not event.pressed or event.canceled:
+			_cancel_path_hold()
+	elif event is InputEventScreenDrag and event.index == path_hold_pointer:
+		if event.position.distance_to(path_hold_screen) > PATH_HOLD_SLOP:
+			_cancel_path_hold()
+
+func _begin_path_hold(pointer: int, screen: Vector2) -> void:
+	if path_touches.size() > 1: return
+	if path_hold_pointer != -2:
+		_cancel_path_hold()
+		return
+	path_hold_pointer = pointer
+	path_hold_elapsed = 0.0
+	path_hold_screen = screen
+	# Capture the world target now: camera following during the hold must not move it.
+	path_hold_world = get_canvas_transform().affine_inverse() * screen
+
+func _cancel_path_hold() -> void:
+	path_hold_pointer = -2
+	path_hold_elapsed = 0.0
+
+func _process(delta: float) -> void:
+	_update_actor_occlusion(delta)
+	if path_hold_pointer == -2: return
+	if not is_instance_valid(expedition_ui) or expedition_ui.call("_map_input_blocked") or edit_walkable or not held_directions.is_empty() or Input.get_vector("move_left","move_right","move_up","move_down").length_squared() > 0.01:
+		_cancel_path_hold()
+		return
+	path_hold_elapsed += delta
+	if path_hold_elapsed >= PATH_HOLD_SECONDS:
+		var target := path_hold_world
+		_cancel_path_hold()
+		_request_path(target)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(expedition_ui) or expedition_ui.call("_map_input_blocked"):
@@ -235,11 +292,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_set_zoom(zoom_level - 0.1)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
-			_edit_or_path(get_global_mouse_position(), event.shift_pressed)
+			if event.device != -1:
+				if edit_walkable:
+					_edit_or_path(get_global_mouse_position(), event.shift_pressed)
+				else:
+					_begin_path_hold(-1, event.position)
 	elif event is InputEventMouseMotion and edit_walkable and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		navigation.paint(get_global_mouse_position(), edit_radius, Input.is_key_pressed(KEY_SHIFT)); route.clear(); queue_redraw()
-	elif event is InputEventScreenTouch and event.pressed:
-		_request_path(get_canvas_transform().affine_inverse() * event.position)
+	elif event is InputEventScreenTouch and event.pressed and not event.canceled:
+		_begin_path_hold(event.index, event.position)
 
 func _edit_or_path(target: Vector2, erase := false) -> void:
 	if edit_walkable and OS.is_debug_build():
@@ -259,7 +320,7 @@ func _save_walkable_edit() -> void:
 func _request_path(target: Vector2) -> void:
 	route = navigation.path(actor.position,target)
 	if route.is_empty():
-		_hint("这里是山岩或断崖，请点击石路。")
+		_hint("这里是山岩或断崖，请长按石路。")
 	else:
 		_hint("正在沿古道前行 · 按方向键可接管")
 	queue_redraw()
@@ -284,7 +345,7 @@ func _update_landmarks() -> void:
 	else:
 		location_label.text = "万修古道 · 山间石径"
 	if hint_time <= 0:
-		hint_label.text = "WASD / 方向键行走 · 点击古道寻路"
+		hint_label.text = "WASD / 方向键行走 · 长按古道寻路"
 
 func _draw() -> void:
 	if not is_instance_valid(actor):
@@ -307,6 +368,10 @@ func _draw() -> void:
 		draw_arc(route[-1],7,0,TAU,24,Color("#d5d6ac"),1.4,true)
 
 func _build_expedition() -> void:
+	return_platform = Sprite2D.new()
+	return_platform.set_script(load("res://scripts/maps/return_platform.gd"))
+	return_platform.call("setup",definition.returnPoint)
+	add_child(return_platform)
 	fog = Node2D.new()
 	fog.set_script(load("res://scripts/maps/map_fog.gd"))
 	fog.set("definition", definition)
@@ -362,6 +427,8 @@ func refresh_state() -> void:
 				nearest = distance
 				proximity_object = object
 
+	if actor.position.distance_to(return_platform.position) <= float(definition.returnPoint.radius):
+		proximity_object = {"id":"__return_camp__","title":"归营阵 · 返回营地"}
 	interact_button.visible = not proximity_object.is_empty() and not expedition_ui.call("_map_input_blocked")
 	if interact_button.visible: interact_button.text = str(proximity_object.get("title","互动"))
 	fog.queue_redraw()
@@ -370,7 +437,10 @@ func _interact() -> void:
 	if proximity_object.is_empty(): return
 	route.clear()
 	held_directions.clear()
-	expedition_ui.call("_show_object",proximity_object)
+	if proximity_object.get("id","") == "__return_camp__":
+		expedition_ui.call("request_return")
+	else:
+		expedition_ui.call("_show_object",proximity_object)
 	refresh_state()
 
 func sync_saved_position() -> void:
@@ -378,3 +448,8 @@ func sync_saved_position() -> void:
 	actor.position = Game.expedition_world_position()
 	_follow_camera(1.0,true)
 	refresh_state()
+
+func _update_actor_occlusion(delta: float) -> void:
+	if not is_instance_valid(actor) or navigation == null: return
+	var target_alpha := 0.42 if navigation.is_in_adjust_region(actor.position) else 1.0
+	actor.modulate.a = move_toward(actor.modulate.a, target_alpha, delta * 4.0)

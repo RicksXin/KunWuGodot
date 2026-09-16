@@ -112,7 +112,7 @@ func _build_event_overlay() -> void:
 		choice_buttons.append(choice_button)
 
 func _map_input_blocked() -> bool:
-	return (is_instance_valid(rest_overlay) and rest_overlay.visible) \
+	return return_animating or (is_instance_valid(rest_overlay) and rest_overlay.visible) \
 		or (is_instance_valid(backpack_overlay) and backpack_overlay.visible) \
 		or (is_instance_valid(entry_return_overlay) and entry_return_overlay.visible) \
 		or (is_instance_valid(event_overlay) and event_overlay.visible)
@@ -361,12 +361,22 @@ func _refresh_backpack_overlay() -> void:
 		var badge := KWUI.panel(slot, Rect2(14, 31, 25, 16), Color("#080a0cee"), Color("#c4b789"))
 		KWUI.label(badge, "×%d" % int(entry[1]), Rect2(0, 0, 23, 14), 9, Color("#fff4cc"), HORIZONTAL_ALIGNMENT_CENTER)
 
+var return_animating := false
+
 func _return_camp() -> void:
+	if return_animating: return
+	return_animating = true
+	entry_return_overlay.visible = false
+	await world.get("return_platform").activate()
 	var result := Game.return_to_camp()
 	if result.get("ok", false):
 		entry_return_overlay.visible = false
 		get_tree().change_scene_to_file("res://scenes/camp.tscn")
-	else: _show_feedback(result.get("message", "请先返回入口"), 2)
+	else:
+		return_animating = false
+		world.get("return_platform").activating = false
+		entry_return_overlay.visible = true
+		_show_feedback(result.get("message", "请先返回入口"), 2)
 
 func _return_with_talisman() -> void:
 	var result := Game.return_with_talisman()
@@ -405,7 +415,7 @@ func _center_map() -> void:
 
 func request_return() -> void:
 	var pos: Vector2 = world.get("actor").position
-	if pos.distance_to(Vector2(450,1890)) <= 28:
+	if pos.distance_to(world.get("return_platform").position) <= float(world.get("definition").returnPoint.radius):
 		entry_return_overlay.visible = true
 	else:
 		_return_with_talisman()

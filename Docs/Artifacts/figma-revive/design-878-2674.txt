@@ -1,0 +1,1208 @@
+const imgPanelDecorationBottom = "https://www.figma.com/api/mcp/asset/a52f69df-78d0-4ddc-a4d6-51a8733dbebf.png";
+const imgPanelDecorationTop = "https://www.figma.com/api/mcp/asset/53ce6c3c-af5b-42c1-8a8e-14eaf00a6ab1.png";
+const imgPanelLevel2 = "https://www.figma.com/api/mcp/asset/9cb512bd-bc5a-4f73-a815-a56c2451be91.png";
+const imgWiFi = "https://www.figma.com/api/mcp/asset/4bbcbed5-4575-4a10-982c-fa6b73ec2455.svg";
+const imgBackgroundLayer = "https://www.figma.com/api/mcp/asset/ce9bb83e-a7b9-439a-a70b-c27b8230d85e.png";
+const imgArt = "https://www.figma.com/api/mcp/asset/71ac5040-baef-4d9e-a084-5281e476a9d9.png";
+const imgStatusIconDisabledLock = "https://www.figma.com/api/mcp/asset/2b057890-c674-414a-b1f2-cbd4249fe1b8.png";
+const imgArt1 = "https://www.figma.com/api/mcp/asset/7e92e302-9c29-4154-a2de-07077b2a9f6a.png";
+const imgArt2 = "https://www.figma.com/api/mcp/asset/82ea0442-7837-4b64-a79e-87edb3031f68.png";
+const imgStatusIconAlertAsset = "https://www.figma.com/api/mcp/asset/b55e3996-a544-4371-a0d7-a11c8786ce7b.png";
+const imgArt3 = "https://www.figma.com/api/mcp/asset/5587736d-4619-417f-bde2-330dfd66db4e.png";
+const imgArt4 = "https://www.figma.com/api/mcp/asset/41de15ed-e598-413b-af71-1dbb47abdc5f.png";
+const imgArt5 = "https://www.figma.com/api/mcp/asset/ce42da82-c5be-4425-b8c3-8f35bdb9a44e.png";
+const imgArt6 = "https://www.figma.com/api/mcp/asset/68d2a6cb-6f15-4dba-8b74-9a09e0820771.png";
+const imgIcon = "https://www.figma.com/api/mcp/asset/a99ff4dd-c0d8-4562-b0df-aef3b5f7c671.png";
+const imgIcon1 = "https://www.figma.com/api/mcp/asset/443688b0-e0ee-4be6-8f11-42c4c24fa157.png";
+const imgIcon2 = "https://www.figma.com/api/mcp/asset/32f47c32-c62e-42c4-94a5-20301dac6ef3.png";
+const imgIcon3 = "https://www.figma.com/api/mcp/asset/27bb85c6-bf3e-45da-87e1-d2da0e482622.png";
+const imgIcon4 = "https://www.figma.com/api/mcp/asset/c2e3643d-d2a3-4e67-ba43-4d4263de36cc.png";
+const img = "https://www.figma.com/api/mcp/asset/44f36304-f11f-4ae8-818d-0b0b070f08b0.png";
+const imgAvatarButtonPortrait = "https://www.figma.com/api/mcp/asset/c2f43ab1-2487-476e-b584-1b06dad7886a.png";
+const imgSettingsButtonIcon = "https://www.figma.com/api/mcp/asset/abf85619-c6a7-4089-8dc6-468648f5f1f3.png";
+const imgBottomRightCurrencyIconOnly = "https://www.figma.com/api/mcp/asset/2a83549c-6938-4657-84b4-ed12ea108020.png";
+const imgArt7 = "https://www.figma.com/api/mcp/asset/22ab8971-d183-4490-a5f6-4104f7b695e2.png";
+const imgDivider = "https://www.figma.com/api/mcp/asset/4fd255fd-4d0b-4b2a-b283-7fb62c2fcce8.svg";
+const img1 = "https://www.figma.com/api/mcp/asset/1627059f-c54f-4a78-a7f0-84597a285ea7.png";
+const img4 = "https://www.figma.com/api/mcp/asset/72f29b9d-9039-4517-ac25-50e1f0d12f3c.png";
+const img19 = "https://www.figma.com/api/mcp/asset/dea57807-4d74-44fd-92cc-5ca587a0cba2.png";
+const img20 = "https://www.figma.com/api/mcp/asset/4f8955ed-5f94-4586-a77b-389a5e7131e8.png";
+const img21 = "https://www.figma.com/api/mcp/asset/3b2c09dc-c56b-4ba7-81bc-de91656a62b8.png";
+const img2 = "https://www.figma.com/api/mcp/asset/045c3987-38ad-43c9-8120-3647a19a00d0.svg";
+const img3 = "https://www.figma.com/api/mcp/asset/f15dd9c1-85c0-472f-89d8-73fef08b6c4f.svg";
+const img5 = "https://www.figma.com/api/mcp/asset/07282836-faab-4333-a34d-b13e45cf54e5.svg";
+const img6 = "https://www.figma.com/api/mcp/asset/984a9faa-8872-4803-986e-961048e032d0.svg";
+const img7 = "https://www.figma.com/api/mcp/asset/6cf93d71-36b2-4f35-bb77-cd8e140f0067.svg";
+const img8 = "https://www.figma.com/api/mcp/asset/dc231b50-8844-41fb-8f30-b02457f64795.svg";
+const img9 = "https://www.figma.com/api/mcp/asset/6631add0-ab38-48fd-bfd6-74de85160911.svg";
+const img10 = "https://www.figma.com/api/mcp/asset/ec0b14a9-6afc-4db9-a8fd-2f8ae8a7e9f2.svg";
+const img11 = "https://www.figma.com/api/mcp/asset/c4614c54-a100-4f3d-b3a5-3304e7bc8573.svg";
+const img12 = "https://www.figma.com/api/mcp/asset/95787489-f36a-4170-aa50-b47926c60c67.svg";
+const img13 = "https://www.figma.com/api/mcp/asset/46b967e8-0f60-4b30-9e0a-3d3aed4c0392.svg";
+const img14 = "https://www.figma.com/api/mcp/asset/7a4dd8d9-af22-452d-acfc-41452efce51c.svg";
+const img15 = "https://www.figma.com/api/mcp/asset/4e3d35d6-cc56-4a40-9b10-a8ff23a780e6.svg";
+const img16 = "https://www.figma.com/api/mcp/asset/e0125477-a61c-482c-88de-869056ec7967.svg";
+const img17 = "https://www.figma.com/api/mcp/asset/fcda61d4-15fd-4756-9a71-ee42aaa93cba.svg";
+const img18 = "https://www.figma.com/api/mcp/asset/41e56110-bdfd-4720-ade2-f28d3a82f69b.svg";
+
+type ButtonResizableFooterProps = {
+  className?: string;
+  label?: string;
+  state?: "Default";
+};
+
+function ButtonResizableFooter({ className, label = "确认操作", state = "Default" }: ButtonResizableFooterProps) {
+  return (
+    <div className={className || "content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative w-[144px]"} data-node-id="541:2417">
+      <div className="absolute border border-[var(--theme\/accent\/dark-gold,#b58a42)] border-solid inset-0 pointer-events-none rounded-[4px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.32)]" data-node-id="541:2418" data-name="01 / Base">
+        <div aria-hidden className="absolute bg-[var(--theme\/surface\/deep-wood,#241d18)] inset-0 rounded-[4px]" />
+        <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0px_-2px_3px_0px_rgba(0,0,0,0.42)]" />
+      </div>
+      <div className="absolute bg-gradient-to-b from-[rgba(214,161,71,0.16)] inset-[2px] rounded-[3px] to-[rgba(5,5,5,0.34)] via-[48%] via-[rgba(31,23,18,0.02)]" data-node-id="541:2419" data-name="02 / Depth Gradient" />
+      <div className="absolute bg-gradient-to-r from-[rgba(5,5,5,0.18)] inset-[4px] mix-blend-soft-light rounded-[2px] to-[rgba(5,5,5,0.2)] via-[52%] via-[rgba(199,148,66,0.07)]" data-node-id="541:2420" data-name="03 / Stretch Texture" />
+      <div className="absolute border border-[var(--theme\/border\/old-bronze,#80623a)] border-solid inset-[2px] rounded-[3px]" data-node-id="541:2421" data-name="04 / Inner Rim" />
+      <div className="absolute bg-[rgba(219,168,82,0.36)] h-px left-[6px] right-[6px] top-[4px]" data-node-id="541:2422" data-name="05 / Top Highlight" />
+      <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[20px] relative shrink-0 text-[14px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center whitespace-nowrap" data-node-id="541:2423">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function PanelDecorationBottom({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[55px] relative w-[360px]"} data-node-id="50:4" data-name="Panel/Decoration/Bottom">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[568.89%] left-[-14.97%] max-w-none top-[-215%] w-[129.95%]" src={imgPanelDecorationBottom} />
+      </div>
+    </div>
+  );
+}
+
+function PanelDecorationTop({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[65px] relative w-[360px]"} data-node-id="50:3" data-name="Panel/Decoration/Top">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[451.1%] left-[-11.16%] max-w-none top-[-165.2%] w-[122.39%]" src={imgPanelDecorationTop} />
+      </div>
+    </div>
+  );
+}
+
+function PanelLevel2({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[367px] relative w-[336px]"} data-node-id="50:2" data-name="Panel/Level 2">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[156.57%] left-[-7.14%] max-w-none top-[-28.03%] w-[114.29%]" src={imgPanelLevel2} />
+      </div>
+    </div>
+  );
+}
+
+type MobileStatusBarForeground3Props = {
+  className?: string;
+  time?: string;
+};
+
+function MobileStatusBarForeground3({ className, time = "9:41" }: MobileStatusBarForeground3Props) {
+  return (
+    <div className={className || "content-stretch flex h-[44px] items-center justify-between px-[16px] relative w-[375px]"} data-node-id="20:92" data-name="Mobile/Status Bar/Foreground3">
+      <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[17px] not-italic relative shrink-0 text-[14px] text-white tracking-[-0.2px] whitespace-nowrap" data-node-id="20:93">
+        {time}
+      </p>
+      <div className="content-stretch flex gap-[6px] h-[12px] items-center relative shrink-0" data-node-id="20:94" data-name="System Indicators">
+        <div className="content-stretch flex gap-[1.5px] h-[12px] items-end relative shrink-0 w-[18px]" data-node-id="20:95" data-name="Signal">
+          <div className="bg-white relative rounded-[0.75px] shrink-0 size-[3px]" data-node-id="20:96" data-name="Bar 1" />
+          <div className="bg-white h-[5.5px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:97" data-name="Bar 2" />
+          <div className="bg-white h-[8px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:98" data-name="Bar 3" />
+          <div className="bg-white h-[11px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:99" data-name="Bar 4" />
+        </div>
+        <div className="h-[12px] relative shrink-0 w-[18px]" data-node-id="20:100" data-name="Wi-Fi">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgWiFi} />
+        </div>
+        <div className="h-[12px] relative shrink-0 w-[27px]" data-node-id="20:104" data-name="Battery">
+          <div className="absolute border border-[rgba(255,255,255,0.55)] border-solid h-[12px] left-0 rounded-[3px] top-0 w-[23px]" data-node-id="20:105" data-name="Outline" />
+          <div className="absolute bg-white h-[8px] left-[2px] rounded-[1.75px] top-[2px] w-[17px]" data-node-id="20:106" data-name="Level" />
+          <div className="absolute bg-[rgba(255,255,255,0.55)] h-[4px] left-[24.5px] rounded-[1px] top-[4px] w-[2px]" data-node-id="20:107" data-name="Cap" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Component({ className }: { className?: string }) {
+  return (
+    <div className={className || "bg-[var(--theme\\/background\\/ink,#111917)] h-[817px] overflow-clip relative w-[375px]"} data-node-id="45:129" data-name="主界面">
+      <div className="absolute h-[817px] left-0 top-0 w-[375px]" data-node-id="58:35" data-name="WorldViewport · 375×817">
+        <div className="absolute h-[817px] left-[-337.5px] top-0 w-[1050px]" data-node-id="58:36" data-name="PanoramaContent · 1050×817 · DefaultCenter">
+          <div className="absolute h-[817px] left-0 top-0 w-[1050px]" data-node-id="58:37" data-name="BackgroundLayer / 昆吾山禁地">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgBackgroundLayer} />
+          </div>
+          <div className="absolute bg-gradient-to-b from-[rgba(5,13,13,0.3)] h-[817px] left-0 to-[rgba(5,8,8,0.66)] top-0 via-[42%] via-[rgba(18,28,26,0.04)] w-[1050px]" data-node-id="58:38" data-name="BackgroundLayer / 云雾压暗" />
+          <div className="absolute h-[817px] left-0 top-0 w-[1050px]" data-node-id="59:17" data-name="BuildingLayer / 七座建筑与传送阵">
+            <div className="absolute h-[137px] left-[71.5px] top-[284px] w-[206px]" data-node-id="59:18" data-name="bai_bao_ku / 百宝库">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex h-[137px] items-center justify-center left-1/2 top-1/2 w-[206px]" data-node-id="59:19">
+                <div className="-scale-y-100 flex-none rotate-180">
+                  <div className="h-[137px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[206px]" data-name="Art / 百宝库">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute h-[20px] left-[64px] top-[117px] w-[63px]" data-node-id="147:1817">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:20" data-name="NameModule / 百宝库" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:21">
+                  <p className="leading-[20px]">百宝库</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:23" data-name="StatusIcon / 百宝库 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[137px] left-[38.5px] top-[464px] w-[206px]" data-node-id="59:24" data-name="huan_hun_tan / 还魂殿">
+              <div className="absolute flex h-[137px] items-center justify-center left-0 top-0 w-[206px]" data-node-id="59:25">
+                <div className="-scale-y-100 flex-none rotate-180">
+                  <div className="h-[137px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[206px]" data-name="Art / 还魂殿">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt1} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute h-[20px] left-[81px] top-[117px] w-[63px]" data-node-id="147:1878">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:26" data-name="NameModule / 还魂殿" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:27">
+                  <p className="leading-[20px]">还魂殿</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:26" data-name="StatusIcon / 还魂殿 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[426.5px] top-[154px] w-[247px]" data-node-id="143:1224" data-name="议事殿">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247px]" data-node-id="59:37" data-name="Art / 议事殿">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt2} />
+              </div>
+              <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-[96.67px] rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-[139.55px] w-[58px]" data-node-id="59:38" data-name="NameModule / 议事殿" />
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[126px] not-italic text-[#e8dcbb] text-[10px] text-center top-[150px] w-[58px]" data-node-id="59:39">
+                <p className="leading-[20px]">议事殿</p>
+              </div>
+              <div className="absolute flex items-center justify-center left-[136px] size-[29.394px] top-[125px]" data-node-id="461:2197">
+                <div className="flex-none rotate-15">
+                  <div className="relative size-[24px]" data-name="StatusIcon / 议事殿 / Alert Asset">
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[137px] left-[747.5px] top-[271px] w-[206px]" data-node-id="59:42" data-name="jiao_yi_hang / 交易行">
+              <div className="absolute h-[137px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[206px]" data-node-id="59:43" data-name="Art / 交易行">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt3} />
+              </div>
+              <div className="absolute h-[20px] left-[61px] top-[113px] w-[63px]" data-node-id="147:1725">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:44" data-name="NameModule / 交易行" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:45">
+                  <p className="leading-[20px]">交易行</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:25" data-name="StatusIcon / 交易行 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[571.5px] top-[339px] w-[247px]" data-node-id="59:48" data-name="lian_qi_fang / 炼器坊">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247px]" data-node-id="59:49" data-name="Art / 炼器坊">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt4} />
+              </div>
+              <div className="absolute h-[20px] left-[67px] top-[149px] w-[63px]" data-node-id="147:1746">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:50" data-name="NameModule / 炼器坊" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:51">
+                  <p className="leading-[20px]">炼器坊</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:24" data-name="StatusIcon / 炼器坊 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[724.5px] top-[515px] w-[247px]" data-node-id="59:54" data-name="ling_pu / 灵圃">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247.504px]" data-node-id="59:55" data-name="Art / 灵圃">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt5} />
+              </div>
+              <div className="absolute h-[20px] left-[92px] top-[145px] w-[64px]" data-node-id="147:1899">
+                <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:56" data-name="NameModule / 灵圃" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[26px] not-italic text-[#e8dcbb] text-[10px] text-center top-[10px] w-[44px]" data-node-id="59:57">
+                  <p className="leading-[20px]">灵圃</p>
+                </div>
+                <div className="absolute left-[46px] size-[24px] top-[-2px]" data-node-id="461:2198" data-name="StatusIcon / 灵圃 / Alert Asset">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[139px] left-[421.5px] top-[535px] w-[206px]" data-node-id="59:60" data-name="ExpeditionEntry / 传送阵">
+              <div className="absolute h-[139px] left-[0.5px] top-[-0.41px] w-[206px]" data-node-id="59:61" data-name="Art / 传送阵">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt6} />
+              </div>
+              <div className="absolute h-[30px] left-[61px] top-[109px] w-[84px]" data-node-id="147:1975">
+                <div className="absolute bg-[var(--theme\/surface\/black-jade,#202a27)] border border-[var(--theme\/primary\/jade-highlight,#6f8f85)] border-solid h-[20px] left-0 rounded-[4px] shadow-[0px_0px_8px_0px_rgba(20,128,117,0.32)] top-0 w-[84px]" data-node-id="59:62" data-name="CTA / 入山整备" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[18px] justify-center leading-[0] left-[42px] not-italic text-[#e8dcbb] text-[10px] text-center top-[9px] w-[84px]" data-node-id="59:63">
+                  <p className="leading-[18px]">启程</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute bg-gradient-to-b from-[rgba(15,26,23,0)] h-[83px] left-[0.5px] to-[rgba(10,18,15,0.9)] top-[734px] w-[1050px]" data-node-id="58:39" data-name="ForegroundLayer / 近景雾幕" />
+        </div>
+      </div>
+      <div className="absolute h-[817px] left-0 top-0 w-[375px]" data-node-id="60:17" data-name="SafeAreaRoot / Fixed HUD">
+        <MobileStatusBarForeground3 className="absolute content-stretch flex h-[44px] items-center justify-between left-0 opacity-94 px-[16px] top-0 w-[375px]" />
+        <div className="absolute h-[132px] left-0 top-[44px] w-[375px]" data-node-id="60:18" data-name="TopHUD / 玩家资源与主线">
+          <div className="absolute backdrop-blur-[2px] drop-shadow-[0px_3px_4px_rgba(0,0,0,0.48)] h-[49px] left-[8px] rounded-[6px] top-[8px] w-[359px]" data-node-id="60:19" data-name="HUD Plate / 头像与五资源" />
+          <div className="absolute h-[47px] left-[63px] top-[9px] w-[298px]" data-node-id="60:22" data-name="ResourceBar / 灵粮·灵木·玄铁·灵晶·庚精">
+            <div className="absolute h-[45px] left-0 top-0 w-[58px]" data-node-id="60:23" data-name="灵粮 / 168">
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:24" data-name="Icon / 灵粮">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-29%] max-w-none size-[160.5%] top-[-26.65%]" src={imgIcon} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:25">
+                <p className="leading-[17px]">168</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[59.5px] top-0 w-[58px]" data-node-id="60:26" data-name="灵木 / 96">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:27" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:28" data-name="Icon / 灵木">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-29.94%] max-w-none size-[160.5%] top-[-23.67%]" src={imgIcon1} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:29">
+                <p className="leading-[17px]">96</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[119px] top-0 w-[58px]" data-node-id="60:30" data-name="玄铁 / 42">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:31" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:32" data-name="Icon / 玄铁">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-[124.44%] left-[-12.57%] max-w-none top-[-10.95%] w-[126.25%]" src={imgIcon2} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:33">
+                <p className="leading-[17px]">42</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[178.5px] top-0 w-[58px]" data-node-id="60:34" data-name="灵晶 / 12">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:35" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:36" data-name="Icon / 灵晶">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-[158.73%] left-[-29.43%] max-w-none top-[-25.09%] w-[159.8%]" src={imgIcon3} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:37">
+                <p className="leading-[17px]">12</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[238px] top-0 w-[58px]" data-node-id="60:38" data-name="庚精 / 3">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:39" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:40" data-name="Icon / 庚精">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-34.83%] max-w-none size-[170.67%] top-[-34.33%]" src={imgIcon4} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:41">
+                <p className="leading-[17px]">3</p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute drop-shadow-[0px_3px_3.5px_rgba(0,0,0,0.42)] h-[42px] left-[8px] rounded-[5px] top-[62px] w-[359px]" data-node-id="60:42" data-name="MainTaskButton / 当前主线" />
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[14px] justify-center leading-[0] left-[53px] not-italic text-[8px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] top-[73px] w-[274px]" data-node-id="60:45">
+            <p className="leading-[14px]">当前主线 · 昆吾外围</p>
+          </div>
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[53px] not-italic text-[11px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[89px] w-[274px]" data-node-id="60:46">
+            <p className="leading-[20px]">前往议事殿，与岑守一交谈</p>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[28px] justify-center leading-[0] left-[345px] not-italic text-[18px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center top-[82px] w-[20px]" data-node-id="60:47">
+            <p className="leading-[28px]">›</p>
+          </div>
+          <div className="absolute bg-[var(--theme\/background\/ink,#111917)] border border-[var(--theme\/border\/old-bronze,#80623a)] border-solid h-[18px] left-[117px] rounded-[9px] top-[111px] w-[141px]" data-node-id="60:48" data-name="Panorama Hint / Backplate" />
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[18px] justify-center leading-[0] left-[187.5px] not-italic text-[8px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center top-[120px] w-[141px]" data-node-id="60:49">
+            <p className="leading-[18px] whitespace-pre-wrap">{`‹  左右拖动查看营地  ›`}</p>
+          </div>
+          <div className="absolute flex items-center justify-center left-[7px] size-[45.255px] top-[62px]" data-node-id="60:43">
+            <div className="-rotate-45 flex-none">
+              <div className="bg-[var(--theme\/surface\/black-jade,#202a27)] border border-[var(--theme\/accent\/dark-gold,#b58a42)] border-solid relative rounded-[4px] size-[32px]" data-name="MainTaskButton / Task Seal" />
+            </div>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] justify-center leading-[0] left-[30px] not-italic size-[32px] text-[14px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] text-center top-[83px]" data-node-id="60:44">
+            <p className="leading-[32px]">令</p>
+          </div>
+          <div className="absolute left-[12px] size-[40px] top-[12px]" data-node-id="680:4839">
+            <div className="absolute left-0 size-[40px] top-0" data-node-id="680:4827" data-name="物品面板">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={img} />
+            </div>
+            <div className="absolute left-0 size-[40px] top-0" data-node-id="60:20" data-name="AvatarButton / Portrait">
+              <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgAvatarButtonPortrait} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute h-[48px] left-0 top-[745px] w-[375px]" data-node-id="61:17" data-name="BottomHUD / Frosted Safe Area">
+          <div className="absolute backdrop-blur-[8px] drop-shadow-[0px_-2px_4px_rgba(0,0,0,0.42)] h-[40px] left-[8px] rounded-[12px] top-[4px] w-[359px]" data-node-id="67:32" data-name="FrostedSurface / Bottom Safe Area" />
+          <div className="absolute drop-shadow-[0px_0px_3.5px_rgba(178,138,64,0.28)] h-[32px] left-[14px] rounded-[8px] top-[8px] w-[42px]" data-node-id="67:33" data-name="SettingsButton / IconOnly / Open" />
+          <div className="absolute left-[25px] size-[20px] top-[14px]" data-node-id="67:34" data-name="SettingsButton / Icon">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute left-[-26.44%] max-w-none size-[151.06%] top-[-24.32%]" src={imgSettingsButtonIcon} />
+            </div>
+          </div>
+          <div className="absolute left-[304px] size-[24px] top-[12px]" data-node-id="67:35" data-name="BottomRightCurrency / IconOnly">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[119.41%] left-[-11.39%] max-w-none top-[-7.76%] w-[121.24%]" src={imgBottomRightCurrencyIconOnly} />
+            </div>
+          </div>
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[24px] justify-center leading-[0] left-[333px] not-italic text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[24px] w-[42px]" data-node-id="67:36">
+            <p className="leading-[24px]">1,280</p>
+          </div>
+        </div>
+        <div className="absolute h-[165px] left-[-86px] top-[358px] w-[247px]" data-node-id="143:1537" data-name="招贤馆">
+          <div className="absolute flex h-[165px] items-center justify-center left-0 top-0 w-[247px]" data-node-id="59:31">
+            <div className="-scale-y-100 flex-none rotate-180">
+              <div className="h-[165px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[247px]" data-name="Art / 招贤馆">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt7} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute h-[20px] left-[103px] top-[140px] w-[64px]" data-node-id="143:1688">
+            <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:32" data-name="NameModule / 招贤馆" />
+            <div className="absolute flex items-center justify-center left-[38px] size-[29.394px] top-[-15px]" data-node-id="518:3615">
+              <div className="flex-none rotate-15">
+                <div className="relative size-[24px]" data-name="StatusIcon / 议事殿 / Alert Asset">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#e8dcbb] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:33">
+              <p className="leading-[20px]">招贤馆</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Draft() {
+  return (
+    <div className="bg-[var(--theme\/background\/ink,#111917)] relative size-full" data-node-id="878:2674" data-name="还魂殿 / 免费救急 / Draft">
+      <Component className="absolute bg-[var(--theme\/background\/ink,#111917)] h-[817px] left-0 overflow-clip top-0 w-[375px]" />
+      <div className="absolute bg-[rgba(10,15,14,0.84)] h-[817px] left-0 top-0 w-[375px]" data-node-id="878:2791" data-name="遮罩 / 炼器坊" />
+      <PanelLevel2 className="absolute h-[565px] left-[20px] top-[110px] w-[335px]" />
+      <PanelDecorationTop className="absolute h-[65px] left-[8px] top-[78px] w-[359px]" />
+      <PanelDecorationBottom className="absolute h-[55px] left-[8px] top-[628px] w-[359px]" />
+      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] left-[187.5px] text-[20px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[110px] w-[359px]" data-node-id="878:2795">
+        还魂殿
+      </p>
+      <div className="absolute content-stretch flex flex-col gap-[14px] items-start left-[44px] overflow-clip top-[155px] w-[287px]" data-node-id="878:2796" data-name="内容">
+        <div className="content-stretch flex gap-[8px] h-[28px] items-start overflow-clip relative shrink-0 w-[287px]" data-node-id="880:2999" data-name="Frame">
+          <div className="relative shrink-0 size-[24px]" data-node-id="880:3000" data-name="图标 / 魂晶">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img1} />
+          </div>
+          <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[14px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] w-[48px]" data-node-id="880:3001">
+            魂晶 20
+          </p>
+          <p className="[word-break:break-word] flex-[1_0_0] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] min-w-px relative text-[12px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-right" data-node-id="880:3002">
+            待还魂 4 人
+          </p>
+        </div>
+        <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[15px] text-[color:var(--theme\/state\/warning,#be883a)] w-[165px]" data-node-id="880:3003">
+          魂晶不足
+        </p>
+        <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[11px] text-[color:var(--theme\/text\/secondary,#91a49e)] w-[287px]" data-node-id="880:3004">
+          全员阵亡，可免费还魂一人。
+        </p>
+        <div className="content-stretch flex flex-col gap-[8px] items-start overflow-clip relative shrink-0 w-[287px]" data-node-id="880:3005" data-name="救急修士列表">
+          <div className="content-stretch flex gap-[10px] h-[60px] items-center overflow-clip px-[10px] relative shrink-0 w-[287px]" data-node-id="880:3006" data-name="救急候选 / 石岩">
+            <div className="absolute h-[60px] left-0 overflow-clip rounded-[8px] top-0 w-[287px]" data-node-id="880:3007" style={{ backgroundImage: "linear-gradient(180deg, rgb(31, 36, 30) 0%, rgb(41, 39, 27) 30%, rgb(48, 42, 29) 62%, rgb(37, 38, 30) 82%, rgb(27, 33, 29) 100%)" }} data-name="PanelItem/V2">
+              <div className="absolute inset-0 rounded-[8px]" data-node-id="I880:3007;192:1173" style={{ backgroundImage: "linear-gradient(90deg, rgba(138, 101, 31, 0.88) 0%, rgba(112, 79, 27, 0.6) 20%, rgba(80, 59, 29, 0.34) 48%, rgba(52, 48, 35, 0.12) 78%, rgba(27, 33, 29, 0) 100%)" }} data-name="叠色 / 横向层次" />
+              <div className="absolute inset-0 mix-blend-multiply rounded-[8px]" data-node-id="I880:3007;192:1175" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(20 0 0 2.4242 144 39.758)'><stop stop-color='rgba(48,39,24,0)' offset='0'/><stop stop-color='rgba(48,39,24,0.005)' offset='0.62'/><stop stop-color='rgba(48,39,24,0.03)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="边缘压暗" />
+              <div className="absolute flex inset-[15%_63.2%_82.2%_4.86%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;192:1182" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0139421cqw,62.4159cqh)] rotate-[0.53deg] w-[hypot(99.9861cqw,37.5841cqh)]">
+                  <div className="bg-[rgba(199,172,105,0.05)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 1" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[42.56%_21.18%_54.75%_42.71%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;192:1185" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0105718cqw,55.7368cqh)] rotate-[-0.53deg] w-[hypot(99.9894cqw,-44.2632cqh)]">
+                  <div className="bg-[rgba(199,172,105,0.05)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[82.11%_28.47%_15.63%_36.11%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;192:1188" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00449147cqw,82.8024cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.1976cqh)]">
+                  <div className="bg-[rgba(199,172,105,0.05)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[68.75%_12.15%_29.38%_54.51%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;192:1191" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00381777cqw,80.3634cqh)] rotate-[0.18deg] w-[hypot(99.9962cqw,19.6366cqh)]">
+                  <div className="bg-[rgba(199,172,105,0.05)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 10" />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[11.25%_86.46%_85%_10.42%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1194" data-name="磨损颗粒 / 1" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] bottom-1/2 left-[19.44%] mix-blend-overlay right-[78.82%] rounded-[1px] top-[47.5%]" data-node-id="I880:3007;192:1195" data-name="磨损颗粒 / 2" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[18.75%_57.64%_77.5%_37.85%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1196" data-name="磨损颗粒 / 3" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] bottom-1/4 left-[45.83%] mix-blend-overlay right-[51.74%] rounded-[1px] top-[72.5%]" data-node-id="I880:3007;192:1197" data-name="磨损颗粒 / 4" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[32.5%_37.5%_65%_58.68%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1198" data-name="磨损颗粒 / 5" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[87.5%_30.9%_8.75%_66.32%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1199" data-name="磨损颗粒 / 6" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[53.75%_15.97%_42.5%_79.51%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1200" data-name="磨损颗粒 / 7" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[12.5%_7.99%_85%_89.58%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1201" data-name="磨损颗粒 / 8" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] bottom-1/4 left-[94.1%] mix-blend-overlay right-[2.43%] rounded-[1px] top-[71.25%]" data-node-id="I880:3007;192:1202" data-name="磨损颗粒 / 9" />
+              <div className="absolute bg-[rgba(224,207,141,0.06)] inset-[88.75%_89.93%_8.75%_5.9%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3007;192:1203" data-name="磨损颗粒 / 10" />
+              <div className="absolute inset-[-10%_52.78%_47.5%_0] mix-blend-overlay" data-node-id="I880:3007;193:1143" data-name="赭金云层 / 1">
+                <div className="absolute inset-[-26.67%_-7.38%]">
+                  <img alt="" className="block max-w-none size-full" src={img2} />
+                </div>
+              </div>
+              <div className="absolute bottom-1/4 left-[24.65%] mix-blend-soft-light right-[27.78%] top-[17.5%]" data-node-id="I880:3007;193:1144" data-name="赭金云层 / 2">
+                <div className="absolute inset-[-26.09%_-6.59%]">
+                  <img alt="" className="block max-w-none size-full" src={img3} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_51.04%_-1.25%_7.29%] mix-blend-overlay" data-node-id="I880:3007;193:1147" data-name="赭金云层 / 5">
+                <div className="absolute inset-[-32.18%_-5.85%]">
+                  <img alt="" className="block max-w-none size-full" src={img5} />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(90,75,39,0.11)] bottom-3/4 left-[7.64%] mix-blend-overlay right-[82.99%] rounded-[1px] top-[22.5%]" data-node-id="I880:3007;193:1149" data-name="纤维颗粒 / 1" />
+              <div className="absolute flex inset-[10%_74.31%_87.84%_21.17%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1151" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.201cqw,86.8601cqh)] rotate-1 w-[hypot(99.799cqw,13.1399cqh)]">
+                  <div className="bg-[rgba(217,201,139,0.08)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[65.98%_59.37%_31.25%_33.33%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1153" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0996374cqw,90.0934cqh)] rotate-[-0.6deg] w-[hypot(99.9004cqw,-9.90664cqh)]">
+                  <div className="bg-[rgba(90,75,39,0.11)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[28.75%_42.36%_69.1%_46.52%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1155" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0327147cqw,87.037cqh)] rotate-[0.4deg] w-[hypot(99.9673cqw,12.963cqh)]">
+                  <div className="bg-[rgba(217,201,139,0.08)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[80.94%_34.71%_16.25%_59.03%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1157" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.15491cqw,88.8358cqh)] rotate-[-0.8deg] w-[hypot(99.8451cqw,-11.1642cqh)]">
+                  <div className="bg-[rgba(90,75,39,0.11)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[18.75%_18.4%_79.01%_73.26%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1159" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0763037cqw,83.6479cqh)] rotate-[0.7deg] w-[hypot(99.9237cqw,16.3521cqh)]">
+                  <div className="bg-[rgba(217,201,139,0.08)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.58%_8.68%_38.75%_84.72%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1161" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0734348cqw,93.7802cqh)] rotate-[-0.4deg] w-[hypot(99.9266cqw,-6.21984cqh)]">
+                  <div className="bg-[rgba(90,75,39,0.11)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[35%_1.74%_62.93%_95.13%] items-center justify-center mix-blend-overlay" data-node-id="I880:3007;193:1163" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.290074cqw,90.5198cqh)] rotate-1 w-[hypot(99.7099cqw,9.48018cqh)]">
+                  <div className="bg-[rgba(217,201,139,0.08)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 8" />
+                </div>
+              </div>
+            </div>
+            <div className="h-[36px] opacity-60 overflow-clip relative shrink-0 w-[30px]" data-node-id="880:3054" data-name="头像裁切 / 石岩">
+              <div className="absolute h-[153px] left-[-21px] top-[-3px] w-[64px]" data-node-id="880:3055" data-name="素材 / 石岩立绘裁切">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-full left-[-36.33%] max-w-none top-0 w-[173.01%]" src={img4} />
+                </div>
+              </div>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col font-['Noto_Sans_SC:Medium'] font-medium gap-[4px] items-start leading-[normal] min-w-px overflow-clip relative" data-node-id="880:3056" data-name="修士信息">
+              <p className="relative shrink-0 text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] w-full" data-node-id="880:3057">
+                石岩 · 武修
+              </p>
+              <p className="relative shrink-0 text-[10px] text-[color:var(--theme\/text\/secondary,#91a49e)] w-full" data-node-id="880:3058">
+                炼气 Lv10 · 阵亡
+              </p>
+            </div>
+            <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[10px] text-[color:var(--theme\/state\/info,#58b9b4)] w-[56px]" data-node-id="880:3059">
+              已选
+            </p>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[60px] items-center overflow-clip px-[10px] relative shrink-0 w-[287px]" data-node-id="880:3060" data-name="救急候选 / 陆清">
+            <div className="absolute h-[60px] left-0 overflow-clip rounded-[8px] top-0 w-[287px]" data-node-id="880:3061" style={{ backgroundImage: "linear-gradient(180deg, rgb(21, 26, 24) 0%, rgb(34, 37, 31) 40%, rgb(23, 26, 23) 72%, rgb(24, 32, 28) 100%)" }} data-name="PanelItem/V2">
+              <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="I880:3061;256:2952" style={{ backgroundImage: "linear-gradient(90deg, rgba(60, 64, 51, 0.2) 0%, rgba(118, 128, 115, 0.08) 36%, rgba(24, 32, 28, 0.1) 72%, rgba(24, 32, 28, 0.12) 100%)" }} data-name="叠色 / 横向层次" />
+              <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="I880:3061;256:2953" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(19.2 0 0 2.3529 145.92 40)'><stop stop-color='rgba(142,160,150,0.16)' offset='0'/><stop stop-color='rgba(82,96,89,0.06)' offset='0.5'/><stop stop-color='rgba(0,0,0,0)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="中部微光" />
+              <div className="absolute inset-0 mix-blend-multiply rounded-[8px]" data-node-id="I880:3061;256:2954" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(21.493 0 0 2.2857 146.15 39.771)'><stop stop-color='rgba(0,0,0,0)' offset='0'/><stop stop-color='rgba(0,0,0,0.04)' offset='0.58'/><stop stop-color='rgba(0,0,0,0.12)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="边缘压暗" />
+              <div className="absolute inset-[-12.5%_-3.47%_70%_75.69%] mix-blend-multiply" data-node-id="I880:3061;256:2955" data-name="暗斑 / 1">
+                <div className="absolute inset-[-23.53%_-7.53%]">
+                  <img alt="" className="block max-w-none size-full" src={img6} />
+                </div>
+              </div>
+              <div className="absolute bottom-[35%] left-[84.72%] mix-blend-multiply right-[-7.64%] top-1/4" data-node-id="I880:3061;256:2956" data-name="暗斑 / 2">
+                <div className="absolute inset-[-25%_-9.12%]">
+                  <img alt="" className="block max-w-none size-full" src={img7} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_-3.82%_-3.75%_71.88%] mix-blend-multiply" data-node-id="I880:3061;256:2957" data-name="暗斑 / 3">
+                <div className="absolute inset-[-25.81%_-6.54%]">
+                  <img alt="" className="block max-w-none size-full" src={img8} />
+                </div>
+              </div>
+              <div className="absolute inset-[61.25%_83.33%_5%_-8.33%] mix-blend-multiply" data-node-id="I880:3061;256:2958" data-name="暗斑 / 4">
+                <div className="absolute inset-[-29.63%_-8.36%]">
+                  <img alt="" className="block max-w-none size-full" src={img9} />
+                </div>
+              </div>
+              <div className="absolute inset-[-18.75%_47.22%_90%_27.08%] mix-blend-multiply" data-node-id="I880:3061;256:2959" data-name="暗斑 / 5">
+                <div className="absolute inset-[-34.78%_-8.14%]">
+                  <img alt="" className="block max-w-none size-full" src={img10} />
+                </div>
+              </div>
+              <div className="absolute inset-[76.25%_21.18%_-7.5%_47.57%] mix-blend-multiply" data-node-id="I880:3061;256:2960" data-name="暗斑 / 6">
+                <div className="absolute inset-[-32%_-6.69%]">
+                  <img alt="" className="block max-w-none size-full" src={img11} />
+                </div>
+              </div>
+              <div className="absolute flex inset-[15%_63.2%_82.2%_4.86%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2961" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0139421cqw,62.4159cqh)] rotate-[0.53deg] w-[hypot(99.9861cqw,37.5841cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 1" />
+                </div>
+              </div>
+              <div className="absolute bottom-[73.13%] flex items-center justify-center left-[28.82%] mix-blend-multiply right-[26.39%] top-1/4" data-node-id="I880:3061;256:2962" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0026044cqw,73.6274cqh)] rotate-[0.18deg] w-[hypot(99.9974cqw,26.3726cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[37.22%_65.28%_60.5%_9.03%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2963" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00660353cqw,87.6222cqh)] rotate-[-0.18deg] w-[hypot(99.9934cqw,-12.3778cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[42.56%_21.18%_54.75%_42.71%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2964" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0105718cqw,55.7368cqh)] rotate-[-0.53deg] w-[hypot(99.9894cqw,-44.2632cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.75%_32.64%_37.83%_16.66%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2965" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00878589cqw,51.1353cqh)] rotate-[0.53deg] w-[hypot(99.9912cqw,48.8647cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[73.75%_56.94%_24.32%_4.17%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2966" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0032724cqw,77.8167cqh)] rotate-[0.18deg] w-[hypot(99.9967cqw,22.1833cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[82.11%_28.47%_15.63%_36.11%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2967" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00449147cqw,82.8024cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.1976cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[15.47%_15.28%_82.38%_61.11%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2968" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0148207cqw,63.8384cqh)] rotate-[-0.53deg] w-[hypot(99.9852cqw,-36.1616cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 8" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[33.75%_9.38%_63.59%_70.48%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2969" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0252715cqw,75.0656cqh)] rotate-[0.53deg] w-[hypot(99.9747cqw,24.9344cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 9" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[68.75%_12.15%_29.38%_54.51%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2970" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00381777cqw,80.3634cqh)] rotate-[0.18deg] w-[hypot(99.9962cqw,19.6366cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 10" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[89.72%_51.74%_8.63%_22.57%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2971" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00454002cqw,82.955cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.045cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 11" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[85.76%_6.59%_12%_78.47%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:2972" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0298249cqw,78.0371cqh)] rotate-[-0.53deg] w-[hypot(99.9702cqw,-21.9629cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 12" />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[11.25%_86.46%_85%_10.42%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2973" data-name="磨损颗粒 / 1" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/2 left-[19.44%] mix-blend-overlay right-[78.82%] rounded-[1px] top-[47.5%]" data-node-id="I880:3061;256:2974" data-name="磨损颗粒 / 2" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[18.75%_57.64%_77.5%_37.85%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2975" data-name="磨损颗粒 / 3" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[45.83%] mix-blend-overlay right-[51.74%] rounded-[1px] top-[72.5%]" data-node-id="I880:3061;256:2976" data-name="磨损颗粒 / 4" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[32.5%_37.5%_65%_58.68%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2977" data-name="磨损颗粒 / 5" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[87.5%_30.9%_8.75%_66.32%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2978" data-name="磨损颗粒 / 6" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[53.75%_15.97%_42.5%_79.51%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2979" data-name="磨损颗粒 / 7" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[12.5%_7.99%_85%_89.58%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2980" data-name="磨损颗粒 / 8" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[94.1%] mix-blend-overlay right-[2.43%] rounded-[1px] top-[71.25%]" data-node-id="I880:3061;256:2981" data-name="磨损颗粒 / 9" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[88.75%_89.93%_8.75%_5.9%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3061;256:2982" data-name="磨损颗粒 / 10" />
+              <div className="absolute inset-[-7.5%_52.78%_47.5%_2.78%] mix-blend-soft-light" data-node-id="I880:3061;256:2983" data-name="烟熏云层 / 1">
+                <div className="absolute inset-[-27.78%_-7.84%]">
+                  <img alt="" className="block max-w-none size-full" src={img12} />
+                </div>
+              </div>
+              <div className="absolute inset-[23.75%_28.82%_22.5%_25.35%] mix-blend-overlay" data-node-id="I880:3061;256:2984" data-name="烟熏云层 / 2">
+                <div className="absolute inset-[-27.91%_-6.84%]">
+                  <img alt="" className="block max-w-none size-full" src={img13} />
+                </div>
+              </div>
+              <div className="absolute inset-[-15%_12.85%_66.25%_49.65%] mix-blend-soft-light" data-node-id="I880:3061;256:2985" data-name="烟熏云层 / 3">
+                <div className="absolute inset-[-37.61%_-10.22%]">
+                  <img alt="" className="block max-w-none size-full" src={img14} />
+                </div>
+              </div>
+              <div className="absolute inset-[48.75%_4.51%_5%_61.46%] mix-blend-multiply" data-node-id="I880:3061;256:2986" data-name="烟熏云层 / 4">
+                <div className="absolute inset-[-28.83%_-8.19%]">
+                  <img alt="" className="block max-w-none size-full" src={img15} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_52.78%_1.25%_8.33%] mix-blend-overlay" data-node-id="I880:3061;256:2987" data-name="烟熏云层 / 5">
+                <div className="absolute inset-[-34.57%_-6.27%]">
+                  <img alt="" className="block max-w-none size-full" src={img16} />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(100,92,77,0.08)] bottom-3/4 left-[7.64%] mix-blend-overlay right-[82.99%] rounded-[1px] top-[22.5%]" data-node-id="I880:3061;256:2988" data-name="纤维颗粒 / 1" />
+              <div className="absolute flex inset-[10%_74.31%_87.84%_21.17%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2989" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.201cqw,86.8601cqh)] rotate-1 w-[hypot(99.799cqw,13.1399cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[65.98%_59.37%_31.25%_33.33%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2990" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0996374cqw,90.0934cqh)] rotate-[-0.6deg] w-[hypot(99.9004cqw,-9.90664cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[28.75%_42.36%_69.1%_46.52%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2991" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0327147cqw,87.037cqh)] rotate-[0.4deg] w-[hypot(99.9673cqw,12.963cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[80.94%_34.71%_16.25%_59.03%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2992" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.15491cqw,88.8358cqh)] rotate-[-0.8deg] w-[hypot(99.8451cqw,-11.1642cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[18.75%_18.4%_79.01%_73.26%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2993" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0763037cqw,83.6479cqh)] rotate-[0.7deg] w-[hypot(99.9237cqw,16.3521cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.58%_8.68%_38.75%_84.72%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2994" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0734348cqw,93.7802cqh)] rotate-[-0.4deg] w-[hypot(99.9266cqw,-6.21984cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[35%_1.74%_62.93%_95.13%] items-center justify-center mix-blend-overlay" data-node-id="I880:3061;256:2995" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.290074cqw,90.5198cqh)] rotate-1 w-[hypot(99.7099cqw,9.48018cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 8" />
+                </div>
+              </div>
+              <div className="absolute inset-[0_0_0_59.03%] mix-blend-multiply" data-node-id="I880:3061;256:2996" data-name="不规则墨渍 / 右侧">
+                <div className="absolute inset-[-4.17%_-2.13%_-4.17%_0]">
+                  <img alt="" className="block max-w-none size-full" src={img17} />
+                </div>
+              </div>
+              <div className="absolute flex inset-[0_65.97%_0_-6.94%] items-center justify-center mix-blend-multiply" data-node-id="I880:3061;256:3001" style={{ containerType: "size" }}>
+                <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+                  <div className="relative size-full" data-name="不规则墨渍 / 左下">
+                    <div className="absolute inset-[-5%_-2.55%_-5%_0]">
+                      <img alt="" className="block max-w-none size-full" src={img18} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="h-[36px] opacity-60 overflow-clip relative shrink-0 w-[30px]" data-node-id="880:3116" data-name="头像裁切 / 陆清">
+              <div className="absolute h-[153px] left-[-16px] top-[-5px] w-[64px]" data-node-id="880:3117" data-name="素材 / 陆清立绘裁切">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-full left-[-36.33%] max-w-none top-0 w-[173.01%]" src={img19} />
+                </div>
+              </div>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col font-['Noto_Sans_SC:Medium'] font-medium gap-[4px] items-start leading-[normal] min-w-px overflow-clip relative" data-node-id="880:3118" data-name="修士信息">
+              <p className="relative shrink-0 text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] w-full" data-node-id="880:3119">
+                陆清 · 法修
+              </p>
+              <p className="relative shrink-0 text-[10px] text-[color:var(--theme\/text\/secondary,#91a49e)] w-full" data-node-id="880:3120">
+                炼气 Lv10 · 阵亡
+              </p>
+            </div>
+            <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium h-[16px] leading-[normal] relative shrink-0 text-[10px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] w-[56px]" data-node-id="880:3121">
+              100 魂晶
+            </p>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[60px] items-center overflow-clip px-[10px] relative shrink-0 w-[287px]" data-node-id="880:3122" data-name="救急候选 / 白灵">
+            <div className="absolute h-[60px] left-0 overflow-clip rounded-[8px] top-0 w-[287px]" data-node-id="880:3123" style={{ backgroundImage: "linear-gradient(180deg, rgb(21, 26, 24) 0%, rgb(34, 37, 31) 40%, rgb(23, 26, 23) 72%, rgb(24, 32, 28) 100%)" }} data-name="PanelItem/V2">
+              <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="I880:3123;256:2952" style={{ backgroundImage: "linear-gradient(90deg, rgba(60, 64, 51, 0.2) 0%, rgba(118, 128, 115, 0.08) 36%, rgba(24, 32, 28, 0.1) 72%, rgba(24, 32, 28, 0.12) 100%)" }} data-name="叠色 / 横向层次" />
+              <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="I880:3123;256:2953" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(19.2 0 0 2.3529 145.92 40)'><stop stop-color='rgba(142,160,150,0.16)' offset='0'/><stop stop-color='rgba(82,96,89,0.06)' offset='0.5'/><stop stop-color='rgba(0,0,0,0)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="中部微光" />
+              <div className="absolute inset-0 mix-blend-multiply rounded-[8px]" data-node-id="I880:3123;256:2954" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(21.493 0 0 2.2857 146.15 39.771)'><stop stop-color='rgba(0,0,0,0)' offset='0'/><stop stop-color='rgba(0,0,0,0.04)' offset='0.58'/><stop stop-color='rgba(0,0,0,0.12)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="边缘压暗" />
+              <div className="absolute inset-[-12.5%_-3.47%_70%_75.69%] mix-blend-multiply" data-node-id="I880:3123;256:2955" data-name="暗斑 / 1">
+                <div className="absolute inset-[-23.53%_-7.53%]">
+                  <img alt="" className="block max-w-none size-full" src={img6} />
+                </div>
+              </div>
+              <div className="absolute bottom-[35%] left-[84.72%] mix-blend-multiply right-[-7.64%] top-1/4" data-node-id="I880:3123;256:2956" data-name="暗斑 / 2">
+                <div className="absolute inset-[-25%_-9.12%]">
+                  <img alt="" className="block max-w-none size-full" src={img7} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_-3.82%_-3.75%_71.88%] mix-blend-multiply" data-node-id="I880:3123;256:2957" data-name="暗斑 / 3">
+                <div className="absolute inset-[-25.81%_-6.54%]">
+                  <img alt="" className="block max-w-none size-full" src={img8} />
+                </div>
+              </div>
+              <div className="absolute inset-[61.25%_83.33%_5%_-8.33%] mix-blend-multiply" data-node-id="I880:3123;256:2958" data-name="暗斑 / 4">
+                <div className="absolute inset-[-29.63%_-8.36%]">
+                  <img alt="" className="block max-w-none size-full" src={img9} />
+                </div>
+              </div>
+              <div className="absolute inset-[-18.75%_47.22%_90%_27.08%] mix-blend-multiply" data-node-id="I880:3123;256:2959" data-name="暗斑 / 5">
+                <div className="absolute inset-[-34.78%_-8.14%]">
+                  <img alt="" className="block max-w-none size-full" src={img10} />
+                </div>
+              </div>
+              <div className="absolute inset-[76.25%_21.18%_-7.5%_47.57%] mix-blend-multiply" data-node-id="I880:3123;256:2960" data-name="暗斑 / 6">
+                <div className="absolute inset-[-32%_-6.69%]">
+                  <img alt="" className="block max-w-none size-full" src={img11} />
+                </div>
+              </div>
+              <div className="absolute flex inset-[15%_63.2%_82.2%_4.86%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2961" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0139421cqw,62.4159cqh)] rotate-[0.53deg] w-[hypot(99.9861cqw,37.5841cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 1" />
+                </div>
+              </div>
+              <div className="absolute bottom-[73.13%] flex items-center justify-center left-[28.82%] mix-blend-multiply right-[26.39%] top-1/4" data-node-id="I880:3123;256:2962" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0026044cqw,73.6274cqh)] rotate-[0.18deg] w-[hypot(99.9974cqw,26.3726cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[37.22%_65.28%_60.5%_9.03%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2963" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00660353cqw,87.6222cqh)] rotate-[-0.18deg] w-[hypot(99.9934cqw,-12.3778cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[42.56%_21.18%_54.75%_42.71%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2964" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0105718cqw,55.7368cqh)] rotate-[-0.53deg] w-[hypot(99.9894cqw,-44.2632cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.75%_32.64%_37.83%_16.66%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2965" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00878589cqw,51.1353cqh)] rotate-[0.53deg] w-[hypot(99.9912cqw,48.8647cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[73.75%_56.94%_24.32%_4.17%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2966" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0032724cqw,77.8167cqh)] rotate-[0.18deg] w-[hypot(99.9967cqw,22.1833cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[82.11%_28.47%_15.63%_36.11%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2967" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00449147cqw,82.8024cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.1976cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[15.47%_15.28%_82.38%_61.11%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2968" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0148207cqw,63.8384cqh)] rotate-[-0.53deg] w-[hypot(99.9852cqw,-36.1616cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 8" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[33.75%_9.38%_63.59%_70.48%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2969" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0252715cqw,75.0656cqh)] rotate-[0.53deg] w-[hypot(99.9747cqw,24.9344cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 9" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[68.75%_12.15%_29.38%_54.51%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2970" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00381777cqw,80.3634cqh)] rotate-[0.18deg] w-[hypot(99.9962cqw,19.6366cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 10" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[89.72%_51.74%_8.63%_22.57%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2971" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00454002cqw,82.955cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.045cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 11" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[85.76%_6.59%_12%_78.47%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:2972" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0298249cqw,78.0371cqh)] rotate-[-0.53deg] w-[hypot(99.9702cqw,-21.9629cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 12" />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[11.25%_86.46%_85%_10.42%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2973" data-name="磨损颗粒 / 1" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/2 left-[19.44%] mix-blend-overlay right-[78.82%] rounded-[1px] top-[47.5%]" data-node-id="I880:3123;256:2974" data-name="磨损颗粒 / 2" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[18.75%_57.64%_77.5%_37.85%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2975" data-name="磨损颗粒 / 3" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[45.83%] mix-blend-overlay right-[51.74%] rounded-[1px] top-[72.5%]" data-node-id="I880:3123;256:2976" data-name="磨损颗粒 / 4" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[32.5%_37.5%_65%_58.68%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2977" data-name="磨损颗粒 / 5" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[87.5%_30.9%_8.75%_66.32%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2978" data-name="磨损颗粒 / 6" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[53.75%_15.97%_42.5%_79.51%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2979" data-name="磨损颗粒 / 7" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[12.5%_7.99%_85%_89.58%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2980" data-name="磨损颗粒 / 8" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[94.1%] mix-blend-overlay right-[2.43%] rounded-[1px] top-[71.25%]" data-node-id="I880:3123;256:2981" data-name="磨损颗粒 / 9" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[88.75%_89.93%_8.75%_5.9%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3123;256:2982" data-name="磨损颗粒 / 10" />
+              <div className="absolute inset-[-7.5%_52.78%_47.5%_2.78%] mix-blend-soft-light" data-node-id="I880:3123;256:2983" data-name="烟熏云层 / 1">
+                <div className="absolute inset-[-27.78%_-7.84%]">
+                  <img alt="" className="block max-w-none size-full" src={img12} />
+                </div>
+              </div>
+              <div className="absolute inset-[23.75%_28.82%_22.5%_25.35%] mix-blend-overlay" data-node-id="I880:3123;256:2984" data-name="烟熏云层 / 2">
+                <div className="absolute inset-[-27.91%_-6.84%]">
+                  <img alt="" className="block max-w-none size-full" src={img13} />
+                </div>
+              </div>
+              <div className="absolute inset-[-15%_12.85%_66.25%_49.65%] mix-blend-soft-light" data-node-id="I880:3123;256:2985" data-name="烟熏云层 / 3">
+                <div className="absolute inset-[-37.61%_-10.22%]">
+                  <img alt="" className="block max-w-none size-full" src={img14} />
+                </div>
+              </div>
+              <div className="absolute inset-[48.75%_4.51%_5%_61.46%] mix-blend-multiply" data-node-id="I880:3123;256:2986" data-name="烟熏云层 / 4">
+                <div className="absolute inset-[-28.83%_-8.19%]">
+                  <img alt="" className="block max-w-none size-full" src={img15} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_52.78%_1.25%_8.33%] mix-blend-overlay" data-node-id="I880:3123;256:2987" data-name="烟熏云层 / 5">
+                <div className="absolute inset-[-34.57%_-6.27%]">
+                  <img alt="" className="block max-w-none size-full" src={img16} />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(100,92,77,0.08)] bottom-3/4 left-[7.64%] mix-blend-overlay right-[82.99%] rounded-[1px] top-[22.5%]" data-node-id="I880:3123;256:2988" data-name="纤维颗粒 / 1" />
+              <div className="absolute flex inset-[10%_74.31%_87.84%_21.17%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2989" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.201cqw,86.8601cqh)] rotate-1 w-[hypot(99.799cqw,13.1399cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[65.98%_59.37%_31.25%_33.33%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2990" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0996374cqw,90.0934cqh)] rotate-[-0.6deg] w-[hypot(99.9004cqw,-9.90664cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[28.75%_42.36%_69.1%_46.52%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2991" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0327147cqw,87.037cqh)] rotate-[0.4deg] w-[hypot(99.9673cqw,12.963cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[80.94%_34.71%_16.25%_59.03%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2992" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.15491cqw,88.8358cqh)] rotate-[-0.8deg] w-[hypot(99.8451cqw,-11.1642cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[18.75%_18.4%_79.01%_73.26%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2993" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0763037cqw,83.6479cqh)] rotate-[0.7deg] w-[hypot(99.9237cqw,16.3521cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.58%_8.68%_38.75%_84.72%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2994" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0734348cqw,93.7802cqh)] rotate-[-0.4deg] w-[hypot(99.9266cqw,-6.21984cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[35%_1.74%_62.93%_95.13%] items-center justify-center mix-blend-overlay" data-node-id="I880:3123;256:2995" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.290074cqw,90.5198cqh)] rotate-1 w-[hypot(99.7099cqw,9.48018cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 8" />
+                </div>
+              </div>
+              <div className="absolute inset-[0_0_0_59.03%] mix-blend-multiply" data-node-id="I880:3123;256:2996" data-name="不规则墨渍 / 右侧">
+                <div className="absolute inset-[-4.17%_-2.13%_-4.17%_0]">
+                  <img alt="" className="block max-w-none size-full" src={img17} />
+                </div>
+              </div>
+              <div className="absolute flex inset-[0_65.97%_0_-6.94%] items-center justify-center mix-blend-multiply" data-node-id="I880:3123;256:3001" style={{ containerType: "size" }}>
+                <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+                  <div className="relative size-full" data-name="不规则墨渍 / 左下">
+                    <div className="absolute inset-[-5%_-2.55%_-5%_0]">
+                      <img alt="" className="block max-w-none size-full" src={img18} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="h-[36px] opacity-60 overflow-clip relative shrink-0 w-[30px]" data-node-id="880:3178" data-name="头像裁切 / 白灵">
+              <div className="absolute h-[153px] left-[-14px] top-0 w-[64px]" data-node-id="880:3179" data-name="素材 / 白灵立绘裁切">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-full left-[-36.33%] max-w-none top-0 w-[173.01%]" src={img20} />
+                </div>
+              </div>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col font-['Noto_Sans_SC:Medium'] font-medium gap-[4px] items-start leading-[normal] min-w-px overflow-clip relative" data-node-id="880:3180" data-name="修士信息">
+              <p className="relative shrink-0 text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] w-full" data-node-id="880:3181">
+                白灵 · 医修
+              </p>
+              <p className="relative shrink-0 text-[10px] text-[color:var(--theme\/text\/secondary,#91a49e)] w-full" data-node-id="880:3182">
+                炼气 Lv10 · 阵亡
+              </p>
+            </div>
+            <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium h-[16px] leading-[normal] relative shrink-0 text-[10px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] w-[56px]" data-node-id="880:3183">
+              100 魂晶
+            </p>
+          </div>
+          <div className="content-stretch flex gap-[10px] h-[60px] items-center overflow-clip px-[10px] relative shrink-0 w-[287px]" data-node-id="880:3184" data-name="救急候选 / 墨言">
+            <div className="absolute h-[60px] left-0 overflow-clip rounded-[8px] top-0 w-[287px]" data-node-id="880:3185" style={{ backgroundImage: "linear-gradient(180deg, rgb(21, 26, 24) 0%, rgb(34, 37, 31) 40%, rgb(23, 26, 23) 72%, rgb(24, 32, 28) 100%)" }} data-name="PanelItem/V2">
+              <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="I880:3185;256:2952" style={{ backgroundImage: "linear-gradient(90deg, rgba(60, 64, 51, 0.2) 0%, rgba(118, 128, 115, 0.08) 36%, rgba(24, 32, 28, 0.1) 72%, rgba(24, 32, 28, 0.12) 100%)" }} data-name="叠色 / 横向层次" />
+              <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="I880:3185;256:2953" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(19.2 0 0 2.3529 145.92 40)'><stop stop-color='rgba(142,160,150,0.16)' offset='0'/><stop stop-color='rgba(82,96,89,0.06)' offset='0.5'/><stop stop-color='rgba(0,0,0,0)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="中部微光" />
+              <div className="absolute inset-0 mix-blend-multiply rounded-[8px]" data-node-id="I880:3185;256:2954" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 288 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(21.493 0 0 2.2857 146.15 39.771)'><stop stop-color='rgba(0,0,0,0)' offset='0'/><stop stop-color='rgba(0,0,0,0.04)' offset='0.58'/><stop stop-color='rgba(0,0,0,0.12)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="边缘压暗" />
+              <div className="absolute inset-[-12.5%_-3.47%_70%_75.69%] mix-blend-multiply" data-node-id="I880:3185;256:2955" data-name="暗斑 / 1">
+                <div className="absolute inset-[-23.53%_-7.53%]">
+                  <img alt="" className="block max-w-none size-full" src={img6} />
+                </div>
+              </div>
+              <div className="absolute bottom-[35%] left-[84.72%] mix-blend-multiply right-[-7.64%] top-1/4" data-node-id="I880:3185;256:2956" data-name="暗斑 / 2">
+                <div className="absolute inset-[-25%_-9.12%]">
+                  <img alt="" className="block max-w-none size-full" src={img7} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_-3.82%_-3.75%_71.88%] mix-blend-multiply" data-node-id="I880:3185;256:2957" data-name="暗斑 / 3">
+                <div className="absolute inset-[-25.81%_-6.54%]">
+                  <img alt="" className="block max-w-none size-full" src={img8} />
+                </div>
+              </div>
+              <div className="absolute inset-[61.25%_83.33%_5%_-8.33%] mix-blend-multiply" data-node-id="I880:3185;256:2958" data-name="暗斑 / 4">
+                <div className="absolute inset-[-29.63%_-8.36%]">
+                  <img alt="" className="block max-w-none size-full" src={img9} />
+                </div>
+              </div>
+              <div className="absolute inset-[-18.75%_47.22%_90%_27.08%] mix-blend-multiply" data-node-id="I880:3185;256:2959" data-name="暗斑 / 5">
+                <div className="absolute inset-[-34.78%_-8.14%]">
+                  <img alt="" className="block max-w-none size-full" src={img10} />
+                </div>
+              </div>
+              <div className="absolute inset-[76.25%_21.18%_-7.5%_47.57%] mix-blend-multiply" data-node-id="I880:3185;256:2960" data-name="暗斑 / 6">
+                <div className="absolute inset-[-32%_-6.69%]">
+                  <img alt="" className="block max-w-none size-full" src={img11} />
+                </div>
+              </div>
+              <div className="absolute flex inset-[15%_63.2%_82.2%_4.86%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2961" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0139421cqw,62.4159cqh)] rotate-[0.53deg] w-[hypot(99.9861cqw,37.5841cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 1" />
+                </div>
+              </div>
+              <div className="absolute bottom-[73.13%] flex items-center justify-center left-[28.82%] mix-blend-multiply right-[26.39%] top-1/4" data-node-id="I880:3185;256:2962" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0026044cqw,73.6274cqh)] rotate-[0.18deg] w-[hypot(99.9974cqw,26.3726cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[37.22%_65.28%_60.5%_9.03%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2963" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00660353cqw,87.6222cqh)] rotate-[-0.18deg] w-[hypot(99.9934cqw,-12.3778cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[42.56%_21.18%_54.75%_42.71%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2964" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0105718cqw,55.7368cqh)] rotate-[-0.53deg] w-[hypot(99.9894cqw,-44.2632cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.75%_32.64%_37.83%_16.66%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2965" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00878589cqw,51.1353cqh)] rotate-[0.53deg] w-[hypot(99.9912cqw,48.8647cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[73.75%_56.94%_24.32%_4.17%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2966" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0032724cqw,77.8167cqh)] rotate-[0.18deg] w-[hypot(99.9967cqw,22.1833cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[82.11%_28.47%_15.63%_36.11%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2967" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00449147cqw,82.8024cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.1976cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[15.47%_15.28%_82.38%_61.11%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2968" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0148207cqw,63.8384cqh)] rotate-[-0.53deg] w-[hypot(99.9852cqw,-36.1616cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 8" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[33.75%_9.38%_63.59%_70.48%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2969" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0252715cqw,75.0656cqh)] rotate-[0.53deg] w-[hypot(99.9747cqw,24.9344cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 9" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[68.75%_12.15%_29.38%_54.51%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2970" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.00381777cqw,80.3634cqh)] rotate-[0.18deg] w-[hypot(99.9962cqw,19.6366cqh)]">
+                  <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 10" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[89.72%_51.74%_8.63%_22.57%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2971" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.00454002cqw,82.955cqh)] rotate-[-0.18deg] w-[hypot(99.9955cqw,-17.045cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 11" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[85.76%_6.59%_12%_78.47%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:2972" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0298249cqw,78.0371cqh)] rotate-[-0.53deg] w-[hypot(99.9702cqw,-21.9629cqh)]">
+                  <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 12" />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[11.25%_86.46%_85%_10.42%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2973" data-name="磨损颗粒 / 1" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/2 left-[19.44%] mix-blend-overlay right-[78.82%] rounded-[1px] top-[47.5%]" data-node-id="I880:3185;256:2974" data-name="磨损颗粒 / 2" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[18.75%_57.64%_77.5%_37.85%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2975" data-name="磨损颗粒 / 3" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[45.83%] mix-blend-overlay right-[51.74%] rounded-[1px] top-[72.5%]" data-node-id="I880:3185;256:2976" data-name="磨损颗粒 / 4" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[32.5%_37.5%_65%_58.68%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2977" data-name="磨损颗粒 / 5" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[87.5%_30.9%_8.75%_66.32%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2978" data-name="磨损颗粒 / 6" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[53.75%_15.97%_42.5%_79.51%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2979" data-name="磨损颗粒 / 7" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[12.5%_7.99%_85%_89.58%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2980" data-name="磨损颗粒 / 8" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[94.1%] mix-blend-overlay right-[2.43%] rounded-[1px] top-[71.25%]" data-node-id="I880:3185;256:2981" data-name="磨损颗粒 / 9" />
+              <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[88.75%_89.93%_8.75%_5.9%] mix-blend-overlay rounded-[1px]" data-node-id="I880:3185;256:2982" data-name="磨损颗粒 / 10" />
+              <div className="absolute inset-[-7.5%_52.78%_47.5%_2.78%] mix-blend-soft-light" data-node-id="I880:3185;256:2983" data-name="烟熏云层 / 1">
+                <div className="absolute inset-[-27.78%_-7.84%]">
+                  <img alt="" className="block max-w-none size-full" src={img12} />
+                </div>
+              </div>
+              <div className="absolute inset-[23.75%_28.82%_22.5%_25.35%] mix-blend-overlay" data-node-id="I880:3185;256:2984" data-name="烟熏云层 / 2">
+                <div className="absolute inset-[-27.91%_-6.84%]">
+                  <img alt="" className="block max-w-none size-full" src={img13} />
+                </div>
+              </div>
+              <div className="absolute inset-[-15%_12.85%_66.25%_49.65%] mix-blend-soft-light" data-node-id="I880:3185;256:2985" data-name="烟熏云层 / 3">
+                <div className="absolute inset-[-37.61%_-10.22%]">
+                  <img alt="" className="block max-w-none size-full" src={img14} />
+                </div>
+              </div>
+              <div className="absolute inset-[48.75%_4.51%_5%_61.46%] mix-blend-multiply" data-node-id="I880:3185;256:2986" data-name="烟熏云层 / 4">
+                <div className="absolute inset-[-28.83%_-8.19%]">
+                  <img alt="" className="block max-w-none size-full" src={img15} />
+                </div>
+              </div>
+              <div className="absolute inset-[65%_52.78%_1.25%_8.33%] mix-blend-overlay" data-node-id="I880:3185;256:2987" data-name="烟熏云层 / 5">
+                <div className="absolute inset-[-34.57%_-6.27%]">
+                  <img alt="" className="block max-w-none size-full" src={img16} />
+                </div>
+              </div>
+              <div className="absolute bg-[rgba(100,92,77,0.08)] bottom-3/4 left-[7.64%] mix-blend-overlay right-[82.99%] rounded-[1px] top-[22.5%]" data-node-id="I880:3185;256:2988" data-name="纤维颗粒 / 1" />
+              <div className="absolute flex inset-[10%_74.31%_87.84%_21.17%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2989" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.201cqw,86.8601cqh)] rotate-1 w-[hypot(99.799cqw,13.1399cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 2" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[65.98%_59.37%_31.25%_33.33%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2990" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0996374cqw,90.0934cqh)] rotate-[-0.6deg] w-[hypot(99.9004cqw,-9.90664cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 3" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[28.75%_42.36%_69.1%_46.52%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2991" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0327147cqw,87.037cqh)] rotate-[0.4deg] w-[hypot(99.9673cqw,12.963cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 4" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[80.94%_34.71%_16.25%_59.03%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2992" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.15491cqw,88.8358cqh)] rotate-[-0.8deg] w-[hypot(99.8451cqw,-11.1642cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 5" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[18.75%_18.4%_79.01%_73.26%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2993" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.0763037cqw,83.6479cqh)] rotate-[0.7deg] w-[hypot(99.9237cqw,16.3521cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 6" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[58.58%_8.68%_38.75%_84.72%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2994" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(0.0734348cqw,93.7802cqh)] rotate-[-0.4deg] w-[hypot(99.9266cqw,-6.21984cqh)]">
+                  <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 7" />
+                </div>
+              </div>
+              <div className="absolute flex inset-[35%_1.74%_62.93%_95.13%] items-center justify-center mix-blend-overlay" data-node-id="I880:3185;256:2995" style={{ containerType: "size" }}>
+                <div className="flex-none h-[hypot(-0.290074cqw,90.5198cqh)] rotate-1 w-[hypot(99.7099cqw,9.48018cqh)]">
+                  <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 8" />
+                </div>
+              </div>
+              <div className="absolute inset-[0_0_0_59.03%] mix-blend-multiply" data-node-id="I880:3185;256:2996" data-name="不规则墨渍 / 右侧">
+                <div className="absolute inset-[-4.17%_-2.13%_-4.17%_0]">
+                  <img alt="" className="block max-w-none size-full" src={img17} />
+                </div>
+              </div>
+              <div className="absolute flex inset-[0_65.97%_0_-6.94%] items-center justify-center mix-blend-multiply" data-node-id="I880:3185;256:3001" style={{ containerType: "size" }}>
+                <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+                  <div className="relative size-full" data-name="不规则墨渍 / 左下">
+                    <div className="absolute inset-[-5%_-2.55%_-5%_0]">
+                      <img alt="" className="block max-w-none size-full" src={img18} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="h-[36px] opacity-60 overflow-clip relative shrink-0 w-[30px]" data-node-id="882:3231" data-name="头像裁切 / 墨言">
+              <div className="absolute h-[153px] left-[-15px] top-[-5px] w-[64px]" data-node-id="882:3232" data-name="素材 / 墨言立绘裁切">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-full left-[-36.33%] max-w-none top-0 w-[173.01%]" src={img21} />
+                </div>
+              </div>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col font-['Noto_Sans_SC:Medium'] font-medium gap-[4px] items-start leading-[normal] min-w-px overflow-clip relative" data-node-id="880:3241" data-name="修士信息">
+              <p className="relative shrink-0 text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] w-full" data-node-id="880:3242">
+                墨言 · 潜修
+              </p>
+              <p className="relative shrink-0 text-[10px] text-[color:var(--theme\/text\/secondary,#91a49e)] w-full" data-node-id="880:3243">
+                炼气 Lv10 · 阵亡
+              </p>
+            </div>
+            <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium h-[16px] leading-[normal] relative shrink-0 text-[10px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] w-[56px]" data-node-id="880:3244">
+              100 魂晶
+            </p>
+          </div>
+        </div>
+        <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[10px] text-[color:var(--theme\/text\/secondary,#91a49e)] w-[287px]" data-node-id="880:3245">
+          免费还魂后，其余修士仍需消耗魂晶。
+        </p>
+      </div>
+      <div className="absolute content-stretch flex gap-[15px] h-[44px] items-start left-[44px] overflow-clip top-[718px] w-[287px]" data-node-id="878:2797" data-name="底部操作">
+        <ButtonResizableFooter className="content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative shrink-0 w-[150px]" label="免费还魂 · 石岩" />
+        <ButtonResizableFooter className="content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative shrink-0 w-[122px]" label="返回营地" />
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## 主界面
+**Node ID:** 45:129
+
+昆吾山外营地主界面｜Web Mobile 375×817。 固定层：TopHUD + BottomHUD；横滑层：PanoramaContent 1050×817（2.8 屏），默认 x=-337.5。 默认中景完整展示议事殿与传送阵，左右保留招贤馆/交易行线索。 建筑交互层、背景层与近景雾幕独立；实现时横滑超过 12dp 取消建筑点击。 底部顺序：设置、成就、排行、邮件、日常；右侧仅展示灵石。
+
+## Panel/Level 2
+**Node ID:** 50:2
+
+二级通用面板主体。建筑点击等次级信息面板使用；375×817 基准下逻辑尺寸 336×367。
+
+## Panel/Decoration/Top
+**Node ID:** 50:3
+
+一级面板顶部装饰，仅与 Panel/Level 2 主体组合使用；逻辑尺寸 360×65。
+
+## Panel/Decoration/Bottom
+**Node ID:** 50:4
+
+一级面板底部装饰，仅与 Panel/Level 2 主体组合使用；逻辑尺寸 360×55。
+
+## PanelItem/V2
+**Node ID:** 195:1138
+
+兼容旧实例的源组件（隐藏维护）；新设计请复制 PanelItem/V2 / Editable Backgrounds 普通 Frame。Default/Selected 背景不作为新 Component 使用。
+
+## State=Default
+**Node ID:** 541:2417
+
+面板底部执行型按钮默认态。
+
+## Button/Resizable/Footer
+**Node ID:** 541:2445
+
+Approved V1.0｜Figma 原生可拉伸执行按钮。实例可直接调整宽高；Label 可编辑；State=Default / Pressed / Selected / Disabled。Page 1 已替换旧图片底按钮。
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

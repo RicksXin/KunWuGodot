@@ -1,0 +1,11 @@
+# 交易行设计还原
+- 唯一范围：Figma 9uaK9zzfEzxGYZsCC1Njix / 374:1538 首屏视觉还原及营地入口；不实现交易结算。
+- 事实源：Docs/PRD/03_灵源院与交易行_PRD.md。设计稿为旧Draft，包含出售、回购、成品装备与旧价；仅作视觉展示，禁止据此写入交易业务。
+- 完成：7条商品、普通/保底原始背景、价格与图标对齐、已购/未开放状态、营地入口、关闭、说明弹窗。
+- 复用：百宝库面板裁切/图标/按钮/字体。Noto变量字体轴改为Godot整数tag 2003265652（wght），使Medium 500生效。百宝库数量位置仍为(17,24)。
+- 关键文件：scripts/ui/market_panel.gd、scripts/scenes/camp.gd、scenes/market_preview.tscn、scripts/scenes/market_preview.gd、assets/camp/ui/market/、assets/fonts/noto_sans_sc_medium.tres。
+- 商品背景来源：Figma 375:1667（311×48）、375:2066（311×54）原始PNG导出。其他图标复用此前同设计库下载的PNG。
+- 验证：Godot 4.7.1 headless导入通过；tools/validate_market.gd GUI通过MARKET_OK，断言7行/2个禁用状态/购买提示/出售回购提示/钱包库存不变/关闭/实际入口；百宝库验证TREASURY_OK。验证均带--no-profile-write --ignore-config-cache。
+- 视觉：preview.png为Godot实际渲染；供用户复核。系统状态栏不模拟，背景为当前营地。
+- 边界：营地入口显示实际灵石余额，独立预览显示1280；商品价格/已购/解锁是稿中示例；不支持实际购买、出售、回购。无存档修改。
+- 待办：用户F6运行market_preview.tscn视觉确认；正式商城业务须按当前PRD另行实现。

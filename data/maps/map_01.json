@@ -1665,5 +1665,14 @@
       450,
       1890
     ]
+  },
+  "returnPoint": {
+    "position": [
+      450,
+      1890
+    ],
+    "radius": 28,
+    "width": 68,
+    "texture": "res://assets/maps/map_01/points/return_platform.png"
   }
 }

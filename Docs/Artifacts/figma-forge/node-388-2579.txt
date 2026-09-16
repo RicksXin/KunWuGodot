@@ -1,0 +1,219 @@
+const img1 = "https://www.figma.com/api/mcp/asset/90872a7f-9e20-48bd-8cd5-850adeb7f96b.svg";
+const img2 = "https://www.figma.com/api/mcp/asset/3f9027e3-1c90-4fd8-8565-08487b17d6f2.svg";
+const img3 = "https://www.figma.com/api/mcp/asset/15cdd211-3d17-4454-889c-c777924ee28a.svg";
+const img4 = "https://www.figma.com/api/mcp/asset/1aa9735a-f10c-4b8e-af21-781df1a5d6cb.svg";
+const img5 = "https://www.figma.com/api/mcp/asset/fd0aa501-70bb-4fa2-bdf7-973ed7501306.svg";
+const img6 = "https://www.figma.com/api/mcp/asset/6753a7fe-bdf1-4e9b-a2ef-9ad178a5eb0d.svg";
+const img7 = "https://www.figma.com/api/mcp/asset/11cefa42-e6e5-4a3f-916c-2cbcd8a59db3.svg";
+const img8 = "https://www.figma.com/api/mcp/asset/7cb6b878-b7d5-472a-8da0-f01c2b8315ff.svg";
+const img9 = "https://www.figma.com/api/mcp/asset/75f12ded-294b-45b9-8d6b-a859efd66b61.svg";
+const img10 = "https://www.figma.com/api/mcp/asset/5f41715c-4a13-43f3-9060-b441a7ff8a06.svg";
+const img11 = "https://www.figma.com/api/mcp/asset/733c4baa-49c2-4182-a6c4-cf5ce3730478.svg";
+const img = "https://www.figma.com/api/mcp/asset/65376b33-3dcd-41a0-9aca-25dcdf08d21d.svg";
+const img12 = "https://www.figma.com/api/mcp/asset/ce4bf361-a9b3-4e6c-a8e7-f9d7aa827ec1.svg";
+
+export default function Component() {
+  return (
+    <div className="relative size-full" data-node-id="388:2579" data-name="当前配方说明">
+      <div className="absolute h-[62px] left-0 overflow-clip rounded-[8px] top-0 w-[272px]" data-node-id="427:2977" style={{ backgroundImage: "linear-gradient(180deg, rgb(21, 26, 24) 0%, rgb(34, 37, 31) 40%, rgb(23, 26, 23) 72%, rgb(24, 32, 28) 100%)" }} data-name="背景 / Panel Item V2 / Default / Editable Frame">
+        <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="427:2978" style={{ backgroundImage: "linear-gradient(90deg, rgba(60, 64, 51, 0.2) 0%, rgba(118, 128, 115, 0.08) 36%, rgba(24, 32, 28, 0.1) 72%, rgba(24, 32, 28, 0.12) 100%)" }} data-name="叠色 / 横向层次" />
+        <div className="absolute inset-0 mix-blend-soft-light rounded-[8px]" data-node-id="427:2979" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 272 62' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(18.133 0 0 1.8235 137.81 31)'><stop stop-color='rgba(142,160,150,0.16)' offset='0'/><stop stop-color='rgba(82,96,89,0.06)' offset='0.5'/><stop stop-color='rgba(0,0,0,0)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="中部微光" />
+        <div className="absolute inset-0 mix-blend-multiply rounded-[8px]" data-node-id="427:2980" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 272 62' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(20.299 0 0 1.7714 138.03 30.823)'><stop stop-color='rgba(0,0,0,0)' offset='0'/><stop stop-color='rgba(0,0,0,0.04)' offset='0.58'/><stop stop-color='rgba(0,0,0,0.12)' offset='1'/></radialGradient></defs></svg>\")" }} data-name="边缘压暗" />
+        <div className="absolute inset-[-12.5%_-3.47%_70%_75.69%] mix-blend-multiply" data-node-id="427:2981" data-name="暗斑 / 1">
+          <div className="absolute inset-[-22.77%_-7.94%]">
+            <img alt="" className="block max-w-none size-full" src={img1} />
+          </div>
+        </div>
+        <div className="absolute bottom-[35%] left-[84.72%] mix-blend-multiply right-[-7.64%] top-1/4" data-node-id="427:2982" data-name="暗斑 / 2">
+          <div className="absolute inset-[-24.19%_-9.63%]">
+            <img alt="" className="block max-w-none size-full" src={img2} />
+          </div>
+        </div>
+        <div className="absolute inset-[65%_-3.82%_-3.75%_71.88%] mix-blend-multiply" data-node-id="427:2983" data-name="暗斑 / 3">
+          <div className="absolute inset-[-24.97%_-6.91%]">
+            <img alt="" className="block max-w-none size-full" src={img3} />
+          </div>
+        </div>
+        <div className="absolute inset-[61.25%_83.33%_5%_-8.33%] mix-blend-multiply" data-node-id="427:2984" data-name="暗斑 / 4">
+          <div className="absolute inset-[-28.67%_-8.82%]">
+            <img alt="" className="block max-w-none size-full" src={img4} />
+          </div>
+        </div>
+        <div className="absolute inset-[-18.75%_47.22%_90%_27.08%] mix-blend-multiply" data-node-id="427:2985" data-name="暗斑 / 5">
+          <div className="absolute inset-[-33.66%_-8.59%]">
+            <img alt="" className="block max-w-none size-full" src={img5} />
+          </div>
+        </div>
+        <div className="absolute inset-[76.25%_21.18%_-7.5%_47.57%] mix-blend-multiply" data-node-id="427:2986" data-name="暗斑 / 6">
+          <div className="absolute inset-[-30.97%_-7.06%]">
+            <img alt="" className="block max-w-none size-full" src={img6} />
+          </div>
+        </div>
+        <div className="absolute flex inset-[15%_63.2%_82.2%_4.86%] items-center justify-center mix-blend-overlay" data-node-id="427:2987" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.0139421cqw,62.4159cqh)] rotate-[0.43deg] skew-x-[-0.21deg] w-[hypot(99.9861cqw,37.5841cqh)]">
+            <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 1" />
+          </div>
+        </div>
+        <div className="absolute bottom-[73.13%] flex items-center justify-center left-[28.82%] mix-blend-multiply right-[26.39%] top-1/4" data-node-id="427:2988" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.0026044cqw,73.6274cqh)] rotate-[0.14deg] skew-x-[-0.07deg] w-[hypot(99.9974cqw,26.3726cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 2" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[37.22%_65.28%_60.5%_9.03%] items-center justify-center mix-blend-multiply" data-node-id="427:2989" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.00660353cqw,87.6222cqh)] rotate-[-0.14deg] skew-x-[0.07deg] w-[hypot(99.9934cqw,-12.3778cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 3" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[42.56%_21.18%_54.75%_42.71%] items-center justify-center mix-blend-overlay" data-node-id="427:2990" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.0105718cqw,55.7368cqh)] rotate-[-0.43deg] skew-x-[0.21deg] w-[hypot(99.9894cqw,-44.2632cqh)]">
+            <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 4" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[58.75%_32.64%_37.83%_16.66%] items-center justify-center mix-blend-multiply" data-node-id="427:2991" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.00878589cqw,51.1353cqh)] rotate-[0.43deg] skew-x-[-0.21deg] w-[hypot(99.9912cqw,48.8647cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 5" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[73.75%_56.94%_24.32%_4.17%] items-center justify-center mix-blend-multiply" data-node-id="427:2992" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.0032724cqw,77.8167cqh)] rotate-[0.14deg] skew-x-[-0.07deg] w-[hypot(99.9967cqw,22.1833cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 6" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[82.11%_28.47%_15.63%_36.11%] items-center justify-center mix-blend-overlay" data-node-id="427:2993" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.00449147cqw,82.8024cqh)] rotate-[-0.14deg] skew-x-[0.07deg] w-[hypot(99.9955cqw,-17.1976cqh)]">
+            <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 7" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[15.47%_15.28%_82.38%_61.11%] items-center justify-center mix-blend-multiply" data-node-id="427:2994" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.0148207cqw,63.8384cqh)] rotate-[-0.43deg] skew-x-[0.21deg] w-[hypot(99.9852cqw,-36.1616cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 8" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[33.75%_9.38%_63.59%_70.48%] items-center justify-center mix-blend-multiply" data-node-id="427:2995" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.0252715cqw,75.0656cqh)] rotate-[0.43deg] skew-x-[-0.21deg] w-[hypot(99.9747cqw,24.9344cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 9" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[68.75%_12.15%_29.38%_54.51%] items-center justify-center mix-blend-overlay" data-node-id="427:2996" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.00381777cqw,80.3634cqh)] rotate-[0.14deg] skew-x-[-0.07deg] w-[hypot(99.9962cqw,19.6366cqh)]">
+            <div className="bg-[rgba(130,144,135,0.07)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 10" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[89.72%_51.74%_8.63%_22.57%] items-center justify-center mix-blend-multiply" data-node-id="427:2997" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.00454002cqw,82.955cqh)] rotate-[-0.14deg] skew-x-[0.07deg] w-[hypot(99.9955cqw,-17.045cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 11" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[85.76%_6.59%_12%_78.47%] items-center justify-center mix-blend-multiply" data-node-id="427:2998" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.0298249cqw,78.0371cqh)] rotate-[-0.43deg] skew-x-[0.21deg] w-[hypot(99.9702cqw,-21.9629cqh)]">
+            <div className="bg-[rgba(5,7,6,0.18)] relative rounded-[0.6px] size-full" data-name="肌理细纹 / 12" />
+          </div>
+        </div>
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[11.25%_86.46%_85%_10.42%] mix-blend-overlay rounded-[1px]" data-node-id="427:2999" data-name="磨损颗粒 / 1" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/2 left-[19.44%] mix-blend-overlay right-[78.82%] rounded-[1px] top-[47.5%]" data-node-id="427:3000" data-name="磨损颗粒 / 2" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[18.75%_57.64%_77.5%_37.85%] mix-blend-overlay rounded-[1px]" data-node-id="427:3001" data-name="磨损颗粒 / 3" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[45.83%] mix-blend-overlay right-[51.74%] rounded-[1px] top-[72.5%]" data-node-id="427:3002" data-name="磨损颗粒 / 4" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[32.5%_37.5%_65%_58.68%] mix-blend-overlay rounded-[1px]" data-node-id="427:3003" data-name="磨损颗粒 / 5" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[87.5%_30.9%_8.75%_66.32%] mix-blend-overlay rounded-[1px]" data-node-id="427:3004" data-name="磨损颗粒 / 6" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[53.75%_15.97%_42.5%_79.51%] mix-blend-overlay rounded-[1px]" data-node-id="427:3005" data-name="磨损颗粒 / 7" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[12.5%_7.99%_85%_89.58%] mix-blend-overlay rounded-[1px]" data-node-id="427:3006" data-name="磨损颗粒 / 8" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] bottom-1/4 left-[94.1%] mix-blend-overlay right-[2.43%] rounded-[1px] top-[71.25%]" data-node-id="427:3007" data-name="磨损颗粒 / 9" />
+        <div className="absolute bg-[rgba(157,171,162,0.05)] inset-[88.75%_89.93%_8.75%_5.9%] mix-blend-overlay rounded-[1px]" data-node-id="427:3008" data-name="磨损颗粒 / 10" />
+        <div className="absolute inset-[-7.5%_52.78%_47.5%_2.78%] mix-blend-soft-light" data-node-id="427:3009" data-name="烟熏云层 / 1">
+          <div className="absolute inset-[-26.88%_-8.27%]">
+            <img alt="" className="block max-w-none size-full" src={img7} />
+          </div>
+        </div>
+        <div className="absolute inset-[23.75%_28.82%_22.5%_25.35%] mix-blend-overlay" data-node-id="427:3010" data-name="烟熏云层 / 2">
+          <div className="absolute inset-[-27.01%_-7.22%]">
+            <img alt="" className="block max-w-none size-full" src={img8} />
+          </div>
+        </div>
+        <div className="absolute inset-[-15%_12.85%_66.25%_49.65%] mix-blend-soft-light" data-node-id="427:3011" data-name="烟熏云层 / 3">
+          <div className="absolute inset-[-36.39%_-10.78%]">
+            <img alt="" className="block max-w-none size-full" src={img9} />
+          </div>
+        </div>
+        <div className="absolute inset-[48.75%_4.51%_5%_61.46%] mix-blend-multiply" data-node-id="427:3012" data-name="烟熏云层 / 4">
+          <div className="absolute inset-[-27.9%_-8.64%]">
+            <img alt="" className="block max-w-none size-full" src={img10} />
+          </div>
+        </div>
+        <div className="absolute inset-[65%_52.78%_1.25%_8.33%] mix-blend-overlay" data-node-id="427:3013" data-name="烟熏云层 / 5">
+          <div className="absolute inset-[-33.45%_-6.62%]">
+            <img alt="" className="block max-w-none size-full" src={img11} />
+          </div>
+        </div>
+        <div className="absolute bg-[rgba(100,92,77,0.08)] bottom-3/4 left-[7.64%] mix-blend-overlay right-[82.99%] rounded-[1px] top-[22.5%]" data-node-id="427:3014" data-name="纤维颗粒 / 1" />
+        <div className="absolute flex inset-[10%_74.31%_87.84%_21.17%] items-center justify-center mix-blend-overlay" data-node-id="427:3015" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.201cqw,86.8601cqh)] rotate-[0.82deg] skew-x-[-0.4deg] w-[hypot(99.799cqw,13.1399cqh)]">
+            <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 2" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[65.98%_59.37%_31.25%_33.33%] items-center justify-center mix-blend-overlay" data-node-id="427:3016" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.0996374cqw,90.0934cqh)] rotate-[-0.49deg] skew-x-[0.24deg] w-[hypot(99.9004cqw,-9.90664cqh)]">
+            <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 3" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[28.75%_42.36%_69.1%_46.52%] items-center justify-center mix-blend-overlay" data-node-id="427:3017" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.0327147cqw,87.037cqh)] rotate-[0.33deg] skew-x-[-0.16deg] w-[hypot(99.9673cqw,12.963cqh)]">
+            <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 4" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[80.94%_34.71%_16.25%_59.03%] items-center justify-center mix-blend-overlay" data-node-id="427:3018" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.15491cqw,88.8358cqh)] rotate-[-0.66deg] skew-x-[0.32deg] w-[hypot(99.8451cqw,-11.1642cqh)]">
+            <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 5" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[18.75%_18.4%_79.01%_73.26%] items-center justify-center mix-blend-overlay" data-node-id="427:3019" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.0763037cqw,83.6479cqh)] rotate-[0.57deg] skew-x-[-0.28deg] w-[hypot(99.9237cqw,16.3521cqh)]">
+            <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 6" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[58.58%_8.68%_38.75%_84.72%] items-center justify-center mix-blend-overlay" data-node-id="427:3020" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(0.0734348cqw,93.7802cqh)] rotate-[-0.33deg] skew-x-[0.16deg] w-[hypot(99.9266cqw,-6.21984cqh)]">
+            <div className="bg-[rgba(100,92,77,0.08)] relative rounded-[1px] size-full" data-name="纤维颗粒 / 7" />
+          </div>
+        </div>
+        <div className="absolute flex inset-[35%_1.74%_62.93%_95.13%] items-center justify-center mix-blend-overlay" data-node-id="427:3021" style={{ containerType: "size" }}>
+          <div className="flex-none h-[hypot(-0.290074cqw,90.5198cqh)] rotate-[0.82deg] skew-x-[-0.4deg] w-[hypot(99.7099cqw,9.48018cqh)]">
+            <div className="bg-[rgba(165,177,170,0.05)] relative rounded-[0.75px] size-full" data-name="纤维颗粒 / 8" />
+          </div>
+        </div>
+        <div className="absolute inset-[0_0_0_59.03%] mix-blend-multiply" data-node-id="427:3022" data-name="不规则墨渍 / 右侧">
+          <div className="absolute inset-[-4.03%_-2.24%_-4.03%_0]">
+            <img alt="" className="block max-w-none size-full" src={img} />
+          </div>
+        </div>
+        <div className="absolute flex inset-[0_65.97%_0_-6.94%] items-center justify-center mix-blend-multiply" data-node-id="427:3027" style={{ containerType: "size" }}>
+          <div className="flex-none h-[100cqh] rotate-180 w-[100cqw]">
+            <div className="relative size-full" data-name="不规则墨渍 / 左下">
+              <div className="absolute inset-[-4.84%_-2.69%_-4.84%_0]">
+                <img alt="" className="block max-w-none size-full" src={img12} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute bg-[var(--theme\/state\/info,#58b9b4)] h-[44px] left-[10px] rounded-[1.5px] shadow-[0px_0px_4px_0px_rgba(51,184,173,0.4)] top-[9px] w-[3px]" data-node-id="388:2635" data-name="当前配方 / 状态标记" />
+      <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Noto_Sans_SC:Medium'] font-medium justify-center leading-[0] left-[20px] text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[13px] w-[242px]" data-node-id="388:2636">
+        <p className="leading-[18px]">当前配方 · 五行法器制式</p>
+      </div>
+      <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Noto_Sans_SC:Medium'] font-medium justify-center leading-[0] left-[20px] text-[10px] text-[color:var(--theme\/text\/secondary,#91a49e)] top-[30.5px] w-[242px]" data-node-id="388:2637">
+        <p className="leading-[15px]">Lv7–12 · 凡品 / 精制 / 上品 · 七维随机</p>
+      </div>
+      <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['Noto_Sans_SC:Medium'] font-medium justify-center leading-[0] left-[20px] text-[10px] text-[color:var(--theme\/state\/warning,#be883a)] top-[48.5px] w-[242px]" data-node-id="388:2638">
+        <p className="leading-[15px]">固定成功；最终品质与七维在打造后生成</p>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

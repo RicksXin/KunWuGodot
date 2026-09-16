@@ -1,6 +1,19 @@
 class_name KWCombatResolver
 extends RefCounted
 
+static func requires_manual_target(skill: Dictionary) -> bool:
+	var kind := str(skill.get("targetType", "ENEMY_SINGLE"))
+	return kind != "SELF" and not kind.ends_with("_ALL") and not kind.contains("MULTI")
+
+static func manual_target_candidates(actor: Dictionary, skill: Dictionary, units: Array) -> Array:
+	if not requires_manual_target(skill):
+		return []
+	var friendly := str(skill.get("targetType", "ENEMY_SINGLE")).begins_with("ALLY")
+	var side := str(actor.get("side", "ally"))
+	if not friendly:
+		side = "enemy" if side == "ally" else "ally"
+	return units.filter(func(unit): return str(unit.get("side", "")) == side and not bool(unit.get("dead", false)) and int(unit.get("hp", 0)) > 0)
+
 static func skill_by_id(catalog: Dictionary, skill_id: String) -> Dictionary:
 	for skill in catalog.get("skills", []):
 		if str(skill.get("id", "")) == skill_id: return skill

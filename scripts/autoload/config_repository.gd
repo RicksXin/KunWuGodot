@@ -100,6 +100,10 @@ func _embedded_runtime_tables() -> Dictionary:
 		"assets": [],
 	}
 
+func formal_map_combat() -> Dictionary:
+	var map_manifest: Dictionary = _load_json("res://data/maps/map_01_manifest.json")
+	return _load_embedded_combat(str(map_manifest.get("combatDataPath", "res://data/config/combat_map01_formal.json")))
+
 func _load_embedded_combat(path: String) -> Dictionary:
 	var document: Dictionary = _load_json(path)
 	var inherited_path := str(document.get("inherits", ""))

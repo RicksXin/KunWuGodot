@@ -1,0 +1,703 @@
+const imgQuality = "https://www.figma.com/api/mcp/asset/8835fdd2-ad66-4fc9-90b4-f2a6f7f13fae.png";
+const imgPanelDecorationBottom = "https://www.figma.com/api/mcp/asset/1a6c2fc0-ad87-46c2-a9be-0fbf23a162ef.png";
+const imgPanelDecorationTop = "https://www.figma.com/api/mcp/asset/ce3b587a-e02e-400c-bf9f-7b2844e7bac3.png";
+const imgPanelLevel2 = "https://www.figma.com/api/mcp/asset/9050a9db-cd92-46de-b54f-43261899b0f9.png";
+const imgWiFi = "https://www.figma.com/api/mcp/asset/af5256a8-a382-4030-b04b-1e68eff5ff91.svg";
+const imgBackgroundLayer = "https://www.figma.com/api/mcp/asset/42df62a2-40e4-468d-b4c3-112a769607bc.png";
+const imgArt = "https://www.figma.com/api/mcp/asset/616dc7f9-aeac-422c-b1e3-743339e6e18d.png";
+const imgStatusIconDisabledLock = "https://www.figma.com/api/mcp/asset/6e160ae8-1683-496e-9b87-bf011fbdd5a2.png";
+const imgArt1 = "https://www.figma.com/api/mcp/asset/38a732e1-9144-4a87-9b9f-ae0981d36b35.png";
+const imgArt2 = "https://www.figma.com/api/mcp/asset/37cc0a49-4a0a-47eb-95ab-f5a43cf43721.png";
+const imgStatusIconAlertAsset = "https://www.figma.com/api/mcp/asset/408dedf5-08bf-4f9f-948b-f3c3fa9e33fe.png";
+const imgArt3 = "https://www.figma.com/api/mcp/asset/1d0b188f-2c30-4a1c-bf19-df25b1aef24f.png";
+const imgArt4 = "https://www.figma.com/api/mcp/asset/9913b8a2-01e6-4d19-a549-665264b2a802.png";
+const imgArt5 = "https://www.figma.com/api/mcp/asset/7940bd04-2905-44a1-ae03-bd78a8bab20b.png";
+const imgArt6 = "https://www.figma.com/api/mcp/asset/a29fb908-c556-4fa2-898d-fe8774b54d75.png";
+const imgIcon = "https://www.figma.com/api/mcp/asset/a9e0a537-061b-467e-ae02-9d482dfcf35e.png";
+const imgIcon1 = "https://www.figma.com/api/mcp/asset/fc8f591c-0fb5-40ed-a4b2-e3f256405f02.png";
+const imgIcon2 = "https://www.figma.com/api/mcp/asset/00e0bc9d-7936-4a9f-ba12-eeeb07ef9de8.png";
+const imgIcon3 = "https://www.figma.com/api/mcp/asset/9760ed3e-faa0-4cc0-9924-91102bda6a47.png";
+const imgIcon4 = "https://www.figma.com/api/mcp/asset/9384ef17-c6f4-41ba-bf27-122e47c0122b.png";
+const imgAvatarButtonPortrait = "https://www.figma.com/api/mcp/asset/5194e233-7749-476c-b1dd-e75025a9643f.png";
+const imgSettingsButtonIcon = "https://www.figma.com/api/mcp/asset/1c1ea0f0-b364-4484-b0c6-c8a8b0e3fcf6.png";
+const imgBottomRightCurrencyIconOnly = "https://www.figma.com/api/mcp/asset/35c10267-6735-4fa7-bfdb-37b9567f40be.png";
+const imgArt7 = "https://www.figma.com/api/mcp/asset/725db4c5-384b-4836-82c4-a572d4473bbb.png";
+const imgDivider = "https://www.figma.com/api/mcp/asset/b1750af9-f74b-4db6-87a0-3ef87cfa2d5c.svg";
+const img = "https://www.figma.com/api/mcp/asset/df9929c1-a531-4716-aa08-e523444899be.png";
+const img1 = "https://www.figma.com/api/mcp/asset/5f45ed16-ac6e-4dd3-9918-2badb2516cf3.png";
+const img2 = "https://www.figma.com/api/mcp/asset/44d20d68-375d-4640-a8e6-1678e798ef84.png";
+const img3 = "https://www.figma.com/api/mcp/asset/be641570-9889-4867-9146-3e1a5cba1e80.png";
+
+type ButtonResizableFooterProps = {
+  className?: string;
+  label?: string;
+  state?: "Default";
+};
+
+function ButtonResizableFooter({ className, label = "确认操作", state = "Default" }: ButtonResizableFooterProps) {
+  return (
+    <div className={className || "content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative w-[144px]"} data-node-id="541:2417">
+      <div className="absolute border border-[var(--theme\/accent\/dark-gold,#b58a42)] border-solid inset-0 pointer-events-none rounded-[4px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.32)]" data-node-id="541:2418" data-name="01 / Base">
+        <div aria-hidden className="absolute bg-[var(--theme\/surface\/deep-wood,#241d18)] inset-0 rounded-[4px]" />
+        <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0px_-2px_3px_0px_rgba(0,0,0,0.42)]" />
+      </div>
+      <div className="absolute bg-gradient-to-b from-[rgba(214,161,71,0.16)] inset-[2px] rounded-[3px] to-[rgba(5,5,5,0.34)] via-[48%] via-[rgba(31,23,18,0.02)]" data-node-id="541:2419" data-name="02 / Depth Gradient" />
+      <div className="absolute bg-gradient-to-r from-[rgba(5,5,5,0.18)] inset-[4px] mix-blend-soft-light rounded-[2px] to-[rgba(5,5,5,0.2)] via-[52%] via-[rgba(199,148,66,0.07)]" data-node-id="541:2420" data-name="03 / Stretch Texture" />
+      <div className="absolute border border-[var(--theme\/border\/old-bronze,#80623a)] border-solid inset-[2px] rounded-[3px]" data-node-id="541:2421" data-name="04 / Inner Rim" />
+      <div className="absolute bg-[rgba(219,168,82,0.36)] h-px left-[6px] right-[6px] top-[4px]" data-node-id="541:2422" data-name="05 / Top Highlight" />
+      <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[20px] relative shrink-0 text-[14px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center whitespace-nowrap" data-node-id="541:2423">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+type InventoryItemSlotQualityProps = {
+  className?: string;
+  quality?: "精制" | "上品" | "凡品";
+};
+
+function InventoryItemSlotQuality({ className, quality = "凡品" }: InventoryItemSlotQualityProps) {
+  const is = quality === "精制";
+  const is1 = quality === "上品";
+  return (
+    <div className={className || `relative size-[40px] ${is1 ? "drop-shadow-[0px_0px_2px_rgba(75,131,184,0.42)]" : is ? "drop-shadow-[0px_0px_2px_rgba(111,148,95,0.42)]" : ""}`} id={is1 ? "node-371_1667" : is ? "node-371_1665" : "node-371_1663"}>
+      <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgQuality} />
+      {quality === "凡品" && <div className="absolute border border-[var(--equipment\/rough,#e8dcbb)] border-solid left-[3px] rounded-[4px] size-[34px] top-[3px]" data-node-id="371:1664" data-name="品质内沿光 / 凡品" />}
+      {is && <div className="absolute border border-[var(--equipment\/refined,#6f945f)] border-solid drop-shadow-[0px_0px_1.5px_rgba(111,148,95,0.55)] left-[3px] rounded-[4px] size-[34px] top-[3px]" data-node-id="371:1666" data-name="品质内沿光 / 精制" />}
+      {is1 && <div className="absolute border border-[var(--equipment\/superior,#4b83b8)] border-solid drop-shadow-[0px_0px_1.5px_rgba(75,131,184,0.55)] left-[3px] rounded-[4px] size-[34px] top-[3px]" data-node-id="371:1668" data-name="品质内沿光 / 上品" />}
+    </div>
+  );
+}
+
+type ButtonResizableInlineProps = {
+  className?: string;
+  label?: string;
+  state?: "Default" | "Selected";
+};
+
+function ButtonResizableInline({ className, label = "升级", state = "Default" }: ButtonResizableInlineProps) {
+  const isSelected = state === "Selected";
+  return (
+    <div className={className || "content-stretch flex gap-[6px] h-[32px] items-center justify-center px-[14px] relative w-[120px]"} id={isSelected ? "node-542_2431" : "node-542_2417"}>
+      <div className="absolute border border-[var(--theme\/primary\/jade-highlight,#6f8f85)] border-solid inset-0 pointer-events-none rounded-[3px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)]" id={isSelected ? "node-542_2432" : "node-542_2418"} data-name="01 / Base">
+        <div aria-hidden className={`absolute inset-0 rounded-[3px] ${isSelected ? String.raw`bg-[var(--theme\/primary\/kunwu-teal,#3f5f59)]` : String.raw`bg-[var(--theme\/surface\/black-jade,#202a27)]`}`} />
+        <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0px_-1px_2px_0px_rgba(0,0,0,0.38)]" />
+      </div>
+      <div className={`absolute bg-gradient-to-b inset-[2px] rounded-[2px] via-1/2 ${isSelected ? "from-[rgba(140,201,178,0.34)] to-[rgba(3,8,8,0.44)] via-[rgba(46,92,82,0.1)]" : "from-[rgba(89,148,133,0.15)] to-[rgba(3,5,5,0.38)] via-[rgba(18,31,28,0.04)]"}`} id={isSelected ? "node-542_2433" : "node-542_2419"} data-name="02 / Depth Gradient" />
+      <div className={`absolute bg-gradient-to-r inset-[4px] mix-blend-soft-light rounded-[2px] via-[54%] ${isSelected ? "from-[rgba(5,13,10,0.28)] to-[rgba(5,13,10,0.26)] via-[rgba(168,224,199,0.19)]" : "from-[rgba(3,5,5,0.26)] to-[rgba(3,5,5,0.24)] via-[rgba(99,163,145,0.08)]"}`} id={isSelected ? "node-542_2434" : "node-542_2420"} data-name="03 / Stretch Texture" />
+      <div className={`absolute border border-solid inset-[2px] rounded-[2px] ${isSelected ? String.raw`border-[var(--theme\/primary\/jade-highlight,#6f8f85)]` : String.raw`border-[var(--theme\/primary\/kunwu-teal,#3f5f59)]`}`} id={isSelected ? "node-542_2435" : "node-542_2421"} data-name="04 / Inner Rim" />
+      <div className={`absolute h-px left-[6px] right-[6px] top-[4px] ${isSelected ? "bg-[rgba(176,232,209,0.68)]" : "bg-[rgba(117,184,163,0.38)]"}`} id={isSelected ? "node-542_2436" : "node-542_2422"} data-name="05 / Top Highlight" />
+      <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] relative shrink-0 text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center whitespace-nowrap" data-node-id="542:2423">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function PanelDecorationBottom({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[55px] relative w-[360px]"} data-node-id="50:4" data-name="Panel/Decoration/Bottom">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[568.89%] left-[-14.97%] max-w-none top-[-215%] w-[129.95%]" src={imgPanelDecorationBottom} />
+      </div>
+    </div>
+  );
+}
+
+function PanelDecorationTop({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[65px] relative w-[360px]"} data-node-id="50:3" data-name="Panel/Decoration/Top">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[451.1%] left-[-11.16%] max-w-none top-[-165.2%] w-[122.39%]" src={imgPanelDecorationTop} />
+      </div>
+    </div>
+  );
+}
+
+function PanelLevel2({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[367px] relative w-[336px]"} data-node-id="50:2" data-name="Panel/Level 2">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[156.57%] left-[-7.14%] max-w-none top-[-28.03%] w-[114.29%]" src={imgPanelLevel2} />
+      </div>
+    </div>
+  );
+}
+
+type MobileStatusBarForeground3Props = {
+  className?: string;
+  time?: string;
+};
+
+function MobileStatusBarForeground3({ className, time = "9:41" }: MobileStatusBarForeground3Props) {
+  return (
+    <div className={className || "content-stretch flex h-[44px] items-center justify-between px-[16px] relative w-[375px]"} data-node-id="20:92" data-name="Mobile/Status Bar/Foreground3">
+      <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[17px] not-italic relative shrink-0 text-[14px] text-white tracking-[-0.2px] whitespace-nowrap" data-node-id="20:93">
+        {time}
+      </p>
+      <div className="content-stretch flex gap-[6px] h-[12px] items-center relative shrink-0" data-node-id="20:94" data-name="System Indicators">
+        <div className="content-stretch flex gap-[1.5px] h-[12px] items-end relative shrink-0 w-[18px]" data-node-id="20:95" data-name="Signal">
+          <div className="bg-white relative rounded-[0.75px] shrink-0 size-[3px]" data-node-id="20:96" data-name="Bar 1" />
+          <div className="bg-white h-[5.5px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:97" data-name="Bar 2" />
+          <div className="bg-white h-[8px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:98" data-name="Bar 3" />
+          <div className="bg-white h-[11px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:99" data-name="Bar 4" />
+        </div>
+        <div className="h-[12px] relative shrink-0 w-[18px]" data-node-id="20:100" data-name="Wi-Fi">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgWiFi} />
+        </div>
+        <div className="h-[12px] relative shrink-0 w-[27px]" data-node-id="20:104" data-name="Battery">
+          <div className="absolute border border-[rgba(255,255,255,0.55)] border-solid h-[12px] left-0 rounded-[3px] top-0 w-[23px]" data-node-id="20:105" data-name="Outline" />
+          <div className="absolute bg-white h-[8px] left-[2px] rounded-[1.75px] top-[2px] w-[17px]" data-node-id="20:106" data-name="Level" />
+          <div className="absolute bg-[rgba(255,255,255,0.55)] h-[4px] left-[24.5px] rounded-[1px] top-[4px] w-[2px]" data-node-id="20:107" data-name="Cap" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Component({ className }: { className?: string }) {
+  return (
+    <div className={className || "bg-[var(--theme\\/background\\/ink,#111917)] h-[817px] overflow-clip relative w-[375px]"} data-node-id="45:129" data-name="主界面">
+      <div className="absolute h-[817px] left-0 top-0 w-[375px]" data-node-id="58:35" data-name="WorldViewport · 375×817">
+        <div className="absolute h-[817px] left-[-337.5px] top-0 w-[1050px]" data-node-id="58:36" data-name="PanoramaContent · 1050×817 · DefaultCenter">
+          <div className="absolute h-[817px] left-0 top-0 w-[1050px]" data-node-id="58:37" data-name="BackgroundLayer / 昆吾山禁地">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgBackgroundLayer} />
+          </div>
+          <div className="absolute bg-gradient-to-b from-[rgba(5,13,13,0.3)] h-[817px] left-0 to-[rgba(5,8,8,0.66)] top-0 via-[42%] via-[rgba(18,28,26,0.04)] w-[1050px]" data-node-id="58:38" data-name="BackgroundLayer / 云雾压暗" />
+          <div className="absolute h-[817px] left-0 top-0 w-[1050px]" data-node-id="59:17" data-name="BuildingLayer / 七座建筑与传送阵">
+            <div className="absolute h-[137px] left-[71.5px] top-[284px] w-[206px]" data-node-id="59:18" data-name="bai_bao_ku / 百宝库">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex h-[137px] items-center justify-center left-1/2 top-1/2 w-[206px]" data-node-id="59:19">
+                <div className="-scale-y-100 flex-none rotate-180">
+                  <div className="h-[137px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[206px]" data-name="Art / 百宝库">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute h-[20px] left-[64px] top-[117px] w-[63px]" data-node-id="147:1817">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:20" data-name="NameModule / 百宝库" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:21">
+                  <p className="leading-[20px]">百宝库</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:23" data-name="StatusIcon / 百宝库 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[137px] left-[38.5px] top-[464px] w-[206px]" data-node-id="59:24" data-name="huan_hun_tan / 还魂殿">
+              <div className="absolute flex h-[137px] items-center justify-center left-0 top-0 w-[206px]" data-node-id="59:25">
+                <div className="-scale-y-100 flex-none rotate-180">
+                  <div className="h-[137px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[206px]" data-name="Art / 还魂殿">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt1} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute h-[20px] left-[81px] top-[117px] w-[63px]" data-node-id="147:1878">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:26" data-name="NameModule / 还魂殿" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:27">
+                  <p className="leading-[20px]">还魂殿</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:26" data-name="StatusIcon / 还魂殿 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[426.5px] top-[154px] w-[247px]" data-node-id="143:1224" data-name="议事殿">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247px]" data-node-id="59:37" data-name="Art / 议事殿">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt2} />
+              </div>
+              <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-[96.67px] rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-[139.55px] w-[58px]" data-node-id="59:38" data-name="NameModule / 议事殿" />
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[126px] not-italic text-[#e8dcbb] text-[10px] text-center top-[150px] w-[58px]" data-node-id="59:39">
+                <p className="leading-[20px]">议事殿</p>
+              </div>
+              <div className="absolute flex items-center justify-center left-[136px] size-[29.394px] top-[125px]" data-node-id="461:2197">
+                <div className="flex-none rotate-15">
+                  <div className="relative size-[24px]" data-name="StatusIcon / 议事殿 / Alert Asset">
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[137px] left-[747.5px] top-[271px] w-[206px]" data-node-id="59:42" data-name="jiao_yi_hang / 交易行">
+              <div className="absolute h-[137px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[206px]" data-node-id="59:43" data-name="Art / 交易行">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt3} />
+              </div>
+              <div className="absolute h-[20px] left-[61px] top-[113px] w-[63px]" data-node-id="147:1725">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:44" data-name="NameModule / 交易行" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:45">
+                  <p className="leading-[20px]">交易行</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:25" data-name="StatusIcon / 交易行 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[571.5px] top-[339px] w-[247px]" data-node-id="59:48" data-name="lian_qi_fang / 炼器坊">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247px]" data-node-id="59:49" data-name="Art / 炼器坊">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt4} />
+              </div>
+              <div className="absolute h-[20px] left-[67px] top-[149px] w-[63px]" data-node-id="147:1746">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:50" data-name="NameModule / 炼器坊" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:51">
+                  <p className="leading-[20px]">炼器坊</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:24" data-name="StatusIcon / 炼器坊 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[724.5px] top-[515px] w-[247px]" data-node-id="59:54" data-name="ling_pu / 灵圃">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247.504px]" data-node-id="59:55" data-name="Art / 灵圃">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt5} />
+              </div>
+              <div className="absolute h-[20px] left-[92px] top-[145px] w-[64px]" data-node-id="147:1899">
+                <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:56" data-name="NameModule / 灵圃" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[26px] not-italic text-[#e8dcbb] text-[10px] text-center top-[10px] w-[44px]" data-node-id="59:57">
+                  <p className="leading-[20px]">灵圃</p>
+                </div>
+                <div className="absolute left-[46px] size-[24px] top-[-2px]" data-node-id="461:2198" data-name="StatusIcon / 灵圃 / Alert Asset">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[139px] left-[421.5px] top-[535px] w-[206px]" data-node-id="59:60" data-name="ExpeditionEntry / 传送阵">
+              <div className="absolute h-[139px] left-[0.5px] top-[-0.41px] w-[206px]" data-node-id="59:61" data-name="Art / 传送阵">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt6} />
+              </div>
+              <div className="absolute h-[30px] left-[61px] top-[109px] w-[84px]" data-node-id="147:1975">
+                <div className="absolute bg-[var(--theme\/surface\/black-jade,#202a27)] border border-[var(--theme\/primary\/jade-highlight,#6f8f85)] border-solid h-[20px] left-0 rounded-[4px] shadow-[0px_0px_8px_0px_rgba(20,128,117,0.32)] top-0 w-[84px]" data-node-id="59:62" data-name="CTA / 入山整备" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[18px] justify-center leading-[0] left-[42px] not-italic text-[#e8dcbb] text-[10px] text-center top-[9px] w-[84px]" data-node-id="59:63">
+                  <p className="leading-[18px]">启程</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute bg-gradient-to-b from-[rgba(15,26,23,0)] h-[83px] left-[0.5px] to-[rgba(10,18,15,0.9)] top-[734px] w-[1050px]" data-node-id="58:39" data-name="ForegroundLayer / 近景雾幕" />
+        </div>
+      </div>
+      <div className="absolute h-[817px] left-0 top-0 w-[375px]" data-node-id="60:17" data-name="SafeAreaRoot / Fixed HUD">
+        <MobileStatusBarForeground3 className="absolute content-stretch flex h-[44px] items-center justify-between left-0 opacity-94 px-[16px] top-0 w-[375px]" />
+        <div className="absolute h-[132px] left-0 top-[44px] w-[375px]" data-node-id="60:18" data-name="TopHUD / 玩家资源与主线">
+          <div className="absolute backdrop-blur-[2px] drop-shadow-[0px_3px_4px_rgba(0,0,0,0.48)] h-[49px] left-[8px] rounded-[6px] top-[8px] w-[359px]" data-node-id="60:19" data-name="HUD Plate / 头像与五资源" />
+          <div className="absolute h-[47px] left-[63px] top-[9px] w-[298px]" data-node-id="60:22" data-name="ResourceBar / 灵粮·灵木·玄铁·灵晶·庚精">
+            <div className="absolute h-[45px] left-0 top-0 w-[58px]" data-node-id="60:23" data-name="灵粮 / 168">
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:24" data-name="Icon / 灵粮">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-29%] max-w-none size-[160.5%] top-[-26.65%]" src={imgIcon} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:25">
+                <p className="leading-[17px]">168</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[59.5px] top-0 w-[58px]" data-node-id="60:26" data-name="灵木 / 96">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:27" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:28" data-name="Icon / 灵木">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-29.94%] max-w-none size-[160.5%] top-[-23.67%]" src={imgIcon1} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:29">
+                <p className="leading-[17px]">96</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[119px] top-0 w-[58px]" data-node-id="60:30" data-name="玄铁 / 42">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:31" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:32" data-name="Icon / 玄铁">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-[124.44%] left-[-12.57%] max-w-none top-[-10.95%] w-[126.25%]" src={imgIcon2} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:33">
+                <p className="leading-[17px]">42</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[178.5px] top-0 w-[58px]" data-node-id="60:34" data-name="灵晶 / 12">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:35" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:36" data-name="Icon / 灵晶">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-[158.73%] left-[-29.43%] max-w-none top-[-25.09%] w-[159.8%]" src={imgIcon3} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:37">
+                <p className="leading-[17px]">12</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[238px] top-0 w-[58px]" data-node-id="60:38" data-name="庚精 / 3">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:39" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:40" data-name="Icon / 庚精">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-34.83%] max-w-none size-[170.67%] top-[-34.33%]" src={imgIcon4} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:41">
+                <p className="leading-[17px]">3</p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute drop-shadow-[0px_3px_3.5px_rgba(0,0,0,0.42)] h-[42px] left-[8px] rounded-[5px] top-[62px] w-[359px]" data-node-id="60:42" data-name="MainTaskButton / 当前主线" />
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[14px] justify-center leading-[0] left-[53px] not-italic text-[8px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] top-[73px] w-[274px]" data-node-id="60:45">
+            <p className="leading-[14px]">当前主线 · 昆吾外围</p>
+          </div>
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[53px] not-italic text-[11px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[89px] w-[274px]" data-node-id="60:46">
+            <p className="leading-[20px]">前往议事殿，与岑守一交谈</p>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[28px] justify-center leading-[0] left-[345px] not-italic text-[18px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center top-[82px] w-[20px]" data-node-id="60:47">
+            <p className="leading-[28px]">›</p>
+          </div>
+          <div className="absolute bg-[var(--theme\/background\/ink,#111917)] border border-[var(--theme\/border\/old-bronze,#80623a)] border-solid h-[18px] left-[117px] rounded-[9px] top-[111px] w-[141px]" data-node-id="60:48" data-name="Panorama Hint / Backplate" />
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[18px] justify-center leading-[0] left-[187.5px] not-italic text-[8px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center top-[120px] w-[141px]" data-node-id="60:49">
+            <p className="leading-[18px] whitespace-pre-wrap">{`‹  左右拖动查看营地  ›`}</p>
+          </div>
+          <div className="absolute flex items-center justify-center left-[7px] size-[45.255px] top-[62px]" data-node-id="60:43">
+            <div className="-rotate-45 flex-none">
+              <div className="bg-[var(--theme\/surface\/black-jade,#202a27)] border border-[var(--theme\/accent\/dark-gold,#b58a42)] border-solid relative rounded-[4px] size-[32px]" data-name="MainTaskButton / Task Seal" />
+            </div>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] justify-center leading-[0] left-[30px] not-italic size-[32px] text-[14px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] text-center top-[83px]" data-node-id="60:44">
+            <p className="leading-[32px]">令</p>
+          </div>
+          <div className="absolute left-[12px] size-[40px] top-[12px]" data-node-id="680:4839">
+            <div className="absolute left-0 size-[40px] top-0" data-node-id="680:4827" data-name="物品面板">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgQuality} />
+            </div>
+            <div className="absolute left-0 size-[40px] top-0" data-node-id="60:20" data-name="AvatarButton / Portrait">
+              <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgAvatarButtonPortrait} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute h-[48px] left-0 top-[745px] w-[375px]" data-node-id="61:17" data-name="BottomHUD / Frosted Safe Area">
+          <div className="absolute backdrop-blur-[8px] drop-shadow-[0px_-2px_4px_rgba(0,0,0,0.42)] h-[40px] left-[8px] rounded-[12px] top-[4px] w-[359px]" data-node-id="67:32" data-name="FrostedSurface / Bottom Safe Area" />
+          <div className="absolute drop-shadow-[0px_0px_3.5px_rgba(178,138,64,0.28)] h-[32px] left-[14px] rounded-[8px] top-[8px] w-[42px]" data-node-id="67:33" data-name="SettingsButton / IconOnly / Open" />
+          <div className="absolute left-[25px] size-[20px] top-[14px]" data-node-id="67:34" data-name="SettingsButton / Icon">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute left-[-26.44%] max-w-none size-[151.06%] top-[-24.32%]" src={imgSettingsButtonIcon} />
+            </div>
+          </div>
+          <div className="absolute left-[304px] size-[24px] top-[12px]" data-node-id="67:35" data-name="BottomRightCurrency / IconOnly">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[119.41%] left-[-11.39%] max-w-none top-[-7.76%] w-[121.24%]" src={imgBottomRightCurrencyIconOnly} />
+            </div>
+          </div>
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[24px] justify-center leading-[0] left-[333px] not-italic text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[24px] w-[42px]" data-node-id="67:36">
+            <p className="leading-[24px]">1,280</p>
+          </div>
+        </div>
+        <div className="absolute h-[165px] left-[-86px] top-[358px] w-[247px]" data-node-id="143:1537" data-name="招贤馆">
+          <div className="absolute flex h-[165px] items-center justify-center left-0 top-0 w-[247px]" data-node-id="59:31">
+            <div className="-scale-y-100 flex-none rotate-180">
+              <div className="h-[165px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[247px]" data-name="Art / 招贤馆">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt7} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute h-[20px] left-[103px] top-[140px] w-[64px]" data-node-id="143:1688">
+            <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:32" data-name="NameModule / 招贤馆" />
+            <div className="absolute flex items-center justify-center left-[38px] size-[29.394px] top-[-15px]" data-node-id="518:3615">
+              <div className="flex-none rotate-15">
+                <div className="relative size-[24px]" data-name="StatusIcon / 议事殿 / Alert Asset">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#e8dcbb] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:33">
+              <p className="leading-[20px]">招贤馆</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Component375817Draft() {
+  return (
+    <div className="bg-[#111917] relative size-full" data-node-id="372:1396" data-name="百宝库面板 / 375×817 / Draft">
+      <Component className="absolute bg-[var(--theme\/background\/ink,#111917)] h-[817px] left-0 overflow-clip top-0 w-[375px]" />
+      <div className="absolute bg-[rgba(10,15,14,0.82)] h-[817px] left-0 top-0 w-[375px]" data-node-id="372:1509" data-name="遮罩 / 百宝库" />
+      <div className="absolute h-[581px] left-[8px] top-[96px] w-[359px]" data-node-id="372:1510" data-name="百宝库 / 一级主体组合">
+        <PanelLevel2 className="absolute h-[540px] left-[12px] top-[32px] w-[335px]" />
+        <PanelDecorationTop className="absolute h-[65px] left-0 top-0 w-[359px]" />
+        <PanelDecorationBottom className="absolute h-[55px] left-0 top-[526px] w-[359px]" />
+        <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[24px] left-[179.5px] text-[#e8dcbb] text-[20px] text-center top-[33px] w-[359px]" data-node-id="372:1514">
+          百宝库
+        </p>
+        <p className="[word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[24px] text-[#91a49e] text-[12px] top-[80px] w-[28px]" data-node-id="373:1507">
+          容量
+        </p>
+        <p className="[word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[20px] left-[56px] text-[#e8dcbb] text-[14px] top-[78px] w-[60px]" data-node-id="373:1508">
+          12 / 40
+        </p>
+        <p className="[word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[124px] text-[#b58a42] text-[10px] top-[80px] w-[104px]" data-node-id="373:1509">
+          锁定 2 · 任务保护 1
+        </p>
+        <ButtonResizableInline className="absolute content-stretch flex gap-[6px] h-[28px] items-center justify-center left-[263px] px-[14px] top-[74px] w-[72px]" label="筛选" />
+        <div className="absolute bg-[rgba(128,98,58,0.45)] h-px left-[24px] top-[110px] w-[311px]" data-node-id="373:1513" data-name="分隔线 / 分类前" />
+        <ButtonResizableInline className="absolute content-stretch flex gap-[6px] h-[28px] items-center justify-center left-[24px] px-[14px] top-[120px] w-[72px]" label="全部" state="Selected" />
+        <ButtonResizableInline className="absolute content-stretch flex gap-[6px] h-[28px] items-center justify-center left-[103px] px-[14px] top-[120px] w-[72px]" label="装备" />
+        <ButtonResizableInline className="absolute content-stretch flex gap-[6px] h-[28px] items-center justify-center left-[182px] px-[14px] top-[120px] w-[72px]" label="材料" />
+        <ButtonResizableInline className="absolute content-stretch flex gap-[6px] h-[28px] items-center justify-center left-[261px] px-[14px] top-[120px] w-[72px]" label="关键" />
+        <div className="absolute h-[64px] left-[24px] top-[160px] w-[72px]" data-node-id="373:1527" data-name="物品 / 玄铁">
+          <InventoryItemSlotQuality className="absolute left-[16px] size-[40px] top-0" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1530" data-name="图标 / 玄铁">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgIcon2} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1531">
+            ×42
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1532">
+            玄铁
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[103px] top-[160px] w-[72px]" data-node-id="373:1533" data-name="物品 / 灵木">
+          <InventoryItemSlotQuality className="absolute left-[16px] size-[40px] top-0" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1536" data-name="图标 / 灵木">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgIcon1} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1537">
+            ×96
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1538">
+            灵木
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[182px] top-[160px] w-[72px]" data-node-id="373:1539" data-name="物品 / 灵晶">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(111,148,95,0.42)] left-[16px] size-[40px] top-0" quality="精制" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1542" data-name="图标 / 灵晶">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgIcon3} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1543">
+            ×12
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1544">
+            灵晶
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[261px] top-[160px] w-[72px]" data-node-id="373:1545" data-name="物品 / 庚精">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(75,131,184,0.42)] left-[16px] size-[40px] top-0" quality="上品" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1548" data-name="图标 / 庚精">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgIcon4} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1549">
+            ×3
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1550">
+            庚精
+          </p>
+          <div className="absolute left-[44px] size-[10px] top-[2px]" data-node-id="373:1551" data-name="状态 / 锁定">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgStatusIconDisabledLock} />
+          </div>
+        </div>
+        <div className="absolute h-[64px] left-[24px] top-[228px] w-[72px]" data-node-id="373:1552" data-name="物品 / 灵粮">
+          <InventoryItemSlotQuality className="absolute left-[16px] size-[40px] top-0" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1555" data-name="图标 / 灵粮">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgIcon} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1556">
+            ×168
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1557">
+            灵粮
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[103px] top-[228px] w-[72px]" data-node-id="373:1558" data-name="物品 / 开山镐">
+          <InventoryItemSlotQuality className="absolute left-[16px] size-[40px] top-0" />
+          <div className="absolute left-[24px] size-[24px] top-[8px]" data-node-id="373:1561" data-name="图标 / 开山镐">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1562">
+            ×6
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1563">
+            开山镐
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[182px] top-[228px] w-[72px]" data-node-id="373:1564" data-name="物品 / 探灵镜">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(111,148,95,0.42)] left-[16px] size-[40px] top-0" quality="精制" />
+          <div className="absolute left-[24px] size-[24px] top-[8px]" data-node-id="373:1567" data-name="图标 / 探灵镜">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img1} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1568">
+            ×2
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1569">
+            探灵镜
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[261px] top-[228px] w-[72px]" data-node-id="373:1570" data-name="物品 / 辟谷饼">
+          <InventoryItemSlotQuality className="absolute left-[16px] size-[40px] top-0" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1573" data-name="图标 / 辟谷饼">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img2} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1574">
+            ×14
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1575">
+            辟谷饼
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[24px] top-[296px] w-[72px]" data-node-id="373:1576" data-name="物品 / 魂晶">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(111,148,95,0.42)] left-[16px] size-[40px] top-0" quality="精制" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1579" data-name="图标 / 魂晶">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img3} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1580">
+            ×8
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1581">
+            魂晶
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[103px] top-[296px] w-[72px]" data-node-id="373:1582" data-name="物品 / 灵石">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(75,131,184,0.42)] left-[16px] size-[40px] top-0" quality="上品" />
+          <div className="absolute left-[20px] size-[32px] top-[4px]" data-node-id="373:1585" data-name="图标 / 灵石">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgBottomRightCurrencyIconOnly} />
+          </div>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1586">
+            ×1,280
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1587">
+            灵石
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[182px] top-[296px] w-[72px]" data-node-id="373:1588" data-name="物品 / 归营符">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(111,148,95,0.42)] left-[16px] size-[40px] top-0" quality="精制" />
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[28px] left-[36px] text-[#58b9b4] text-[18px] text-center top-[5px] w-[28px]" data-node-id="373:1591">
+            符
+          </p>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1592">
+            ×1
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1593">
+            归营符
+          </p>
+          <div className="absolute left-[44px] size-[10px] top-[2px]" data-node-id="373:1594" data-name="状态 / 锁定">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgStatusIconDisabledLock} />
+          </div>
+        </div>
+        <div className="absolute h-[64px] left-[261px] top-[296px] w-[72px]" data-node-id="373:1595" data-name="物品 / 护心镜">
+          <InventoryItemSlotQuality className="absolute drop-shadow-[0px_0px_2px_rgba(75,131,184,0.42)] left-[16px] size-[40px] top-0" quality="上品" />
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[28px] left-[36px] text-[#b58a42] text-[18px] text-center top-[5px] w-[28px]" data-node-id="373:1598">
+            甲
+          </p>
+          <p className="-translate-x-full [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[12px] left-[54px] text-[#e8dcbb] text-[9px] text-right text-shadow-[1px_1px_1px_rgba(0,0,0,0.9)] top-[27px] w-[38px]" data-node-id="373:1599">
+            ×1
+          </p>
+          <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[36px] text-[#e8dcbb] text-[10px] text-center top-[44px] w-[72px]" data-node-id="373:1600">
+            护心镜
+          </p>
+        </div>
+        <div className="absolute h-[64px] left-[24px] top-[364px] w-[72px]" data-node-id="373:1601" data-name="空槽 / 13">
+          <InventoryItemSlotQuality className="absolute left-[16px] opacity-38 size-[40px] top-0" />
+        </div>
+        <div className="absolute h-[64px] left-[103px] top-[364px] w-[72px]" data-node-id="373:1604" data-name="空槽 / 14">
+          <InventoryItemSlotQuality className="absolute left-[16px] opacity-38 size-[40px] top-0" />
+        </div>
+        <div className="absolute h-[64px] left-[182px] top-[364px] w-[72px]" data-node-id="373:1607" data-name="空槽 / 15">
+          <InventoryItemSlotQuality className="absolute left-[16px] opacity-38 size-[40px] top-0" />
+        </div>
+        <div className="absolute h-[64px] left-[261px] top-[364px] w-[72px]" data-node-id="373:1610" data-name="空槽 / 16">
+          <InventoryItemSlotQuality className="absolute left-[16px] opacity-38 size-[40px] top-0" />
+        </div>
+        <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[16px] left-[179.5px] text-[#91a49e] text-[10px] text-center top-[444px] w-[311px]" data-node-id="373:1613">
+          按获取顺序 · 保护物品不会进入批量处理
+        </p>
+        <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[14px] left-[179.5px] text-[#91a49e] text-[9px] text-center top-[466px] w-[311px]" data-node-id="373:1877">
+          筛选：槽位 · 品质 · 职业 · 来源 · 锁定
+        </p>
+      </div>
+      <ButtonResizableFooter className="absolute content-stretch flex gap-[8px] h-[44px] items-center justify-center left-[43px] px-[20px] top-[718px] w-[132px]" label="批量处理" />
+      <ButtonResizableFooter className="absolute content-stretch flex gap-[8px] h-[44px] items-center justify-center left-[200px] px-[20px] top-[718px] w-[132px]" label="关闭" />
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## 主界面
+**Node ID:** 45:129
+
+昆吾山外营地主界面｜Web Mobile 375×817。 固定层：TopHUD + BottomHUD；横滑层：PanoramaContent 1050×817（2.8 屏），默认 x=-337.5。 默认中景完整展示议事殿与传送阵，左右保留招贤馆/交易行线索。 建筑交互层、背景层与近景雾幕独立；实现时横滑超过 12dp 取消建筑点击。 底部顺序：设置、成就、排行、邮件、日常；右侧仅展示灵石。
+
+## Panel/Level 2
+**Node ID:** 50:2
+
+二级通用面板主体。建筑点击等次级信息面板使用；375×817 基准下逻辑尺寸 336×367。
+
+## Panel/Decoration/Top
+**Node ID:** 50:3
+
+一级面板顶部装饰，仅与 Panel/Level 2 主体组合使用；逻辑尺寸 360×65。
+
+## Panel/Decoration/Bottom
+**Node ID:** 50:4
+
+一级面板底部装饰，仅与 Panel/Level 2 主体组合使用；逻辑尺寸 360×55。
+
+## State=Default
+**Node ID:** 542:2417
+
+面板内紧凑操作按钮默认态。
+
+## Button/Resizable/Inline
+**Node ID:** 542:2445
+
+Approved V1.0｜Figma 原生可拉伸面板按钮。实例可直接调整宽高；Label 可编辑；State=Default / Pressed / Selected / Disabled。Page 1 已替换旧图片底按钮。
+
+## State=Selected
+**Node ID:** 542:2431
+
+面板内小按钮持续选中态。
+
+## Inventory/Item Slot Quality
+**Node ID:** 371:1671
+
+40×40 物品槽品质外壳。凡品/精制/上品/珍品/法宝对应白/绿/蓝/紫/金；与修士灵根资质完全解耦。建议使用下方普通 Frame 版本，不把品质槽做成组件。
+
+## State=Default
+**Node ID:** 541:2417
+
+面板底部执行型按钮默认态。
+
+## Button/Resizable/Footer
+**Node ID:** 541:2445
+
+Approved V1.0｜Figma 原生可拉伸执行按钮。实例可直接调整宽高；Label 可编辑；State=Default / Pressed / Selected / Disabled。Page 1 已替换旧图片底按钮。
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

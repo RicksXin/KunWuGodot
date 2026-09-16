@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="650" viewBox="0 0 1140 650">
+<rect width="1140" height="650" fill="#142125"/>
+<style>text{font-family:"Noto Sans CJK SC","PingFang SC",sans-serif;fill:#e6e6d7;font-size:16px}.small{font-size:13px;fill:#b8c6bd}</style>
+<text x="28" y="36" class="">议事殿样板 · 尺寸与分层示意</text>
+<text x="28" y="61" class="small">试制规格 / 斜俯视正交 / 仅表达接口，不是美术效果图</text>
+<polygon points="74.96,378.44 547.88,451.12 505.64,541.54 32.72,468.86" fill="#364b42" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="74.96,378.44 547.88,451.12 547.88,423.27 74.96,350.59" fill="#47514d" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="642.92,247.68 547.88,451.12 547.88,423.27 642.92,219.83" fill="#303e3a" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="170.00,147.15 642.92,219.83 547.88,423.27 74.96,350.59" fill="#566456" stroke="#8e9c8e" stroke-width="1"/>
+<polyline points="209.41,153.21 114.37,356.65" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="248.82,159.26 153.78,362.70" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="288.23,165.32 193.19,368.76" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="327.64,171.38 232.60,374.82" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="367.05,177.43 272.01,380.87" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="406.46,183.49 311.42,386.93" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="445.87,189.55 350.83,392.99" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="485.28,195.60 390.24,399.04" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="524.69,201.66 429.65,405.10" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="564.10,207.72 469.06,411.16" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="603.51,213.77 508.47,417.21" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="159.44,169.75 632.36,242.44" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="148.88,192.36 621.80,265.04" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="138.32,214.96 611.24,287.64" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="127.76,237.57 600.68,310.25" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="117.20,260.17 590.12,332.85" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="106.64,282.78 579.56,355.46" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="96.08,305.38 569.00,378.06" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="85.52,327.98 558.44,400.67" fill="none" stroke="#697767" stroke-width="1.5" stroke-dasharray=""/>
+<polygon points="245.99,255.74 324.81,267.85 272.01,380.87 193.19,368.76" fill="#97876b" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="238.26,181.87 395.90,206.09 364.22,273.91 206.58,249.68" fill="#a09a78" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="206.58,249.68 364.22,273.91 364.22,190.35 206.58,166.13" fill="#637d7b" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="395.90,206.09 364.22,273.91 364.22,190.35 395.90,122.54" fill="#405f62" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="238.26,98.31 395.90,122.54 364.22,190.35 206.58,166.13" fill="#819995" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="272.01,408.72 250.89,453.93 272.01,380.87" fill="#5b6054" stroke="#8e9c8e" stroke-width="1"/>
+<polygon points="193.19,368.76 272.01,380.87 250.89,453.93 172.07,441.82" fill="#b0a07b" stroke="#8e9c8e" stroke-width="1"/>
+<polyline points="193.19,368.76 272.01,380.87" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="190.55,377.89 269.37,390.01" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="187.91,387.03 266.73,399.14" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="185.27,396.16 264.09,408.27" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="182.63,405.29 261.45,417.40" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="179.99,414.42 258.81,426.54" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="177.35,423.56 256.17,435.67" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="174.71,432.69 253.53,444.80" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polyline points="172.07,441.82 250.89,453.93" fill="none" stroke="#5d6255" stroke-width="1.5" stroke-dasharray=""/>
+<polygon points="172.07,441.82 250.89,453.93 240.33,476.54 161.51,464.42" fill="#97876b" stroke="#8e9c8e" stroke-width="1"/>
+<text x="263" y="138" class="">C05</text>
+<text x="484" y="322" class="">C01</text>
+<text x="237" y="324" class="">C02</text>
+<text x="436" y="424" class="">C03</text>
+<text x="200" y="408" class="">C04</text>
+<text x="795" y="120" class="">首批 5 个独立候选</text>
+<text x="795" y="166" class="">C01  岩土地面</text>
+<text x="795" y="190" class="small">48×48逻辑格，先生成连续材质</text>
+<text x="795" y="230" class="">C02  石铺路</text>
+<text x="795" y="254" class="small">宽96＝2格，留土石过渡边</text>
+<text x="795" y="294" class="">C03  岩壁</text>
+<text x="795" y="318" class="small">上沿192＝4格，高差40</text>
+<text x="795" y="358" class="">C04  石阶</text>
+<text x="795" y="382" class="small">宽96 × 进深96 / 8级 × 高5</text>
+<text x="795" y="422" class="">C05  议事殿</text>
+<text x="795" y="446" class="small">底面192×144 / 显示框暂定256×192</text>
+<text x="28" y="580" class="">接口：门口 → 2格宽道路 → 阶梯上口 → 阶梯下口 → 下层落脚区</text>
+<text x="28" y="608" class="small">地面与崖壁连续；石阶两侧有岩体支撑。建筑方块高度仅为体量示意。</text>
+<text x="795" y="530" class="small">1024级原图 ≠ 最终TileSet</text>
+<text x="795" y="554" class="small">接缝、裁切、锚点由本地编译完成</text>
+</svg>

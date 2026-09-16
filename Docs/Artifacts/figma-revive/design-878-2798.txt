@@ -1,0 +1,475 @@
+const imgPanelDecorationBottom = "https://www.figma.com/api/mcp/asset/d514a3cf-e115-43cd-bcec-97415e1db73a.png";
+const imgPanelDecorationTop = "https://www.figma.com/api/mcp/asset/0111f460-518e-45ae-a39c-e2aa7b2a8dc4.png";
+const imgPanelLevel2 = "https://www.figma.com/api/mcp/asset/a479c5da-158e-43e9-be9e-bfaae38f4fff.png";
+const imgWiFi = "https://www.figma.com/api/mcp/asset/768d42ed-e1c4-4366-9344-02cc379484cb.svg";
+const imgBackgroundLayer = "https://www.figma.com/api/mcp/asset/d1a0249f-4a26-4891-be8d-7b8f0f663832.png";
+const imgArt = "https://www.figma.com/api/mcp/asset/9259ed24-7a03-4bdc-8c52-3e650a824287.png";
+const imgStatusIconDisabledLock = "https://www.figma.com/api/mcp/asset/ffbbf4bc-8ec8-4b0a-afe6-fc761553ae3e.png";
+const imgArt1 = "https://www.figma.com/api/mcp/asset/17a97836-250a-4edf-a307-09e7b6dfa34f.png";
+const imgArt2 = "https://www.figma.com/api/mcp/asset/8a749afa-b59b-4d33-aa7b-d6fed8c2761c.png";
+const imgStatusIconAlertAsset = "https://www.figma.com/api/mcp/asset/023cb337-73a4-4db9-a6b9-9337c3c63a6c.png";
+const imgArt3 = "https://www.figma.com/api/mcp/asset/96e34e23-57e2-46dc-86e9-ff72891577fd.png";
+const imgArt4 = "https://www.figma.com/api/mcp/asset/a731ec00-7517-40e6-be02-e0f5537b7901.png";
+const imgArt5 = "https://www.figma.com/api/mcp/asset/6a4cbd05-2e3b-4bb4-9cbe-220d94082a13.png";
+const imgArt6 = "https://www.figma.com/api/mcp/asset/5993e540-4231-45aa-85f3-fd38e0331baf.png";
+const imgIcon = "https://www.figma.com/api/mcp/asset/3796a23a-33a6-4840-b06c-74f7fc496a1e.png";
+const imgIcon1 = "https://www.figma.com/api/mcp/asset/31e01be4-81ab-4d38-a89c-3911f1bfe10c.png";
+const imgIcon2 = "https://www.figma.com/api/mcp/asset/74f5c3db-20d8-4810-a41f-8098e290c62d.png";
+const imgIcon3 = "https://www.figma.com/api/mcp/asset/e5b97ac4-ccc2-4899-acb0-66e9ae4dad07.png";
+const imgIcon4 = "https://www.figma.com/api/mcp/asset/9446918a-8a72-4f81-a274-c4a8446769c6.png";
+const img = "https://www.figma.com/api/mcp/asset/511e2549-41c7-4251-b4c8-e9fcd7942c4c.png";
+const imgAvatarButtonPortrait = "https://www.figma.com/api/mcp/asset/c2218d70-4ce2-4175-be8f-95da5a7e5ba3.png";
+const imgSettingsButtonIcon = "https://www.figma.com/api/mcp/asset/1cd41ce3-f2e5-4793-8324-2e328ff8cf95.png";
+const imgBottomRightCurrencyIconOnly = "https://www.figma.com/api/mcp/asset/e2a7beb3-5de0-4daf-b58a-80dea28b5696.png";
+const imgArt7 = "https://www.figma.com/api/mcp/asset/04f90885-9be4-4011-b11c-21b644b2b41a.png";
+const imgDivider = "https://www.figma.com/api/mcp/asset/bccd88be-cc71-4b8f-aa02-14549439df76.svg";
+const img1 = "https://www.figma.com/api/mcp/asset/83ad56e8-3105-4bb2-a496-a273fde40d9d.png";
+
+type ButtonResizableFooterProps = {
+  className?: string;
+  label?: string;
+  state?: "Default";
+};
+
+function ButtonResizableFooter({ className, label = "确认操作", state = "Default" }: ButtonResizableFooterProps) {
+  return (
+    <div className={className || "content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative w-[144px]"} data-node-id="541:2417">
+      <div className="absolute border border-[var(--theme\/accent\/dark-gold,#b58a42)] border-solid inset-0 pointer-events-none rounded-[4px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.32)]" data-node-id="541:2418" data-name="01 / Base">
+        <div aria-hidden className="absolute bg-[var(--theme\/surface\/deep-wood,#241d18)] inset-0 rounded-[4px]" />
+        <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0px_-2px_3px_0px_rgba(0,0,0,0.42)]" />
+      </div>
+      <div className="absolute bg-gradient-to-b from-[rgba(214,161,71,0.16)] inset-[2px] rounded-[3px] to-[rgba(5,5,5,0.34)] via-[48%] via-[rgba(31,23,18,0.02)]" data-node-id="541:2419" data-name="02 / Depth Gradient" />
+      <div className="absolute bg-gradient-to-r from-[rgba(5,5,5,0.18)] inset-[4px] mix-blend-soft-light rounded-[2px] to-[rgba(5,5,5,0.2)] via-[52%] via-[rgba(199,148,66,0.07)]" data-node-id="541:2420" data-name="03 / Stretch Texture" />
+      <div className="absolute border border-[var(--theme\/border\/old-bronze,#80623a)] border-solid inset-[2px] rounded-[3px]" data-node-id="541:2421" data-name="04 / Inner Rim" />
+      <div className="absolute bg-[rgba(219,168,82,0.36)] h-px left-[6px] right-[6px] top-[4px]" data-node-id="541:2422" data-name="05 / Top Highlight" />
+      <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[20px] relative shrink-0 text-[14px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center whitespace-nowrap" data-node-id="541:2423">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function PanelDecorationBottom({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[55px] relative w-[360px]"} data-node-id="50:4" data-name="Panel/Decoration/Bottom">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[568.89%] left-[-14.97%] max-w-none top-[-215%] w-[129.95%]" src={imgPanelDecorationBottom} />
+      </div>
+    </div>
+  );
+}
+
+function PanelDecorationTop({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[65px] relative w-[360px]"} data-node-id="50:3" data-name="Panel/Decoration/Top">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[451.1%] left-[-11.16%] max-w-none top-[-165.2%] w-[122.39%]" src={imgPanelDecorationTop} />
+      </div>
+    </div>
+  );
+}
+
+function PanelLevel2({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[367px] relative w-[336px]"} data-node-id="50:2" data-name="Panel/Level 2">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img alt="" className="absolute h-[156.57%] left-[-7.14%] max-w-none top-[-28.03%] w-[114.29%]" src={imgPanelLevel2} />
+      </div>
+    </div>
+  );
+}
+
+type MobileStatusBarForeground3Props = {
+  className?: string;
+  time?: string;
+};
+
+function MobileStatusBarForeground3({ className, time = "9:41" }: MobileStatusBarForeground3Props) {
+  return (
+    <div className={className || "content-stretch flex h-[44px] items-center justify-between px-[16px] relative w-[375px]"} data-node-id="20:92" data-name="Mobile/Status Bar/Foreground3">
+      <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[17px] not-italic relative shrink-0 text-[14px] text-white tracking-[-0.2px] whitespace-nowrap" data-node-id="20:93">
+        {time}
+      </p>
+      <div className="content-stretch flex gap-[6px] h-[12px] items-center relative shrink-0" data-node-id="20:94" data-name="System Indicators">
+        <div className="content-stretch flex gap-[1.5px] h-[12px] items-end relative shrink-0 w-[18px]" data-node-id="20:95" data-name="Signal">
+          <div className="bg-white relative rounded-[0.75px] shrink-0 size-[3px]" data-node-id="20:96" data-name="Bar 1" />
+          <div className="bg-white h-[5.5px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:97" data-name="Bar 2" />
+          <div className="bg-white h-[8px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:98" data-name="Bar 3" />
+          <div className="bg-white h-[11px] relative rounded-[0.75px] shrink-0 w-[3px]" data-node-id="20:99" data-name="Bar 4" />
+        </div>
+        <div className="h-[12px] relative shrink-0 w-[18px]" data-node-id="20:100" data-name="Wi-Fi">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgWiFi} />
+        </div>
+        <div className="h-[12px] relative shrink-0 w-[27px]" data-node-id="20:104" data-name="Battery">
+          <div className="absolute border border-[rgba(255,255,255,0.55)] border-solid h-[12px] left-0 rounded-[3px] top-0 w-[23px]" data-node-id="20:105" data-name="Outline" />
+          <div className="absolute bg-white h-[8px] left-[2px] rounded-[1.75px] top-[2px] w-[17px]" data-node-id="20:106" data-name="Level" />
+          <div className="absolute bg-[rgba(255,255,255,0.55)] h-[4px] left-[24.5px] rounded-[1px] top-[4px] w-[2px]" data-node-id="20:107" data-name="Cap" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Component({ className }: { className?: string }) {
+  return (
+    <div className={className || "bg-[var(--theme\\/background\\/ink,#111917)] h-[817px] overflow-clip relative w-[375px]"} data-node-id="45:129" data-name="主界面">
+      <div className="absolute h-[817px] left-0 top-0 w-[375px]" data-node-id="58:35" data-name="WorldViewport · 375×817">
+        <div className="absolute h-[817px] left-[-337.5px] top-0 w-[1050px]" data-node-id="58:36" data-name="PanoramaContent · 1050×817 · DefaultCenter">
+          <div className="absolute h-[817px] left-0 top-0 w-[1050px]" data-node-id="58:37" data-name="BackgroundLayer / 昆吾山禁地">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgBackgroundLayer} />
+          </div>
+          <div className="absolute bg-gradient-to-b from-[rgba(5,13,13,0.3)] h-[817px] left-0 to-[rgba(5,8,8,0.66)] top-0 via-[42%] via-[rgba(18,28,26,0.04)] w-[1050px]" data-node-id="58:38" data-name="BackgroundLayer / 云雾压暗" />
+          <div className="absolute h-[817px] left-0 top-0 w-[1050px]" data-node-id="59:17" data-name="BuildingLayer / 七座建筑与传送阵">
+            <div className="absolute h-[137px] left-[71.5px] top-[284px] w-[206px]" data-node-id="59:18" data-name="bai_bao_ku / 百宝库">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex h-[137px] items-center justify-center left-1/2 top-1/2 w-[206px]" data-node-id="59:19">
+                <div className="-scale-y-100 flex-none rotate-180">
+                  <div className="h-[137px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[206px]" data-name="Art / 百宝库">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute h-[20px] left-[64px] top-[117px] w-[63px]" data-node-id="147:1817">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:20" data-name="NameModule / 百宝库" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:21">
+                  <p className="leading-[20px]">百宝库</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:23" data-name="StatusIcon / 百宝库 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[137px] left-[38.5px] top-[464px] w-[206px]" data-node-id="59:24" data-name="huan_hun_tan / 还魂殿">
+              <div className="absolute flex h-[137px] items-center justify-center left-0 top-0 w-[206px]" data-node-id="59:25">
+                <div className="-scale-y-100 flex-none rotate-180">
+                  <div className="h-[137px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[206px]" data-name="Art / 还魂殿">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt1} />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute h-[20px] left-[81px] top-[117px] w-[63px]" data-node-id="147:1878">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:26" data-name="NameModule / 还魂殿" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:27">
+                  <p className="leading-[20px]">还魂殿</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:26" data-name="StatusIcon / 还魂殿 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[426.5px] top-[154px] w-[247px]" data-node-id="143:1224" data-name="议事殿">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247px]" data-node-id="59:37" data-name="Art / 议事殿">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt2} />
+              </div>
+              <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-[96.67px] rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-[139.55px] w-[58px]" data-node-id="59:38" data-name="NameModule / 议事殿" />
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[126px] not-italic text-[#e8dcbb] text-[10px] text-center top-[150px] w-[58px]" data-node-id="59:39">
+                <p className="leading-[20px]">议事殿</p>
+              </div>
+              <div className="absolute flex items-center justify-center left-[136px] size-[29.394px] top-[125px]" data-node-id="461:2197">
+                <div className="flex-none rotate-15">
+                  <div className="relative size-[24px]" data-name="StatusIcon / 议事殿 / Alert Asset">
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[137px] left-[747.5px] top-[271px] w-[206px]" data-node-id="59:42" data-name="jiao_yi_hang / 交易行">
+              <div className="absolute h-[137px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[206px]" data-node-id="59:43" data-name="Art / 交易行">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt3} />
+              </div>
+              <div className="absolute h-[20px] left-[61px] top-[113px] w-[63px]" data-node-id="147:1725">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:44" data-name="NameModule / 交易行" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:45">
+                  <p className="leading-[20px]">交易行</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:25" data-name="StatusIcon / 交易行 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[571.5px] top-[339px] w-[247px]" data-node-id="59:48" data-name="lian_qi_fang / 炼器坊">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247px]" data-node-id="59:49" data-name="Art / 炼器坊">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt4} />
+              </div>
+              <div className="absolute h-[20px] left-[67px] top-[149px] w-[63px]" data-node-id="147:1746">
+                <div className="absolute bg-[rgba(32,42,39,0.6)] border border-[rgba(94,106,102,0.7)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:50" data-name="NameModule / 炼器坊" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#abb2ab] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:51">
+                  <p className="leading-[20px]">炼器坊</p>
+                </div>
+                <div className="absolute left-[51px] opacity-76 size-[12px] top-[4px]" data-node-id="64:24" data-name="StatusIcon / 炼器坊 / Disabled Lock">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-15.79%] max-w-none size-[131.58%] top-[-13.16%]" src={imgStatusIconDisabledLock} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[165px] left-[724.5px] top-[515px] w-[247px]" data-node-id="59:54" data-name="ling_pu / 灵圃">
+              <div className="absolute h-[165px] left-0 shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] top-0 w-[247.504px]" data-node-id="59:55" data-name="Art / 灵圃">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt5} />
+              </div>
+              <div className="absolute h-[20px] left-[92px] top-[145px] w-[64px]" data-node-id="147:1899">
+                <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:56" data-name="NameModule / 灵圃" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[26px] not-italic text-[#e8dcbb] text-[10px] text-center top-[10px] w-[44px]" data-node-id="59:57">
+                  <p className="leading-[20px]">灵圃</p>
+                </div>
+                <div className="absolute left-[46px] size-[24px] top-[-2px]" data-node-id="461:2198" data-name="StatusIcon / 灵圃 / Alert Asset">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute h-[139px] left-[421.5px] top-[535px] w-[206px]" data-node-id="59:60" data-name="ExpeditionEntry / 传送阵">
+              <div className="absolute h-[139px] left-[0.5px] top-[-0.41px] w-[206px]" data-node-id="59:61" data-name="Art / 传送阵">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt6} />
+              </div>
+              <div className="absolute h-[30px] left-[61px] top-[109px] w-[84px]" data-node-id="147:1975">
+                <div className="absolute bg-[var(--theme\/surface\/black-jade,#202a27)] border border-[var(--theme\/primary\/jade-highlight,#6f8f85)] border-solid h-[20px] left-0 rounded-[4px] shadow-[0px_0px_8px_0px_rgba(20,128,117,0.32)] top-0 w-[84px]" data-node-id="59:62" data-name="CTA / 入山整备" />
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[18px] justify-center leading-[0] left-[42px] not-italic text-[#e8dcbb] text-[10px] text-center top-[9px] w-[84px]" data-node-id="59:63">
+                  <p className="leading-[18px]">启程</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute bg-gradient-to-b from-[rgba(15,26,23,0)] h-[83px] left-[0.5px] to-[rgba(10,18,15,0.9)] top-[734px] w-[1050px]" data-node-id="58:39" data-name="ForegroundLayer / 近景雾幕" />
+        </div>
+      </div>
+      <div className="absolute h-[817px] left-0 top-0 w-[375px]" data-node-id="60:17" data-name="SafeAreaRoot / Fixed HUD">
+        <MobileStatusBarForeground3 className="absolute content-stretch flex h-[44px] items-center justify-between left-0 opacity-94 px-[16px] top-0 w-[375px]" />
+        <div className="absolute h-[132px] left-0 top-[44px] w-[375px]" data-node-id="60:18" data-name="TopHUD / 玩家资源与主线">
+          <div className="absolute backdrop-blur-[2px] drop-shadow-[0px_3px_4px_rgba(0,0,0,0.48)] h-[49px] left-[8px] rounded-[6px] top-[8px] w-[359px]" data-node-id="60:19" data-name="HUD Plate / 头像与五资源" />
+          <div className="absolute h-[47px] left-[63px] top-[9px] w-[298px]" data-node-id="60:22" data-name="ResourceBar / 灵粮·灵木·玄铁·灵晶·庚精">
+            <div className="absolute h-[45px] left-0 top-0 w-[58px]" data-node-id="60:23" data-name="灵粮 / 168">
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:24" data-name="Icon / 灵粮">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-29%] max-w-none size-[160.5%] top-[-26.65%]" src={imgIcon} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:25">
+                <p className="leading-[17px]">168</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[59.5px] top-0 w-[58px]" data-node-id="60:26" data-name="灵木 / 96">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:27" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:28" data-name="Icon / 灵木">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-29.94%] max-w-none size-[160.5%] top-[-23.67%]" src={imgIcon1} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:29">
+                <p className="leading-[17px]">96</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[119px] top-0 w-[58px]" data-node-id="60:30" data-name="玄铁 / 42">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:31" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:32" data-name="Icon / 玄铁">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-[124.44%] left-[-12.57%] max-w-none top-[-10.95%] w-[126.25%]" src={imgIcon2} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:33">
+                <p className="leading-[17px]">42</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[178.5px] top-0 w-[58px]" data-node-id="60:34" data-name="灵晶 / 12">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:35" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:36" data-name="Icon / 灵晶">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute h-[158.73%] left-[-29.43%] max-w-none top-[-25.09%] w-[159.8%]" src={imgIcon3} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:37">
+                <p className="leading-[17px]">12</p>
+              </div>
+            </div>
+            <div className="absolute h-[45px] left-[238px] top-0 w-[58px]" data-node-id="60:38" data-name="庚精 / 3">
+              <div className="absolute h-[28px] left-0 top-[9px] w-0" data-node-id="60:39" data-name="Divider">
+                <div className="absolute bottom-full left-0 right-0 top-[-3.57%]">
+                  <img alt="" className="block max-w-none size-full" src={imgDivider} />
+                </div>
+              </div>
+              <div className="absolute left-[18px] size-[22px] top-[2px]" data-node-id="60:40" data-name="Icon / 庚精">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <img alt="" className="absolute left-[-34.83%] max-w-none size-[170.67%] top-[-34.33%]" src={imgIcon4} />
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[17px] justify-center leading-[0] left-[29px] not-italic text-[10px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[33.5px] w-[54px]" data-node-id="60:41">
+                <p className="leading-[17px]">3</p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute drop-shadow-[0px_3px_3.5px_rgba(0,0,0,0.42)] h-[42px] left-[8px] rounded-[5px] top-[62px] w-[359px]" data-node-id="60:42" data-name="MainTaskButton / 当前主线" />
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[14px] justify-center leading-[0] left-[53px] not-italic text-[8px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] top-[73px] w-[274px]" data-node-id="60:45">
+            <p className="leading-[14px]">当前主线 · 昆吾外围</p>
+          </div>
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[53px] not-italic text-[11px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[89px] w-[274px]" data-node-id="60:46">
+            <p className="leading-[20px]">前往议事殿，与岑守一交谈</p>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[28px] justify-center leading-[0] left-[345px] not-italic text-[18px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center top-[82px] w-[20px]" data-node-id="60:47">
+            <p className="leading-[28px]">›</p>
+          </div>
+          <div className="absolute bg-[var(--theme\/background\/ink,#111917)] border border-[var(--theme\/border\/old-bronze,#80623a)] border-solid h-[18px] left-[117px] rounded-[9px] top-[111px] w-[141px]" data-node-id="60:48" data-name="Panorama Hint / Backplate" />
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Regular'] h-[18px] justify-center leading-[0] left-[187.5px] not-italic text-[8px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center top-[120px] w-[141px]" data-node-id="60:49">
+            <p className="leading-[18px] whitespace-pre-wrap">{`‹  左右拖动查看营地  ›`}</p>
+          </div>
+          <div className="absolute flex items-center justify-center left-[7px] size-[45.255px] top-[62px]" data-node-id="60:43">
+            <div className="-rotate-45 flex-none">
+              <div className="bg-[var(--theme\/surface\/black-jade,#202a27)] border border-[var(--theme\/accent\/dark-gold,#b58a42)] border-solid relative rounded-[4px] size-[32px]" data-name="MainTaskButton / Task Seal" />
+            </div>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] justify-center leading-[0] left-[30px] not-italic size-[32px] text-[14px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] text-center top-[83px]" data-node-id="60:44">
+            <p className="leading-[32px]">令</p>
+          </div>
+          <div className="absolute left-[12px] size-[40px] top-[12px]" data-node-id="680:4839">
+            <div className="absolute left-0 size-[40px] top-0" data-node-id="680:4827" data-name="物品面板">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={img} />
+            </div>
+            <div className="absolute left-0 size-[40px] top-0" data-node-id="60:20" data-name="AvatarButton / Portrait">
+              <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgAvatarButtonPortrait} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute h-[48px] left-0 top-[745px] w-[375px]" data-node-id="61:17" data-name="BottomHUD / Frosted Safe Area">
+          <div className="absolute backdrop-blur-[8px] drop-shadow-[0px_-2px_4px_rgba(0,0,0,0.42)] h-[40px] left-[8px] rounded-[12px] top-[4px] w-[359px]" data-node-id="67:32" data-name="FrostedSurface / Bottom Safe Area" />
+          <div className="absolute drop-shadow-[0px_0px_3.5px_rgba(178,138,64,0.28)] h-[32px] left-[14px] rounded-[8px] top-[8px] w-[42px]" data-node-id="67:33" data-name="SettingsButton / IconOnly / Open" />
+          <div className="absolute left-[25px] size-[20px] top-[14px]" data-node-id="67:34" data-name="SettingsButton / Icon">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute left-[-26.44%] max-w-none size-[151.06%] top-[-24.32%]" src={imgSettingsButtonIcon} />
+            </div>
+          </div>
+          <div className="absolute left-[304px] size-[24px] top-[12px]" data-node-id="67:35" data-name="BottomRightCurrency / IconOnly">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[119.41%] left-[-11.39%] max-w-none top-[-7.76%] w-[121.24%]" src={imgBottomRightCurrencyIconOnly} />
+            </div>
+          </div>
+          <div className="-translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[24px] justify-center leading-[0] left-[333px] not-italic text-[12px] text-[color:var(--theme\/text\/primary,#e8dcbb)] top-[24px] w-[42px]" data-node-id="67:36">
+            <p className="leading-[24px]">1,280</p>
+          </div>
+        </div>
+        <div className="absolute h-[165px] left-[-86px] top-[358px] w-[247px]" data-node-id="143:1537" data-name="招贤馆">
+          <div className="absolute flex h-[165px] items-center justify-center left-0 top-0 w-[247px]" data-node-id="59:31">
+            <div className="-scale-y-100 flex-none rotate-180">
+              <div className="h-[165px] relative shadow-[0px_4px_6px_0px_rgba(3,5,5,0.68)] w-[247px]" data-name="Art / 招贤馆">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgArt7} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute h-[20px] left-[103px] top-[140px] w-[64px]" data-node-id="143:1688">
+            <div className="absolute bg-[rgba(36,29,24,0.92)] border border-[rgba(128,98,58,0.95)] border-solid h-[20px] left-0 rounded-[3px] shadow-[0px_2px_3px_0px_rgba(0,0,0,0.6)] top-0 w-[58px]" data-node-id="59:32" data-name="NameModule / 招贤馆" />
+            <div className="absolute flex items-center justify-center left-[38px] size-[29.394px] top-[-15px]" data-node-id="518:3615">
+              <div className="flex-none rotate-15">
+                <div className="relative size-[24px]" data-name="StatusIcon / 议事殿 / Alert Asset">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute left-[-0.95%] max-w-none size-[119.05%] top-[-12.5%]" src={imgStatusIconAlertAsset} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute flex flex-col font-['LXGW_WenKai_TC:Bold'] h-[20px] justify-center leading-[0] left-[29px] not-italic text-[#e8dcbb] text-[10px] text-center top-[10px] w-[58px]" data-node-id="59:33">
+              <p className="leading-[20px]">招贤馆</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Draft() {
+  return (
+    <div className="bg-[var(--theme\/background\/ink,#111917)] relative size-full" data-node-id="878:2798" data-name="还魂殿 / 无人待还魂 / Draft">
+      <Component className="absolute bg-[var(--theme\/background\/ink,#111917)] h-[817px] left-0 overflow-clip top-0 w-[375px]" />
+      <div className="absolute bg-[rgba(10,15,14,0.84)] h-[817px] left-0 top-0 w-[375px]" data-node-id="878:2915" data-name="遮罩 / 炼器坊" />
+      <PanelLevel2 className="absolute h-[565px] left-[20px] top-[110px] w-[335px]" />
+      <PanelDecorationTop className="absolute h-[65px] left-[8px] top-[78px] w-[359px]" />
+      <PanelDecorationBottom className="absolute h-[55px] left-[8px] top-[628px] w-[359px]" />
+      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] left-[187.5px] text-[20px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center top-[110px] w-[359px]" data-node-id="878:2919">
+        还魂殿
+      </p>
+      <div className="absolute content-stretch flex flex-col gap-[20px] items-start left-[44px] overflow-clip top-[155px] w-[287px]" data-node-id="878:2920" data-name="内容">
+        <div className="content-stretch flex gap-[8px] h-[28px] items-start overflow-clip relative shrink-0 w-[287px]" data-node-id="880:3260" data-name="Frame">
+          <div className="relative shrink-0 size-[24px]" data-node-id="880:3261" data-name="图标 / 魂晶">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img1} />
+          </div>
+          <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[14px] text-[color:var(--theme\/accent\/dark-gold,#b58a42)] w-[48px]" data-node-id="880:3262">
+            魂晶 80
+          </p>
+        </div>
+        <div className="content-stretch flex flex-col gap-[18px] items-center overflow-clip pt-[65px] relative shrink-0 w-[287px]" data-node-id="880:3264" data-name="空状态说明">
+          <div className="relative shrink-0 size-[64px]" data-node-id="880:3265" data-name="图标 / 魂晶">
+            <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={img1} />
+          </div>
+          <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[20px] text-[color:var(--theme\/text\/primary,#e8dcbb)] text-center w-[287px]" data-node-id="880:3266">
+            当前无人待还魂
+          </p>
+          <p className="[word-break:break-word] font-['Noto_Sans_SC:Medium'] font-medium leading-[normal] relative shrink-0 text-[12px] text-[color:var(--theme\/text\/secondary,#91a49e)] text-center w-[287px]" data-node-id="880:3267">
+            可前往整备，继续入山。
+          </p>
+        </div>
+      </div>
+      <div className="absolute content-stretch flex gap-[15px] h-[44px] items-start left-[44px] overflow-clip top-[718px] w-[287px]" data-node-id="878:2921" data-name="底部操作">
+        <ButtonResizableFooter className="content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative shrink-0 w-[150px]" label="前往入山整备" />
+        <ButtonResizableFooter className="content-stretch flex gap-[8px] h-[44px] items-center justify-center px-[20px] relative shrink-0 w-[122px]" label="返回营地" />
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+Component descriptions: The following components have usage descriptions or documentation links defined in Figma. These descriptions provide important context about the intended usage, best practices, and any constraints for each component. Follow these guidelines when implementing or using these components.
+
+## 主界面
+**Node ID:** 45:129
+
+昆吾山外营地主界面｜Web Mobile 375×817。 固定层：TopHUD + BottomHUD；横滑层：PanoramaContent 1050×817（2.8 屏），默认 x=-337.5。 默认中景完整展示议事殿与传送阵，左右保留招贤馆/交易行线索。 建筑交互层、背景层与近景雾幕独立；实现时横滑超过 12dp 取消建筑点击。 底部顺序：设置、成就、排行、邮件、日常；右侧仅展示灵石。
+
+## Panel/Level 2
+**Node ID:** 50:2
+
+二级通用面板主体。建筑点击等次级信息面板使用；375×817 基准下逻辑尺寸 336×367。
+
+## Panel/Decoration/Top
+**Node ID:** 50:3
+
+一级面板顶部装饰，仅与 Panel/Level 2 主体组合使用；逻辑尺寸 360×65。
+
+## Panel/Decoration/Bottom
+**Node ID:** 50:4
+
+一级面板底部装饰，仅与 Panel/Level 2 主体组合使用；逻辑尺寸 360×55。
+
+## State=Default
+**Node ID:** 541:2417
+
+面板底部执行型按钮默认态。
+
+## Button/Resizable/Footer
+**Node ID:** 541:2445
+
+Approved V1.0｜Figma 原生可拉伸执行按钮。实例可直接调整宽高；Label 可编辑；State=Default / Pressed / Selected / Disabled。Page 1 已替换旧图片底按钮。
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000.png'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

@@ -12,6 +12,7 @@ var painted_walkable: Dictionary = {}
 var external_collision_polygons: Array[PackedVector2Array] = []
 var collision_bounds: Array[Rect2] = []
 var collision_loaded := false
+var external_adjust_polygons: Array[PackedVector2Array] = []
 
 func setup(data: Dictionary) -> void:
 	definition = data
@@ -58,6 +59,7 @@ func can_walk(position: Vector2) -> bool:
 	return true
 
 func _load_external_collision_layer() -> void:
+	external_adjust_polygons.clear()
 	external_collision_polygons.clear()
 	collision_bounds.clear()
 	collision_loaded = false
@@ -69,13 +71,16 @@ func _load_external_collision_layer() -> void:
 	var source_size := Vector2(float(canvas["width"]), float(canvas["height"]))
 	var source_to_world := world_size / source_size
 	for layer in manifest["annotations"]["layers"]:
-		if layer["id"] != "collision":
+		if layer["id"] not in ["collision", "adjust"]:
 			continue
 		for shape in layer["shapes"]:
 			var polygon := PackedVector2Array()
 			for p in shape["points"]:
 				polygon.append(Vector2(float(p["x"]), float(p["y"])) * source_to_world)
 			if polygon.size() < 3:
+				continue
+			if layer["id"] == "adjust":
+				external_adjust_polygons.append(polygon)
 				continue
 			var bounds := Rect2(polygon[0], Vector2.ZERO)
 			for p in polygon:
@@ -169,3 +174,10 @@ func set_dynamic_blockers(blockers: Array) -> void:
 	for y in graph.region.size.y:
 		for x in graph.region.size.x:
 			graph.set_point_solid(Vector2i(x,y),not can_walk(Vector2(x,y)*step))
+
+# Authored purple regions affect presentation only, never passability.
+func is_in_adjust_region(world_position: Vector2) -> bool:
+	for polygon in external_adjust_polygons:
+		if Geometry2D.is_point_in_polygon(world_position, polygon):
+			return true
+	return false
