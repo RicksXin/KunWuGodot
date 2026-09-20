@@ -184,7 +184,16 @@ func _adapt_remote_modules(remote_modules: Dictionary) -> Dictionary:
 		"maps": maps,
 		"default_profile": default_profile,
 		"assets": base.get("assets", []).duplicate(true),
+		"map01_loop": remote_modules["combat"].get("map01Loop", {}),
 	}
+
+func has_formal_map_combat(combat: Dictionary) -> bool:
+	var ids: Dictionary = {}
+	for encounter in combat.get("encounters", []):
+		ids[str(encounter.get("id", ""))] = true
+	for encounter in formal_map_combat().get("encounters", []):
+		if not ids.has(str(encounter.get("id", ""))): return false
+	return not ids.is_empty()
 
 func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Dictionary, loot_pools: Dictionary) -> Dictionary:
 	var skills: Array = []
@@ -193,6 +202,10 @@ func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Diction
 		skill["id"] = str(row.get("code", ""))
 		var status := _adapt_skill_status(row.get("effects", []))
 		if not status.is_empty(): skill["appliesStatus"] = status
+		var runtime: Dictionary = row.get("enemyRuntime", {}) if row.get("enemyRuntime") is Dictionary else {}
+		if int(runtime.get("version", 0)) == 1:
+			for key in ["useBelowHpPercent", "warningTicks", "appliesStatus"]:
+				if runtime.has(key): skill[key] = runtime[key]
 		skills.append(skill)
 	var enemies_by_code: Dictionary = {}
 	for row in module.get("enemies", []):
@@ -207,6 +220,10 @@ func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Diction
 			},
 			"skillIds": row.get("skills", []).map(func(skill): return str(skill.get("skillCode", ""))),
 		}
+		var runtime: Dictionary = row.get("runtime", {}) if row.get("runtime") is Dictionary else {}
+		if int(runtime.get("version", 0)) == 1:
+			enemy["mechanics"] = runtime.duplicate(true)
+			enemy["initialActionTimer"] = int(runtime.get("initialActionTimer", 45))
 		enemies_by_code[enemy["id"]] = enemy
 	var encounters: Array = []
 	for row in module.get("encounters", []):
@@ -219,12 +236,16 @@ func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Diction
 				if enemy.is_empty(): continue
 				if quantity > 1: enemy["id"] = "%s_%d" % [enemy_code, copy_index + 1]
 				enemy["definitionId"] = enemy_code
-				enemy["initialActionTimer"] = int(member.get("initialActionTimer", 45))
+				var member_timer := int(member.get("initialActionTimer", 0))
+				enemy["initialActionTimer"] = member_timer if member_timer > 0 else int(enemy.get("initialActionTimer", 45))
 				enemies.append(enemy)
 		var encounter := {
 			"id": str(row.get("code", "")),
 			"escapeEnemyHpPercent": int(row.get("escapeEnemyHpPercent", 35)),
-			"soulCrystalReward": _reward_amount(reward_packs.get(str(row.get("firstClearRewardPackCode", "")), {}), "soulCrystal"),
+			"firstSoulCrystalReward": _reward_amount(reward_packs.get(str(row.get("firstClearRewardPackCode", "")), {}), "soulCrystal"),
+			"repeatSoulCrystalReward": _reward_amount(reward_packs.get(str(row.get("repeatRewardPackCode", "")), {}), "soulCrystal"),
+			"firstLoot": _fixed_reward_loot(reward_packs.get(str(row.get("firstClearRewardPackCode", "")), {}), assets),
+			"repeatLoot": _fixed_reward_loot(reward_packs.get(str(row.get("repeatRewardPackCode", "")), {}), assets),
 			"enemies": enemies,
 			"loot": _loot_entries(loot_pools.get(str(row.get("lootPoolCode", "")), {}), assets),
 		}
@@ -232,12 +253,23 @@ func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Diction
 	var parameters: Dictionary = {}
 	for row in module.get("parameters", []):
 		if str(row.get("code", "")) == "default" or parameters.is_empty(): parameters = row
-	return {
+	var result := {
 		"defenseLevelConstant": int(parameters.get("defenseBase", 100)),
 		"partyInitialActionTimers": parameters.get("partyInitialActionTimers", [30, 40, 50, 60]),
 		"skills": skills,
 		"encounters": encounters,
 	}
+
+	var loop: Dictionary = module.get("map01Loop", {}) if module.get("map01Loop") is Dictionary else {}
+	if int(loop.get("schemaVersion", 0)) == 1:
+		var configured: Dictionary = _expand_embedded_encounters(loop.get("combat", {}).duplicate(true))
+		var skill_ids: Array = configured.get("skills", []).map(func(skill): return str(skill.get("id", "")))
+		result["skills"] = result["skills"].filter(func(skill): return str(skill.get("id", "")) not in skill_ids)
+		result["skills"].append_array(configured.get("skills", []))
+		var ids: Array = configured.get("encounters", []).map(func(encounter): return str(encounter.get("id", "")))
+		result["encounters"] = result["encounters"].filter(func(encounter): return str(encounter.get("id", "")) not in ids)
+		result["encounters"].append_array(configured.get("encounters", []))
+	return result
 
 func _adapt_skill_status(effects: Array) -> Dictionary:
 	for effect in effects:
@@ -368,6 +400,14 @@ func _reward_amount(reward_pack: Dictionary, asset_code: String) -> int:
 	for entry in reward_pack.get("entries", []):
 		if str(entry.get("assetCode", "")) == asset_code: amount += int(entry.get("quantityMin", 0))
 	return amount
+
+func _fixed_reward_loot(reward_pack: Dictionary, assets: Dictionary) -> Array:
+	var result: Array = []
+	for entry in reward_pack.get("entries", []):
+		var code := str(entry.get("assetCode", ""))
+		if code.is_empty() or code == "soulCrystal": continue
+		result.append({"itemId": code, "nameKey": str(assets.get(code, {}).get("nameKey", code)), "amount": int(entry.get("quantityMin", 0))})
+	return result
 
 func _single_reward(reward_pack: Dictionary, assets: Dictionary) -> Dictionary:
 	var entries: Array = reward_pack.get("entries", [])

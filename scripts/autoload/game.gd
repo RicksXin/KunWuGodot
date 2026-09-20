@@ -139,6 +139,8 @@ func _load_profile() -> void:
 	_normalise_profile()
 
 func _normalise_profile() -> void:
+	KWEquipment.ensure(profile)
+	if not profile.has("lootSeed"): profile["lootSeed"] = Crypto.new().generate_random_bytes(16).hex_encode()
 	var defaults: Dictionary = default_profile if not default_profile.is_empty() else _load_json(DEFAULT_PROFILE_PATH)
 	_merge_missing(profile, defaults)
 	# JSON 中显式的 null 不会被 Dictionary.get(key, default) 替换，
@@ -251,10 +253,12 @@ func save_profile() -> bool:
 		emit_signal("feedback", "存档写入失败", 3)
 		return false
 	tmp.store_string(payload)
+	tmp.flush()
+	var write_error := tmp.get_error()
 	tmp.close()
-	if FileAccess.file_exists(PROFILE_PATH):
-		DirAccess.remove_absolute(PROFILE_PATH)
-	DirAccess.rename_absolute(PROFILE_TMP_PATH, PROFILE_PATH)
+	if write_error != OK or DirAccess.rename_absolute(PROFILE_TMP_PATH, PROFILE_PATH) != OK:
+		emit_signal("feedback", "存档写入失败", 3)
+		return false
 	emit_signal("state_changed")
 	return true
 
@@ -479,7 +483,7 @@ func debug_start_combat(encounter_id: String = "") -> Dictionary:
 			"remainingGrain": 0, "grainCapacity": 0, "grainDepletionSteps": 0,
 			"carriedItems": {"pickaxe": 0, "lens": 0}, "restUsesRemaining": int(map_rule.get("restCount", 0)),
 			"isResting": false, "restHealingUsed": false, "revealedTiles": _reveal([], entry, discovery_radius),
-			"temporaryLoot": {}, "pendingEncounterLoot": [], "pendingEncounterSoulCrystal": 0,
+			"temporaryLoot": {}, "pendingEncounterLoot": [], "pendingEncounterSoulCrystal": 0, "temporaryEquipment": [], "pendingEquipment": [], "settlementSeed": str(Time.get_unix_time_from_system()) + ":" + str(Time.get_ticks_usec()),
 		}
 	else:
 		var existing_heroes := party_heroes()
@@ -489,6 +493,7 @@ func debug_start_combat(encounter_id: String = "") -> Dictionary:
 	# Keep old expedition bookkeeping intact and only replace the active
 	# encounter fields required by combat and victory settlement.
 	expedition["mapId"] = target_map_id
+	expedition["encounterSettled"] = false
 	expedition["encounterId"] = requested_encounter_id
 	expedition["mapObjectId"] = selected_object_id
 	expedition["debugReturnToSettings"] = true
@@ -748,7 +753,8 @@ func get_map_definition(map_id: String = "") -> Dictionary:
 		map_definitions[target_id] = configured
 		# Legacy cached maps cannot supply the HD map's encounter IDs. Migrate
 		# the paired combat table too, for both Debug and normal exploration.
-		combat_config = ConfigRepository.formal_map_combat()
+		if not ConfigRepository.has_formal_map_combat(combat_config):
+			combat_config = ConfigRepository.formal_map_combat()
 	if configured.is_empty():
 		return {}
 	if int(configured.get("positionVersion",0)) == 2:
@@ -1042,6 +1048,11 @@ func finish_encounter_victory(encounter: Dictionary) -> Dictionary:
 	var expedition: Variant = profile.get("expedition")
 	if not expedition is Dictionary:
 		return {"ok": false, "message": "当前没有探索进度"}
+	var active_id := str(expedition.get("encounterId", ""))
+	if active_id.is_empty() or str(encounter.get("id", "")) != active_id:
+		return {"ok": false, "message": "战斗结算与当前遭遇不一致"}
+	if bool(expedition.get("encounterSettled", false)):
+		return {"ok": true, "alreadySettled": true, "soulCrystal": 0, "loot": []}
 	var previous_profile := profile.duplicate(true)
 	var map_id := get_active_map_id()
 	var object_id := get_active_map_object_id()
@@ -1051,6 +1062,16 @@ func finish_encounter_victory(encounter: Dictionary) -> Dictionary:
 	var first_clear := not bool(map_state_value(first_key, false))
 	profile["completedMapObjects"][map_object_key(map_id, object_id)] = true
 	_set_map_state_in_profile(first_key, true)
+	var equipment_loot: Array = []
+	if first_clear:
+		for reward in encounter.get("equipmentRewards", []):
+			for index in int(reward.get("quantity", 0)):
+				var equipment := KWEquipment.generate(equipment_catalog(), str(profile.get("lootSeed", "legacy")) + ":" + first_key + ":" + str(reward.get("qualityCode")) + ":" + str(index), str(reward.get("qualityCode")))
+				if equipment.is_empty():
+					profile = previous_profile
+					return {"ok": false, "message": "装备奖励配置不完整，未结算"}
+				equipment_loot.append(equipment)
+	expedition["pendingEquipment"] = equipment_loot
 	var soul_reward := int(encounter.get("firstSoulCrystalReward", encounter.get("soulCrystalReward", 0))) if first_clear else int(encounter.get("repeatSoulCrystalReward", encounter.get("soulCrystalReward", 0)))
 	profile["wallet"]["soulCrystal"] = int(profile["wallet"].get("soulCrystal", 0)) + soul_reward
 	_apply_profile_effects(encounter.get("victoryEffects", {}), object_id, first_clear)
@@ -1060,6 +1081,9 @@ func finish_encounter_victory(encounter: Dictionary) -> Dictionary:
 	var reward_loot: Array = encounter.get("loot", []).duplicate(true)
 	if first_clear:
 		reward_loot.append_array(encounter.get("firstLoot", []).duplicate(true))
+	else:
+		reward_loot.append_array(encounter.get("repeatLoot", []).duplicate(true))
+	expedition["encounterSettled"] = true
 	expedition["pendingEncounterLoot"] = reward_loot
 	expedition["pendingEncounterSoulCrystal"] = soul_reward
 	if not save_profile():
@@ -1101,6 +1125,7 @@ func take_pending_encounter_loot() -> bool:
 	var expedition: Variant = profile.get("expedition")
 	if not expedition is Dictionary:
 		return false
+	var previous_profile := profile.duplicate(true)
 	var temporary_loot: Dictionary = expedition.get("temporaryLoot", {})
 	for reward in expedition.get("pendingEncounterLoot", []):
 		var item_id := str(reward.get("itemId", ""))
@@ -1108,17 +1133,30 @@ func take_pending_encounter_loot() -> bool:
 		if not item_id.is_empty() and amount > 0:
 			temporary_loot[item_id] = int(temporary_loot.get(item_id, 0)) + amount
 	expedition["temporaryLoot"] = temporary_loot
+	var equipment: Array = expedition.get("temporaryEquipment", [])
+	for item in expedition.get("pendingEquipment", []):
+		if not equipment.any(func(existing): return existing.get("instanceId") == item.get("instanceId")): equipment.append(item)
+	expedition["temporaryEquipment"] = equipment
+	expedition["pendingEquipment"] = []
 	expedition["pendingEncounterLoot"] = []
 	expedition["pendingEncounterSoulCrystal"] = 0
-	return save_profile()
+	if save_profile(): return true
+	profile = previous_profile
+	return false
 
 func discard_pending_encounter_loot() -> bool:
 	var expedition: Variant = profile.get("expedition")
-	if not expedition is Dictionary:
+	if not expedition is Dictionary: return false
+	var previous := profile.duplicate(true)
+	# Mandatory boss equipment and protected quest items cannot be discarded.
+	var kept: Array = []
+	for reward in expedition.get("pendingEncounterLoot", []):
+		if is_protected_loot(str(reward.get("itemId", ""))): kept.append(reward)
+	expedition["pendingEncounterLoot"] = kept
+	if not take_pending_encounter_loot():
+		profile = previous
 		return false
-	expedition["pendingEncounterLoot"] = []
-	expedition["pendingEncounterSoulCrystal"] = 0
-	return save_profile()
+	return true
 
 func item_weight(item_id: String) -> int:
 	if asset_definitions.has(item_id): return int(asset_definitions[item_id].get("weight", 0))
@@ -1319,6 +1357,13 @@ func begin_encounter(object: Dictionary) -> Dictionary:
 		return requirement_result
 	var encounter_id := str(object.get("encounterId", object.get("enemyId", "")))
 	if encounter_id.is_empty() or get_encounter(encounter_id).is_empty(): return {"ok": false, "message": "该地图对象没有可用的遭遇配置"}
+	if not str(expedition.get("encounterId", "")).is_empty():
+		return {"ok": false, "message": "当前遭遇尚未结束"}
+	if not expedition.get("pendingEncounterLoot", []).is_empty() or not expedition.get("pendingEquipment", []).is_empty():
+		return {"ok": false, "message": "请先处理上一场战利品"}
+	if bool(profile.get("completedMapObjects", {}).get(map_object_key(get_active_map_id(), str(object.get("id", ""))), false)):
+		return {"ok": false, "message": "本次入山已完成该遭遇"}
+	expedition["encounterSettled"] = false
 	expedition["encounterId"] = encounter_id
 	expedition["mapObjectId"] = str(object.get("id", ""))
 	save_profile()
@@ -1351,8 +1396,7 @@ func return_to_camp() -> Dictionary:
 	var active_map := get_map_definition()
 	var entry := {"x": int(active_map.get("entryX", 2)), "y": int(active_map.get("entryY", 2))}
 	if Vector2(float(pos.x),float(pos.y)).distance_to(Vector2(entry.x,entry.y)) > 28: return {"ok": false, "message": "请先返回入口传送阵"}
-	_finish_expedition(false)
-	return {"ok": true}
+	return {"ok": _finish_expedition(false)}
 
 func return_with_talisman() -> Dictionary:
 	var expedition: Variant = profile.get("expedition")
@@ -1361,10 +1405,12 @@ func return_with_talisman() -> Dictionary:
 	var inventory: Dictionary = profile.get("inventory", {})
 	if int(inventory.get("return_talisman", 0)) <= 0:
 		return {"ok": false, "message": "没有归营符，无法直接归营"}
+	var before := profile.duplicate(true)
 	inventory["return_talisman"] = int(inventory.get("return_talisman", 0)) - 1
 	profile["inventory"] = inventory
-	_finish_expedition(false)
-	return {"ok": true}
+	if _finish_expedition(false): return {"ok": true}
+	profile = before
+	return {"ok": false, "message": "归营保存失败"}
 
 func enter_rest() -> Dictionary:
 	var expedition: Variant = profile.get("expedition")
@@ -1432,22 +1478,23 @@ func continue_rest() -> Dictionary:
 	save_profile()
 	return {"ok": true, "message": "休整结束，继续探索"}
 
-func _finish_expedition(defeated: bool) -> void:
-	var expedition: Dictionary = profile.get("expedition", {})
+func _finish_expedition(defeated: bool) -> bool:
+	if not profile.get("expedition") is Dictionary: return false
+	var before := profile.duplicate(true)
+	var expedition: Dictionary = profile["expedition"]
+	var temporary: Dictionary = expedition.get("temporaryLoot", {}).duplicate(true)
+	for reward in expedition.get("pendingEncounterLoot", []):
+		var code := str(reward.get("itemId", ""))
+		if not code.is_empty(): temporary[code] = int(temporary.get(code, 0)) + int(reward.get("amount", 0))
+	var equipment: Array = expedition.get("temporaryEquipment", []).duplicate(true)
+	equipment.append_array(expedition.get("pendingEquipment", []).duplicate(true))
 	if defeated:
 		for hero in party_heroes():
 			hero["currentHp"] = 0
 			hero["isDead"] = true
-		# 冻结结算规则：战斗/断粮阵亡时，携带池的一半向下取整返还。
-		var lost_pool: Dictionary = {}
-		for source in [expedition.get("carriedItems", {}), expedition.get("temporaryLoot", {})]:
-			for item_id in source:
-				lost_pool[item_id] = int(lost_pool.get(item_id, 0)) + int(source[item_id])
-		var retained_basis_points := 10000 - int(expedition_config.get("materialLossBasisPoints", 5000))
-		for item_id in lost_pool:
-			var retained := floori(float(int(lost_pool[item_id]) * retained_basis_points) / 10000.0)
-			if retained > 0:
-				profile["inventory"][item_id] = int(profile["inventory"].get(item_id, 0)) + retained
+		var rules: Dictionary = loop_rules().get("settlement", {})
+		temporary = KWEquipment.retained_loot(temporary, rules.get("protectedItemCodes", []), asset_definitions, int(rules.get("materialLossBasisPoints", 3000)))
+		equipment = KWEquipment.retained_equipment(equipment, str(expedition.get("settlementSeed", "legacy:" + str(expedition.get("mapId", "")))), int(rules.get("equipmentLossBasisPoints", 3000)))
 		var dead_ids: Array = expedition.get("partyMemberIds", [])
 		for preset in profile.get("expeditionPreparation", {}).get("partyPresets", []):
 			var slots: Array = preset.get("slots", [])
@@ -1455,15 +1502,18 @@ func _finish_expedition(defeated: bool) -> void:
 				if slots[index] in dead_ids: slots[index] = null
 			preset["slots"] = slots
 	else:
-		profile["wallet"]["spiritGrain"] += int(expedition.get("remainingGrain", 0))
-		for source in [expedition.get("carriedItems", {}), expedition.get("temporaryLoot", {})]:
-			for id in source:
-				_credit_returned_item(str(id), int(source[id]))
+		profile["wallet"]["spiritGrain"] = int(profile["wallet"].get("spiritGrain", 0)) + int(expedition.get("remainingGrain", 0))
+	# Supplies brought from camp are outside the temporary-loot loss pool.
+	for source in [expedition.get("carriedItems", {}), temporary]:
+		for code in source: _credit_returned_item(str(code), int(source[code]))
+	KWEquipment.store(profile, equipment, int(equipment_catalog().get("capacity", 100)))
 	profile["expedition"] = null
 	var preparation: Dictionary = profile.get("expeditionPreparation", {})
 	preparation["lastStaminaSettledAtUtc"] = now()
 	profile["expeditionPreparation"] = preparation
-	save_profile()
+	if save_profile(): return true
+	profile = before
+	return false
 
 func _credit_returned_item(item_id: String, amount: int) -> void:
 	if amount <= 0:
@@ -1472,3 +1522,58 @@ func _credit_returned_item(item_id: String, amount: int) -> void:
 		profile["wallet"][item_id] = int(profile["wallet"].get(item_id, 0)) + amount
 	else:
 		profile["inventory"][item_id] = int(profile["inventory"].get(item_id, 0)) + amount
+
+func loop_rules() -> Dictionary:
+	var remote: Variant = ConfigRepository.table("map01_loop")
+	return remote if remote is Dictionary and not remote.is_empty() else _load_json("res://data/config/map01_loop.json")
+
+func equipment_catalog() -> Dictionary:
+	return loop_rules().get("equipment", {})
+
+func is_protected_loot(code: String) -> bool:
+	return code in loop_rules().get("settlement", {}).get("protectedItemCodes", []) or bool(asset_definitions.get(code, {}).get("isProtected", false))
+
+func equip_item(hero_id: String, instance_id: String, slot: String) -> Dictionary:
+	var before := profile.duplicate(true)
+	var result := KWEquipment.equip(profile, hero_id, instance_id, slot)
+	if not result.get("ok", false): return result
+	_refresh_equipment_attributes(hero_id)
+	if save_profile(): return result
+	profile = before
+	return {"ok": false, "message": "装备保存失败"}
+
+func unequip_item(hero_id: String, slot: String) -> Dictionary:
+	if profile.get("expedition") is Dictionary: return {"ok": false, "message": "请归营后调整装备"}
+	var before := profile.duplicate(true)
+	var state := KWEquipment.ensure(profile)
+	state["loadouts"].get(hero_id, {}).erase(slot)
+	_refresh_equipment_attributes(hero_id)
+	if save_profile(): return {"ok": true, "message": "已卸下"}
+	profile = before
+	return {"ok": false, "message": "卸下保存失败"}
+
+func _refresh_equipment_attributes(hero_id: String) -> void:
+	var hero := _roster_hero(hero_id)
+	if hero.is_empty(): return
+	var previous: Dictionary = hero.get("equipmentAppliedBonuses", {})
+	var bonuses := KWEquipment.bonuses(profile, hero_id)
+	var attributes: Dictionary = hero.get("attributes", {})
+	for key in KWEquipment.ATTRIBUTES:
+		attributes[key] = int(attributes.get(key, 0)) - int(previous.get(key, 0)) + int(bonuses.get(key, 0))
+	hero["attributes"] = attributes
+	var hp_factor := int(_load_json("res://data/balance/combat_constants.json").get("combat_constants", {}).get("constitutionHpFactor", 8))
+	hero["maxHp"] = maxi(1, int(hero.get("maxHp", 1)) + (int(bonuses.get("constitution", 0)) - int(previous.get("constitution", 0))) * hp_factor)
+	hero["currentHp"] = mini(int(hero.get("currentHp", 0)), int(hero["maxHp"]))
+	hero["equipmentAppliedBonuses"] = bonuses
+
+func discard_equipment(instance_id: String) -> Dictionary:
+	if profile.get("expedition") is Dictionary: return {"ok": false, "message": "请归营后整理装备"}
+	var state := KWEquipment.ensure(profile)
+	var item: Dictionary = state["instances"].get(instance_id, {})
+	if item.is_empty() or bool(item.get("locked", false)) or bool(item.get("protected", false)) or not KWEquipment.owner(state, instance_id).is_empty(): return {"ok": false, "message": "已装备、锁定或受保护的装备不能丢弃"}
+	var before := profile.duplicate(true)
+	state["instances"].erase(instance_id)
+	KWEquipment.claim_pending(profile, int(equipment_catalog().get("capacity", 100)))
+	if save_profile(): return {"ok": true, "message": "已丢弃，待入库装备已自动补入"}
+	profile = before
+	return {"ok": false, "message": "保存失败"}

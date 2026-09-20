@@ -1,0 +1,28 @@
+{
+  "source": "art/candidates/camp-council-isometric/gpt-v2-plaque/council.png",
+  "alpha_source": "art/candidates/camp-council-isometric/gpt-v3-alpha/extracted.png",
+  "approved_visual": "GPT building with 议事殿 plaque",
+  "method": "Approved RGB plus extracted alpha; uniform downscale and padding",
+  "canvas": [
+    336,
+    240
+  ],
+  "anchor": [
+    182,
+    216
+  ],
+  "source_anchor_estimate": [
+    880,
+    990
+  ],
+  "source_size": [
+    1536,
+    1024
+  ],
+  "scaled_size": [
+    317,
+    211
+  ],
+  "scope": "Camp prototype only; authored blockers remain unchanged",
+  "note": "Hand-painted building reduced for prototype; text readability at native scale is limited."
+}

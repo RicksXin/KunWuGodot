@@ -1,0 +1,185 @@
+{
+  "scope": "Camp orthographic experiment only",
+  "generated_here": false,
+  "items": [
+    {
+      "id": "B01",
+      "title": "百宝库",
+      "kind": "building",
+      "delivery": "1536×1152",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "B01_百宝库/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_building_bai_bao_ku.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "B02",
+      "title": "还魂殿",
+      "kind": "building",
+      "delivery": "1536×1152",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "B02_还魂殿/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_building_huan_hun_tan.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "B03",
+      "title": "招贤馆",
+      "kind": "building",
+      "delivery": "1536×1152",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "B03_招贤馆/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_building_zhao_xian_tai.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "B04",
+      "title": "交易行",
+      "kind": "building",
+      "delivery": "1536×1152",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "B04_交易行/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_building_jiao_yi_hang.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "B05",
+      "title": "炼器坊",
+      "kind": "building",
+      "delivery": "1536×1152",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "B05_炼器坊/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_building_lian_qi_fang.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "B06",
+      "title": "灵源院",
+      "kind": "building",
+      "delivery": "1536×1152",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "B06_灵源院/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_building_ling_pu.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "M01",
+      "title": "后侧中景",
+      "kind": "midground",
+      "delivery": "2048×768",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "M01_后侧中景/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_panorama_bg.png",
+        "03_分层位置示意.png",
+        "04_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "M02",
+      "title": "左翼中景",
+      "kind": "midground",
+      "delivery": "1024×1024",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "M02_左翼中景/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_panorama_bg.png",
+        "03_分层位置示意.png",
+        "04_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "M03",
+      "title": "右翼中景",
+      "kind": "midground",
+      "delivery": "1024×1024",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "M03_右翼中景/提示词.md",
+      "references": [
+        "01_council.png",
+        "02_env_camp_panorama_bg.png",
+        "03_分层位置示意.png",
+        "04_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "E01",
+      "title": "远山",
+      "kind": "far_background",
+      "delivery": "2048×1024",
+      "alpha": "真实RGBA透明背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "E01_远山/提示词.md",
+      "references": [
+        "01_env_camp_panorama_bg.png",
+        "02_分层位置示意.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    },
+    {
+      "id": "E02",
+      "title": "天空",
+      "kind": "far_background",
+      "delivery": "2048×1024",
+      "alpha": "不透明RGB/RGBA背景",
+      "status": "AWAITING_USER_EXTERNAL_GENERATION",
+      "prompt": "E02_天空/提示词.md",
+      "references": [
+        "01_env_camp_panorama_bg.png",
+        "02_分层位置示意.png",
+        "03_fullcamp-integrated-ingame.png"
+      ],
+      "runtime": "UNVERIFIED; candidate only",
+      "collision": "No generated collision; existing JSON unchanged"
+    }
+  ]
+}

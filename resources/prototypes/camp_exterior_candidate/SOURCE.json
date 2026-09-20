@@ -1,0 +1,77 @@
+{
+  "status": "User supplied; candidate preview only; no pixel modification",
+  "missing": [
+    "E01 far mountains",
+    "B01-B06 buildings"
+  ],
+  "assets": [
+    {
+      "id": "sky",
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGB",
+      "alpha_range": null,
+      "visible_bounds": null,
+      "sha256": "2cfb21d67d250e5249000cdc5817e95f7c0b875173a4b12b75062f43ebc30b63"
+    },
+    {
+      "id": "rear",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bounds": [
+        0,
+        21,
+        1672,
+        915
+      ],
+      "sha256": "260098807f460648ab03626bba07417a5191f976937f0ef8c177bc95b467bcae"
+    },
+    {
+      "id": "left",
+      "size": [
+        1448,
+        1086
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "visible_bounds": [
+        25,
+        39,
+        1428,
+        1086
+      ],
+      "sha256": "875b7d4e9ab7cd6d00728259df9ff84aedf16da492e0bb1a106dd9051619b991"
+    },
+    {
+      "id": "right",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "visible_bounds": [
+        0,
+        15,
+        1536,
+        1024
+      ],
+      "sha256": "b5926867e472f79f40bb77f7855c6e1eee6c3eced8a85d80868c65ac5cb06224"
+    }
+  ]
+}

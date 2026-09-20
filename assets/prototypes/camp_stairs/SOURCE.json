@@ -1,0 +1,36 @@
+{
+  "master": "art/candidates/camp-stairs/v2-sidewall/stairs-master.png",
+  "master_sha256": "cba12367a68b22827126d806386e6a6ac2c0e647f54112faaf0908d0c577089d",
+  "approval": "用户对带侧壁候选回复：继续",
+  "crop": [
+    173,
+    157,
+    1119,
+    1111
+  ],
+  "scaled_content": [
+    96,
+    97
+  ],
+  "canvas": [
+    128,
+    128
+  ],
+  "placement": [
+    16,
+    16
+  ],
+  "resampling": "nearest; proportional within integer pixel rounding; no geometric warp",
+  "component_offset": [
+    -108,
+    42
+  ],
+  "status": "approved prototype stair with corrected side support",
+  "height_correction": {
+    "source": "art/candidates/camp-stairs/v2-sidewall/height-fit/stairs.png",
+    "reason": "User reported stair support shallower than cliff",
+    "method": "Side-wall-only integer remapping to48px lower plane; treads/nav/anchor unchanged",
+    "script": "art/candidates/camp-stairs/v2-sidewall/height-fit/build.py",
+    "visual_approval": "用户确认高度修正：可以没问题"
+  }
+}

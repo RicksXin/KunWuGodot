@@ -54,3 +54,27 @@ static func heal_amount(attacker: Dictionary, target: Dictionary, skill: Diction
 	var attrs: Dictionary = attacker.get("attrs", {})
 	var primary := int(attrs.get(str(skill.get("primaryAttribute", "magic")), 0))
 	return maxi(1, int(round(primary * maxf(1.0, float(skill.get("primaryPercent", 100))) / 100.0)))
+
+static func enemy_skill_eligible(enemy: Dictionary, skill: Dictionary) -> bool:
+	var below := int(skill.get("useBelowHpPercent", -1))
+	return below < 0 or int(enemy.get("hp", 0)) * 100 < int(enemy.get("max_hp", 1)) * below
+
+static func enemy_interval_percent(actor: Dictionary, skill_id: String) -> int:
+	var mechanics: Dictionary = actor.get("mechanics", {})
+	if actor.get("side") != "enemy" or not bool(mechanics.get("bossGoldBody", false)): return 100
+	var phase: Dictionary = mechanics.get("lowPhase", {"hpPercent": 35, "skillCode": "m1_boss_ground_quake", "intervalPercent": 80})
+	if str(phase.get("skillCode", "")) != skill_id: return 100
+	if int(actor.get("hp", 0)) * 100 > int(actor.get("max_hp", 1)) * int(phase.get("hpPercent", 35)): return 100
+	return int(phase.get("intervalPercent", 80))
+
+static func control_application(target: Dictionary, status: Dictionary) -> Dictionary:
+	var kind := str(status.get("kind", ""))
+	var mechanics: Dictionary = target.get("mechanics", {})
+	if kind in mechanics.get("controlImmunities", []): return {"allowed": false}
+	var duration := int(status.get("durationTicks", 20))
+	var count := int(target.get("stuns_received", 0))
+	var percentages: Array = mechanics.get("stunDurationPercents", [])
+	if kind == "stun" and not percentages.is_empty():
+		duration = maxi(1, int(floor(duration * int(percentages[mini(count, percentages.size() - 1)]) / 100.0)))
+		count += 1
+	return {"allowed": true, "durationTicks": duration, "stunsReceived": count}

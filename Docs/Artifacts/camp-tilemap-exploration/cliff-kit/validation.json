@@ -1,0 +1,14 @@
+{
+  "checks": {
+    "A consecutive segments": "PASS pixel-exact alpha union",
+    "B consecutive segments": "PASS pixel-exact alpha union",
+    "48+48 stacked A": "PASS pixel-exact alpha union",
+    "convex replacement": "PASS pixel-exact alpha union",
+    "concave replacement": "PASS pixel-exact alpha union"
+  },
+  "additional": [
+    "convex/concave atlas alpha equals two-face assembly",
+    "convex/concave RGBA preserves orientation colors"
+  ],
+  "limits": "Geometry and alpha only; does not validate future artwork color/texture seams or runtime collision."
+}

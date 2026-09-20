@@ -1,0 +1,29 @@
+{
+  "source": "assets/prototypes/camp_cliff_corner/terrace_continuous.png",
+  "method": "Native full vertical profiles -24..63 around cliff lip; hard overlap; native convex corner crop; no generation",
+  "profiles": {
+    "a": [
+      228,
+      100,
+      0.5
+    ],
+    "b": [
+      100,
+      156,
+      -0.5
+    ]
+  },
+  "front_corner": {
+    "crop": [
+      58,
+      130,
+      122,
+      218
+    ],
+    "anchor": [
+      32,
+      28
+    ]
+  },
+  "status": "full-camp adaptation candidate"
+}

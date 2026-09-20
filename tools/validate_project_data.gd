@@ -174,7 +174,8 @@ func _validate_map_files() -> void:
 	if map_document is Dictionary:
 		if str(map_document.get("id", "")) != "map_01":
 			_fail("formal map id must be map_01")
-		if map_document.get("worldSize", []) != [897,1938.5411681914145]:
+		var world_size: Array = map_document.get("worldSize", [])
+		if world_size.size() != 2 or not is_equal_approx(float(world_size[0]), 897.0) or not is_equal_approx(float(world_size[1]), 1938.5411681914145):
 			_fail("formal map world size mismatch")
 		var visual: Variant = map_document.get("visual")
 		if not visual is Dictionary:

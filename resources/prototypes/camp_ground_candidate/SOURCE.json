@@ -1,0 +1,20 @@
+{
+  "source": "assets/prototypes/camp_cliff_corner/terrace_continuous.png",
+  "sha256": "7aa467c5aaa50ddfc3a238115ce27a963d3dfec0823f4bb84b83c6bd12a5124d",
+  "source_region": [
+    180,
+    55,
+    64,
+    32
+  ],
+  "output": [
+    48,
+    24
+  ],
+  "method": "native top-surface sample; hard overlap at repeat edges; no generation",
+  "status": "derived full-camp candidate; original L retained",
+  "limitations": [
+    "small sampled motif repeats",
+    "arbitrary outline corners not represented by complete original L silhouette"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "original": "art/candidates/camp-rock-slope-v1/original.png",
+  "supplier": "built-in image_gen",
+  "wall_output": [
+    64,
+    96
+  ],
+  "processing": "nearest sampled opaque rock interior; original alpha retained in slope sprite; sprite shader clips alpha below0.65",
+  "status": "candidate; no user approval yet",
+  "wall_crops_xywh": {
+    "a": [
+      284,
+      588,
+      48,
+      120
+    ],
+    "b": [
+      480,
+      644,
+      48,
+      120
+    ]
+  },
+  "wall_candidate_status": "REJECTED_NOT_USED: repeated planar blocks; current walls retain approved continuous cliff textures",
+  "prompt": "art/candidates/camp-rock-slope-v1/PROMPT.md",
+  "edge_overlay_processing": {
+    "method": "Sprite2D region crop at runtime; original pixels unchanged",
+    "rubble_region_xywh": [
+      750,
+      600,
+      750,
+      400
+    ],
+    "placement_source": "data/prototypes/camp_tile_rebuild.json:edge_overlays",
+    "navigation": "visual only; rendered before stairs and buildings"
+  }
+}

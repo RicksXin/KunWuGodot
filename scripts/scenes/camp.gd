@@ -1186,7 +1186,7 @@ func _open_settings() -> void:
 	tilemap_lab.pressed.connect(_open_camp_tilemap_lab)
 
 func _open_camp_tilemap_lab() -> void:
-	var lab := preload("res://scenes/prototypes/camp_tilemap_lab.tscn").instantiate()
+	var lab := preload("res://scenes/prototypes/camp_terrain_sample.tscn").instantiate()
 	lab.camp = self
 	hide()
 	process_mode = Node.PROCESS_MODE_DISABLED

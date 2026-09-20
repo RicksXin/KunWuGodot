@@ -1,0 +1,98 @@
+{
+  "runtime_changes": "none; keep current procedural full-camp stairs",
+  "stairs": [
+    {
+      "id": "upper_left",
+      "axis": "y",
+      "drop": 48,
+      "planar_run": [
+        -64,
+        32
+      ],
+      "upper_edge_width_screen": [
+        64,
+        32
+      ],
+      "approved_sprite_run": [
+        56,
+        28
+      ],
+      "approved_sprite_upper_edge": [
+        40,
+        -20
+      ],
+      "direct_reuse": false,
+      "reason": "Opposite facing and different width/run; mirroring would also reverse visible support and lighting"
+    },
+    {
+      "id": "upper_right",
+      "axis": "x",
+      "drop": 48,
+      "planar_run": [
+        64,
+        32
+      ],
+      "upper_edge_width_screen": [
+        64,
+        -32
+      ],
+      "approved_sprite_run": [
+        56,
+        28
+      ],
+      "approved_sprite_upper_edge": [
+        40,
+        -20
+      ],
+      "direct_reuse": false,
+      "reason": "Same facing, but width and planar run require different scale factors; cannot preserve48px rise with uniform scaling"
+    },
+    {
+      "id": "lower_left",
+      "axis": "y",
+      "drop": 48,
+      "planar_run": [
+        -64,
+        32
+      ],
+      "upper_edge_width_screen": [
+        64,
+        32
+      ],
+      "approved_sprite_run": [
+        56,
+        28
+      ],
+      "approved_sprite_upper_edge": [
+        40,
+        -20
+      ],
+      "direct_reuse": false,
+      "reason": "Opposite facing and different width/run; mirroring would also reverse visible support and lighting"
+    },
+    {
+      "id": "lower_right",
+      "axis": "y",
+      "drop": 48,
+      "planar_run": [
+        -64,
+        32
+      ],
+      "upper_edge_width_screen": [
+        64,
+        32
+      ],
+      "approved_sprite_run": [
+        56,
+        28
+      ],
+      "approved_sprite_upper_edge": [
+        40,
+        -20
+      ],
+      "direct_reuse": false,
+      "reason": "Opposite facing and different width/run; mirroring would also reverse visible support and lighting"
+    }
+  ],
+  "new_generation": false
+}

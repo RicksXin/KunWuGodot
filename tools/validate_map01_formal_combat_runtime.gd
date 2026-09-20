@@ -27,20 +27,20 @@ func _run() -> void:
 	game.set("map_definitions", {"map_01": formal_map})
 	game.set("combat_config", formal_combat)
 
-	var combat: Control = await _spawn_combat(game, "m1_g04", "m1_g04")
+	var combat: Control = await _spawn_combat(game, "m1_g10", "m1_g10")
 	if combat != null:
 		var units: Array = combat.get("units")
 		var enemies: Array = units.filter(func(unit): return unit.get("side") == "enemy")
-		_check(enemies.size() == 3, "multi-enemy encounter did not expand to three enemies")
-		_check(combat.get("unit_hosts").has(100) and combat.get("unit_hosts").has(101) and combat.get("unit_hosts").has(102), "multi-enemy UI cards are missing")
-		if enemies.size() == 3:
+		_check(enemies.size() == 4, "multi-enemy encounter did not expand to four enemies")
+		_check(combat.get("unit_hosts").has(100) and combat.get("unit_hosts").has(101) and combat.get("unit_hosts").has(102) and combat.get("unit_hosts").has(103), "multi-enemy UI cards are missing")
+		if enemies.size() == 4:
 			var ally: Dictionary = units[0]
 			combat.call("_apply_damage", enemies[0], 999999, ally, "physical", true)
 			_check(not bool(combat.get("finished")), "combat ended after only one enemy died")
 		combat.queue_free()
 		await process_frame
 
-	combat = await _spawn_combat(game, "m1_g02", "m1_g02")
+	combat = await _spawn_combat(game, "m1_g03", "m1_g03")
 	if combat != null:
 		var wisp: Dictionary = combat.get("units").filter(func(unit): return unit.get("side") == "enemy")[0]
 		combat.set("combat_ticks", 60)
@@ -67,7 +67,7 @@ func _run() -> void:
 	if combat != null:
 		var enemies: Array = combat.get("units").filter(func(unit): return unit.get("side") == "enemy")
 		var banner: Dictionary = enemies[0]
-		var corpse: Dictionary = enemies[1]
+		var corpse: Dictionary = banner
 		_check(int(combat.call("_outgoing_damage_percent", corpse)) == 115, "banner aura did not increase ally damage")
 		banner["dead"] = true
 		banner["hp"] = 0

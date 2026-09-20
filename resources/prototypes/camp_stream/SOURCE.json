@@ -1,0 +1,7 @@
+{
+  "source": "art/candidates/camp-stream-v1/water.png",
+  "supplier": "built-in imagegen",
+  "status": "candidate, pending visual review",
+  "processing": "Original water image. Runtime UV reflection, nearest filtering. Riverbed reuses natural cliff; banks reuse rock-slope region.",
+  "meowa_credits": 0
+}

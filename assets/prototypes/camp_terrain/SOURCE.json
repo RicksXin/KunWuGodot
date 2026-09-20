@@ -1,0 +1,20 @@
+{
+  "asset": "stone_dirt.png",
+  "scope": "approved visual for isolated camp prototype only",
+  "job_id": "job_19c45baa52c943599484bfe4598cd5c5",
+  "source": "Meowa isometric-tileset-run, built-in cobblestone_tile + dirt_tile",
+  "user_visual_approval": "确认可以",
+  "sha256": "5cbc53a242b6d22afcc85614c945bb66634e479b9df9e5517554c46984fc8c2e",
+  "dimensions": [
+    512,
+    256
+  ],
+  "tile_dimensions": [
+    128,
+    64
+  ],
+  "atlas_layout": "4x4; all 16 corner states including empty dirt",
+  "projection": "2:1 isometric; positive axes (64,32),(-64,32)",
+  "filter": "nearest",
+  "profile": "No runtime service dependency"
+}

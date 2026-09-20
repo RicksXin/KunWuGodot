@@ -66,7 +66,7 @@ func _build() -> void:
 	equipment_summary.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(equipment_summary)
 	_label(equipment_summary, "容量" if preview else "装备", Rect2(32, 176, 28, 16), 12, MUTED)
-	_label(equipment_summary, "12 / 40" if preview else "0 / 100", Rect2(64, 174, 65, 20), 14)
+	_label(equipment_summary, "12 / 40" if preview else "%d / %d" % [KWEquipment.ensure(Game.profile)["instances"].size(), int(Game.equipment_catalog().get("capacity", 100))], Rect2(64, 174, 65, 20), 14)
 	_label(equipment_summary, "锁定 2 · 任务保护 1" if preview else "资源不占装备仓位", Rect2(132, 176, 120, 16), 10, Color("#b58a42"))
 	var filter := _button(self, "筛选", Rect2(271, 170, 72, 28), "inline", false, 12)
 	filter.pressed.connect(_filter)
@@ -80,8 +80,13 @@ func _build() -> void:
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(content)
 	message = _label(self, "", Rect2(32, 552, 311, 16), 10, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
-	var batch := _button(self, "批量处理", Rect2(43, 718, 132, 44), "footer", false, 14)
-	batch.pressed.connect(func(): message.text = "批量处理暂未开放")
+	var batch := _button(self, "装备管理" if not preview else "批量处理", Rect2(43, 718, 132, 44), "footer", false, 14)
+	batch.pressed.connect(func():
+		if preview: message.text = "预览模式"
+		else:
+			var equipment := preload("res://scripts/ui/equipment_panel.gd").new()
+			add_child(equipment)
+			equipment.closed.connect(func(): equipment.queue_free(); _refresh()))
 	var close := _button(self, "关闭", Rect2(200, 718, 132, 44), "footer", false, 14)
 	close.pressed.connect(func(): closed.emit())
 	_refresh()
@@ -104,7 +109,15 @@ func _refresh() -> void:
 		button.pressed.connect(func(): category = tab_name; _refresh())
 	var visible_items: Array = []
 	for item in ITEMS:
+		if not preview and item[4] == "装备": continue
 		if _quantity(item) > 0 and (category == "全部" or item[4] == category) and (quality < 0 or item[3] == quality): visible_items.append(item)
+	if not preview and category in ["全部", "材料", "关键"] and quality < 0:
+		for id in Game.profile.get("inventory", {}):
+			if ITEMS.any(func(item): return item[0] == id): continue
+			var kind := "关键" if Game.is_protected_loot(str(id)) else "材料"
+			if category != "全部" and category != kind: continue
+			var amount := int(Game.profile["inventory"][id])
+			if amount > 0: visible_items.append([id, Game.text("item." + str(id) + ".name", str(id)), "符", 0, kind, amount])
 	for i in 16:
 		var slot := Control.new()
 		slot.position = Vector2(32 + (i % 4) * 79, 256 + (i / 4) * 68)
@@ -112,8 +125,8 @@ func _refresh() -> void:
 		content.add_child(slot)
 		var frame := _image(slot, "imgQuality", Rect2(16, 0, 40, 40))
 		var q := 0 if i >= visible_items.size() else int(visible_items[i][3])
-		var rim := KWUI.panel(slot, Rect2(19, 3, 34, 34), Color.TRANSPARENT, [INK, Color("#6f945f"), Color("#4b83b8")][q])
-		rim.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, [INK, Color("#6f945f"), Color("#4b83b8")][q], 4, 1))
+		var rim := KWUI.panel(slot, Rect2(19, 3, 34, 34), Color.TRANSPARENT, [INK, Color("#6f945f"), Color("#4b83b8"), Color("#B39BCF"), Color("#D5B26C"), Color("#DC897B")][clampi(q, 0, 5)])
+		rim.add_theme_stylebox_override("panel", KWUI.style_box(Color.TRANSPARENT, [INK, Color("#6f945f"), Color("#4b83b8"), Color("#B39BCF"), Color("#D5B26C"), Color("#DC897B")][clampi(q, 0, 5)], 4, 1))
 		rim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if i >= visible_items.size():
 			frame.modulate.a = 0.38
@@ -144,8 +157,8 @@ func _refresh() -> void:
 		_label(content, "暂无物品" if quality < 0 else "暂无符合条件的物品", Rect2(42, 518, 291, 18), 11, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _filter() -> void:
-	quality = quality + 1 if quality < 2 else -1
-	message.text = "品质：%s" % ["全部", "凡品", "精制", "上品"][quality + 1]
+	quality = quality + 1 if quality < 5 else -1
+	message.text = "品质：%s" % ["全部", "法器", "真宝", "法宝", "古宝", "通天灵宝", "玄天之宝"][quality + 1]
 	_refresh()
 
 class TreasuryButtonVisual extends KWCampButtonVisual:

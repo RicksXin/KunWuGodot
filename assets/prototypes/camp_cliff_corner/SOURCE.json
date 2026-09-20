@@ -1,0 +1,50 @@
+{
+  "scope": "User-approved visual sample in isolated camp lab only; not a repeatable tileset",
+  "source": "art/candidates/camp-cliff-tiles/meowa-corner-edit-v1/corner-edited.png",
+  "job_id": "job_cb7363dbea8f46ffa98a895c13bc3887",
+  "user_visual_approval": "用户看到本次结果后回复：可以，继续",
+  "sha256": "9c5553394581326a4c5b6ada8b6151415170471d64ce7517bce947a96c72c880",
+  "dimensions": [
+    440,
+    300
+  ],
+  "anchor": [
+    220,
+    64
+  ],
+  "logical_cells": [
+    [
+      0,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "projection_axes": [
+    [
+      64,
+      32
+    ],
+    [
+      -64,
+      32
+    ]
+  ],
+  "height_status": "Not calibrated to 48; front alpha bound extends about 34 below top corner",
+  "filter": "nearest",
+  "generation_credits_this_turn": 0
+}

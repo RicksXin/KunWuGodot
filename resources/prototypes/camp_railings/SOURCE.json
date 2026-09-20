@@ -1,0 +1,7 @@
+{
+  "supplier": "built-in image_gen",
+  "status": "candidate",
+  "source": "art/candidates/camp-railings-v1/post.png",
+  "processing": "original image; runtime nearest scaling and alpha clipping",
+  "meowa_credits": 0
+}

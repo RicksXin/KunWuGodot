@@ -1,0 +1,1493 @@
+{
+  "checks": {
+    "L": {
+      "boundary_edges": 12,
+      "concave": 1,
+      "convex": 5,
+      "drops": {
+        "48": 12
+      },
+      "stair_openings": 0,
+      "visible_wall_edges": 6
+    },
+    "corridor": {
+      "boundary_edges": 8,
+      "concave": 0,
+      "convex": 4,
+      "drops": {
+        "48": 8
+      },
+      "stair_openings": 0,
+      "visible_wall_edges": 4
+    },
+    "diagonal": {
+      "boundary_edges": 8,
+      "concave": 0,
+      "convex": 8,
+      "drops": {
+        "48": 8
+      },
+      "stair_openings": 0,
+      "visible_wall_edges": 4
+    },
+    "full_camp": {
+      "boundary_edges": 69,
+      "concave": 0,
+      "convex": 12,
+      "drops": {
+        "118": 9,
+        "22": 20,
+        "48": 21,
+        "70": 19
+      },
+      "stair_openings": 4,
+      "visible_wall_edges": 45
+    },
+    "hole": {
+      "boundary_edges": 16,
+      "concave": 4,
+      "convex": 4,
+      "drops": {
+        "48": 16
+      },
+      "stair_openings": 0,
+      "visible_wall_edges": 8
+    },
+    "rectangle": {
+      "boundary_edges": 12,
+      "concave": 0,
+      "convex": 4,
+      "drops": {
+        "48": 12
+      },
+      "stair_openings": 0,
+      "visible_wall_edges": 6
+    }
+  },
+  "full_camp": {
+    "corners": [
+      {
+        "kind": "convex",
+        "level": 0,
+        "mask": 4,
+        "vertex": [
+          -1,
+          -1
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 0,
+        "mask": 8,
+        "vertex": [
+          11,
+          -1
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 0,
+        "mask": 2,
+        "vertex": [
+          -1,
+          11
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 0,
+        "mask": 1,
+        "vertex": [
+          11,
+          11
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 48,
+        "mask": 4,
+        "vertex": [
+          -1,
+          -1
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 48,
+        "mask": 8,
+        "vertex": [
+          11,
+          -1
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 48,
+        "mask": 2,
+        "vertex": [
+          -1,
+          7
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 48,
+        "mask": 1,
+        "vertex": [
+          11,
+          7
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 96,
+        "mask": 4,
+        "vertex": [
+          -1,
+          -1
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 96,
+        "mask": 8,
+        "vertex": [
+          5,
+          -1
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 96,
+        "mask": 2,
+        "vertex": [
+          -1,
+          2
+        ]
+      },
+      {
+        "kind": "convex",
+        "level": 96,
+        "mask": 1,
+        "vertex": [
+          5,
+          2
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "cell": [
+          0,
+          0
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          -1,
+          0
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          0,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          0,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          1,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          1,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          2,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          2,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          3,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          3,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          4,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          4,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          5,
+          0
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          6,
+          0
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          5,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          5,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          6,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          6,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          7,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          7,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          8,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          8,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          9,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          9,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          10,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          10,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          0
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          0
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          0
+        ],
+        "direction": [
+          0,
+          -1
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          11,
+          -1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          0,
+          1
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          -1,
+          1
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          5,
+          1
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          6,
+          1
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          1
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          1
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          2
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          0,
+          3
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          2
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 118,
+        "high": 96,
+        "low": -22,
+        "neighbor": [
+          -1,
+          2
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          1,
+          2
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          1,
+          3
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          2,
+          2
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          2,
+          3
+        ],
+        "stair": "upper_left",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          3,
+          2
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          3,
+          3
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          4,
+          2
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          4,
+          3
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          5,
+          2
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          6,
+          2
+        ],
+        "stair": "upper_right",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          5,
+          2
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 96,
+        "low": 48,
+        "neighbor": [
+          5,
+          3
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          2
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          2
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          3
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          -1,
+          3
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          3
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          3
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          4
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          -1,
+          4
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          4
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          4
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          5
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          -1,
+          5
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          5
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          5
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          6
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          -1,
+          6
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          6
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          6
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          0,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          7
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          -1,
+          7
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          1,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          1,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          2,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          2,
+          8
+        ],
+        "stair": "lower_left",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          3,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          3,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          4,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          4,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          5,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          5,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          6,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          6,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          7,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          7,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          8,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          8,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          9,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          9,
+          8
+        ],
+        "stair": "lower_right",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          10,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          10,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          7
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 70,
+        "high": 48,
+        "low": -22,
+        "neighbor": [
+          12,
+          7
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          7
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 48,
+        "high": 48,
+        "low": 0,
+        "neighbor": [
+          11,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          8
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          -1,
+          8
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          8
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          12,
+          8
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          9
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          -1,
+          9
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          9
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          12,
+          9
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          10
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          -1,
+          10
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          11,
+          10
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          12,
+          10
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          0,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          0,
+          11
+        ],
+        "direction": [
+          -1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          -1,
+          11
+        ],
+        "stair": "",
+        "visible_face": false
+      },
+      {
+        "cell": [
+          1,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          1,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          2,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          2,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          3,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          3,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          4,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          4,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          5,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          5,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          6,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          6,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          7,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          7,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          8,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          8,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          9,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          9,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          10,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          10,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          11
+        ],
+        "direction": [
+          1,
+          0
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          12,
+          11
+        ],
+        "stair": "",
+        "visible_face": true
+      },
+      {
+        "cell": [
+          11,
+          11
+        ],
+        "direction": [
+          0,
+          1
+        ],
+        "drop": 22,
+        "high": 0,
+        "low": -22,
+        "neighbor": [
+          11,
+          12
+        ],
+        "stair": "",
+        "visible_face": true
+      }
+    ]
+  },
+  "note": "Topology only; no generated collision or approved artwork implied."
+}

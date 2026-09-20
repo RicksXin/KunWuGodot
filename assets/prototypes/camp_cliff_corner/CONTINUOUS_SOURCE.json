@@ -1,0 +1,8 @@
+{
+  "source": "art/candidates/camp-cliff-tiles/long-edge-proposal-v1/local-fit/terrace.png",
+  "sha256": "7aa467c5aaa50ddfc3a238115ce27a963d3dfec0823f4bb84b83c6bd12a5124d",
+  "approval": "用户：可以了，现在已经很好了，继续",
+  "derivation": "Existing continuous L with locally selected long-edge patches and hard seams; native440x300; original alpha unchanged",
+  "scope": "Approved local L-shaped sample, not arbitrary terrain tileset",
+  "extra_height": 0
+}

@@ -1,0 +1,85 @@
+{
+  "source": "assets/prototypes/camp_stairs/stairs.png",
+  "source_sha256": "f1d0164187f5f51fa3724d20770cbe3247fa5fc6f6da74362725870cfb05ef51",
+  "method": "Horizontal mirror; native nearest sampling in separate tread/support regions",
+  "target_size": [
+    144,
+    144
+  ],
+  "regions": [
+    {
+      "region": "treads",
+      "source_points": [
+        [
+          71.0,
+          16.0
+        ],
+        [
+          111.0,
+          36.0
+        ],
+        [
+          15.0,
+          92.0
+        ]
+      ],
+      "target_points": [
+        [
+          72.0,
+          8.0
+        ],
+        [
+          136.0,
+          40.0
+        ],
+        [
+          8.0,
+          88.0
+        ]
+      ],
+      "anchor_error": 0
+    },
+    {
+      "region": "support",
+      "source_points": [
+        [
+          111.0,
+          36.0
+        ],
+        [
+          55.0,
+          112.0
+        ],
+        [
+          111.0,
+          84.0
+        ]
+      ],
+      "target_points": [
+        [
+          136.0,
+          40.0
+        ],
+        [
+          72.0,
+          120.0
+        ],
+        [
+          136.0,
+          88.0
+        ]
+      ],
+      "anchor_error": 0
+    }
+  ],
+  "support_height_preserved": 48,
+  "source_master_unchanged": true,
+  "credits": 0,
+  "limits": [
+    "Mirrored lighting retained for scene evaluation",
+    "Local geometric adaptation; not a newly generated master",
+    "End coordinates are nominal; visual edge overlap requires scene review"
+  ],
+  "authorization": "用户确认本地镜像＋接头适配：可以",
+  "x_variant": "stairs_fullcamp_x.png: reflect fitted Y aboutx72 via horizontal flip+1px translation; shared144x144 canvas; restores source light handedness"
+}

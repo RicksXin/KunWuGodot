@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "purpose": "Approved terrace component connection fixture; not the formal camp layout",
+  "modules": [
+    {"name": "左侧台地", "position": [0, 0], "road_index": 0},
+    {"name": "右侧台地", "position": [512, 0], "road_index": 8}
+  ],
+  "road_origin": [0, 152],
+  "road_cells": [[0,0], [1,0], [1,-1], [2,-1], [2,-2], [3,-2], [3,-3], [4,-3], [4,-4]]
+}

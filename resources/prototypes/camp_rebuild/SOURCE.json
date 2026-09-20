@@ -1,0 +1,7 @@
+{
+  "source": "art/candidates/camp-rebuild-v1/terrain-original.png",
+  "method": "built-in image_gen edit",
+  "status": "composition comparison only; not tile terrain",
+  "sha256": "13783de7e7b48d0830d456608095840be1c894c3d105b7cd4fd98837b3603759",
+  "prompt": "art/candidates/camp-rebuild-v1/PROMPT.md"
+}

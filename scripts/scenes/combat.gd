@@ -719,8 +719,8 @@ func _build_loot_overlay() -> void:
 		loot_backpack_buttons.append(row)
 	var rewards := KWUI.panel(panel, Rect2(16, 283, 303, 150), Color("#111718"), Color("#52655b"))
 	KWUI.label(rewards, "本场战利品", Rect2(10, 10, 125, 22), 13, Color("#d5cdaa"))
-	for index in 4:
-		loot_reward_labels.append(KWUI.label(rewards, "", Rect2(15, 38 + index * 25, 273, 22), 11, Color("#d5cdaa")))
+	for index in 6:
+		loot_reward_labels.append(KWUI.label(rewards, "", Rect2(15, 35 + index * 18, 273, 18), 11, Color("#d5cdaa")))
 	loot_status_label = KWUI.label(panel, "", Rect2(20, 440, 295, 34), 11, Color("#a8c2a6"), HORIZONTAL_ALIGNMENT_CENTER)
 	loot_take_all_button = KWUI.combat_button(panel, "全部拾取", Rect2(24, 478, 134, 44), 13)
 	loot_take_all_button.pressed.connect(_take_all_loot)
@@ -857,9 +857,14 @@ func _step(ticks: int) -> void:
 		unit["timer"] = int(unit["timer"]) - ticks
 		if unit["timer"] > 0: continue
 		if _has_status(unit, "stun"):
+			unit.erase("pending_enemy_skill")
 			unit["timer"] = 1
 			continue
-		if unit["side"] == "enemy": _enemy_action(unit)
+		if unit.has("pending_enemy_skill"):
+			var pending_skill := str(unit["pending_enemy_skill"])
+			unit.erase("pending_enemy_skill")
+			_resolve_command(unit, pending_skill, -1, true)
+		elif unit["side"] == "enemy": _enemy_action(unit)
 		elif unit["auto"]: _auto_action(unit)
 		else: unit["timer"] = 0
 		if finished: return
@@ -998,6 +1003,9 @@ func _enemy_action(enemy: Dictionary) -> void:
 	var available_skills: Array[String] = []
 	var cooldowns: Dictionary = enemy.get("cooldowns", {})
 	for skill_id in enemy.get("skills", []):
+		var candidate := KWCombatResolver.skill_by_id(Game.combat_config, str(skill_id))
+		if not KWCombatResolver.enemy_skill_eligible(enemy, candidate):
+			continue
 		if int(cooldowns.get(str(skill_id), 0)) <= 0:
 			available_skills.append(str(skill_id))
 	if available_skills.is_empty():
@@ -1014,7 +1022,7 @@ func _enemy_action(enemy: Dictionary) -> void:
 	enemy["ai_index"] = int(enemy.get("ai_index", 0)) + 1
 	_resolve_command(enemy, chosen_id)
 
-func _resolve_command(actor: Dictionary, skill_id: String, target_unit_id: int = -1) -> void:
+func _resolve_command(actor: Dictionary, skill_id: String, target_unit_id: int = -1, warning_complete: bool = false) -> void:
 	var skill := KWCombatResolver.skill_by_id(Game.combat_config, skill_id)
 	if skill.is_empty(): actor["timer"] = 20; return
 	var manual_targets: Array = []
@@ -1031,7 +1039,14 @@ func _resolve_command(actor: Dictionary, skill_id: String, target_unit_id: int =
 	if int(cooldowns.get(skill_id, 0)) > 0:
 		_show_log("%s 尚在冷却" % Game.text(skill.get("nameKey", skill_id)))
 		return
-	var interval_percent := 80 if actor.get("side") == "enemy" and _is_low_phase_boss(actor) else 100
+	var warning_ticks := int(skill.get("warningTicks", 0))
+	if actor.get("side") == "enemy" and warning_ticks > 0 and not warning_complete:
+		actor["pending_enemy_skill"] = skill_id
+		actor["timer"] = warning_ticks
+		actor["action_max"] = warning_ticks
+		_show_log("%s 正在蓄力 %s" % [actor["name"], _skill_name(skill, skill_id)])
+		return
+	var interval_percent := KWCombatResolver.enemy_interval_percent(actor, skill_id)
 	actor["timer"] = KWCombatResolver.action_interval(int(skill.get("baseIntervalTicks", 20)), actor.get("statuses", []), interval_percent)
 	actor["action_max"] = actor["timer"]
 	var cooldown_ticks := int(skill.get("cooldownTicks", 0))
@@ -1113,7 +1128,7 @@ func _has_status(unit: Dictionary, kind: String) -> bool:
 	return false
 
 func _is_low_phase_boss(unit: Dictionary) -> bool:
-	return bool(unit.get("mechanics", {}).get("bossGoldBody", false)) and int(unit.get("hp", 0)) * 100 <= int(unit.get("max_hp", 1)) * 35
+	return bool(unit.get("mechanics", {}).get("bossGoldBody", false)) and int(unit.get("hp", 0)) * 100 <= int(unit.get("max_hp", 1)) * int(unit.get("mechanics", {}).get("lowPhase", {}).get("hpPercent", 35))
 
 func _effective_defender(target: Dictionary) -> Dictionary:
 	var defender := target.duplicate(true)
@@ -1321,6 +1336,10 @@ func _apply_skill_status(actor: Dictionary, target: Dictionary, skill: Dictionar
 	if chance < 100 and int((combat_ticks + int(actor.get("unit_id", 0)) * 17 + int(target.get("unit_id", 0)) * 31) % 100) >= chance:
 		return
 	var status_kind := str(status_definition.get("kind", ""))
+	var control_result := KWCombatResolver.control_application(target, status_definition)
+	if not bool(control_result.get("allowed", false)): return
+	var duration := int(control_result["durationTicks"])
+	target["stuns_received"] = int(control_result["stunsReceived"])
 	if status_kind == "shield":
 		target["shield"] = int(target.get("shield", 0)) + int(status_definition.get("magnitude", 0))
 		return
@@ -1334,7 +1353,7 @@ func _apply_skill_status(actor: Dictionary, target: Dictionary, skill: Dictionar
 			break
 	statuses.append({
 		"kind": status_kind,
-		"ticks": int(status_definition.get("durationTicks", 20)),
+		"ticks": duration,
 		"magnitude": int(status_definition.get("magnitude", 0)),
 		"perSecondDamage": int(status_definition.get("perSecondDamage", 0)),
 		"sourceUnitId": int(actor.get("unit_id", -1)),
@@ -1537,8 +1556,8 @@ func _finish_victory() -> void:
 	_persist_ally_unit_states()
 	victory_result = Game.finish_encounter_victory(current_encounter)
 	if not bool(victory_result.get("ok", false)):
-		finished = false
 		_show_log(str(victory_result.get("message", "战斗结算失败")))
+		get_tree().create_timer(1.0).timeout.connect(_retry_settlement.bind(true))
 		return
 	for message in victory_result.get("progressMessages", []):
 		_show_log(str(message))
@@ -1549,8 +1568,16 @@ func _finish_defeat() -> void:
 	if finished: return
 	_set_combat_paused(false)
 	finished = true
-	Game._finish_expedition(true)
+	if not Game._finish_expedition(true):
+		_show_log("阵亡结算保存失败，正在重试；不会重新抽取损失")
+		get_tree().create_timer(1.0).timeout.connect(_retry_settlement.bind(false))
+		return
 	_show_outcome(false)
+
+func _retry_settlement(victory: bool) -> void:
+	finished = false
+	if victory: _finish_victory()
+	else: _finish_defeat()
 
 func _show_outcome(victory: bool) -> void:
 	_refresh()
@@ -1592,6 +1619,12 @@ func _show_loot_overlay() -> void:
 		loot_reward_labels[reward_index].text = "%s ×%d    重量 %d" % [Game.text(str(reward.get("nameKey", reward.get("itemId", "战利品"))), str(reward.get("itemId", "战利品"))), int(reward.get("amount", 1)), int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))]
 		loot_reward_labels[reward_index].visible = true
 		reward_index += 1
+	for equipment in expedition.get("pendingEquipment", []):
+		if reward_index >= loot_reward_labels.size(): break
+		var quality := str(Game.equipment_catalog().get("qualityNames", {}).get(equipment.get("qualityCode"), ""))
+		loot_reward_labels[reward_index].text = "%s · %s（归营后可穿戴）" % [quality, equipment.get("name", "装备")]
+		loot_reward_labels[reward_index].visible = true
+		reward_index += 1
 	var reward_weight := 0
 	for reward in pending_loot: reward_weight += int(reward.get("amount", 1)) * _loot_weight(str(reward.get("itemId", "")))
 	loot_status_label.text = "全部拾取后：%d/%d" % [burden + reward_weight, limit]
@@ -1605,9 +1638,12 @@ func _take_all_loot() -> void:
 	_leave_loot()
 
 func _leave_loot() -> void:
+	var expedition: Dictionary = Game.profile.get("expedition", {})
+	if not expedition.get("pendingEncounterLoot", []).is_empty() or not expedition.get("pendingEquipment", []).is_empty():
+		if not Game.discard_pending_encounter_loot():
+			_show_log("战利品保存失败，请重试")
+			return
 	loot_overlay.visible = false
-	if not Game.profile.get("expedition", {}).get("pendingEncounterLoot", []).is_empty():
-		Game.discard_pending_encounter_loot()
 	Game.clear_active_encounter()
 	_change_scene_after_combat("res://scenes/map.tscn")
 
@@ -1619,6 +1655,7 @@ func _drop_loot_item(index: int) -> void:
 		if amount > 0: entries.append([str(item_id), amount])
 	if index < 0 or index >= entries.size(): return
 	var item_id := str(entries[index][0])
+	if Game.is_protected_loot(item_id): return
 	var loot: Dictionary = expedition.get("temporaryLoot", {})
 	if int(loot.get(item_id, 0)) <= 1: loot.erase(item_id)
 	else: loot[item_id] = int(loot[item_id]) - 1

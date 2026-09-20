@@ -1,0 +1,7 @@
+{
+  "supplier": "built-in image_gen",
+  "status": "User accepted cliff and paving direction; integration remains experimental",
+  "source": "art/candidates/camp-natural-materials-v1",
+  "processing": "original pixels unchanged; nearest sampling and reflected repeat in runtime shader; no navigation derived from pixels",
+  "meowa_credits": 0
+}

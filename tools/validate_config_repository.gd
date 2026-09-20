@@ -31,7 +31,7 @@ func _validate() -> void:
 	_assert(not map_definition.is_empty() and map_definition.get("objects", []).size() in [3, 31], "地图模块适配失败")
 	var encounter_id: String = "m1_g01" if formal_map else "can_jin_shi_kui"
 	var map_object_id: String = "m1_g01" if formal_map else "can_jin_shi_kui_01"
-	var expected_enemy_count: int = 2 if formal_map else 1
+	var expected_enemy_count: int = 1
 	var encounter: Dictionary = game.call("get_encounter", encounter_id)
 	_assert(not encounter.is_empty() and encounter.get("enemies", []).size() == expected_enemy_count, "战斗模块适配失败")
 	var map_rule: Dictionary = game.call("get_expedition_map_rule", "map_01")

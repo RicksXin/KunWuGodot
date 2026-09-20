@@ -1,0 +1,10 @@
+{
+  "size": [6, 6],
+  "upper_last_row": 2,
+  "rise": 48,
+  "stairs": [2, 3],
+  "spawn": [2, 5],
+  "door": [2, 2],
+  "building_cells": [[1,0],[2,0],[1,1],[2,1]],
+  "notes": "Prototype only. Coordinates and walkability are authored independently of image pixels."
+}
