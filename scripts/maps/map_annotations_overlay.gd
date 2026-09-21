@@ -4,8 +4,8 @@ const MANIFEST_PATH := "res://data/maps/map_01_regions.json"
 var source_canvas := Vector2.ZERO
 var shapes: Array = []
 
-func setup(background: Sprite2D) -> void:
-	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
+func setup(background: Sprite2D, definition: Dictionary = {}) -> void:
+	var manifest: Dictionary = definition.get("regionsDocument", {}) if definition.has("regionsDocument") else JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
 	var canvas: Dictionary = manifest["canvas"]
 	source_canvas = Vector2(float(canvas["width"]), float(canvas["height"]))
 	# Source pixels -> texture pixels -> world. Camera zoom applies to both siblings.

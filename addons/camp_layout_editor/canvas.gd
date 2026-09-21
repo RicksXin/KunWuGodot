@@ -9,6 +9,7 @@ var pan := Vector2(650,160)
 var show_grid := true
 var translucent := false
 var sprites: Array[Sprite2D] = []
+var live_sprites: Dictionary = {}
 var world: Node2D
 var overlay: Node2D
 var drag := false
@@ -28,17 +29,46 @@ func _ready() -> void:
 		ground = load("res://addons/camp_layout_editor/ground_preview.png")
 	world = Node2D.new()
 	add_child(world)
+	if ResourceLoader.exists("res://addons/camp_layout_editor/foreground_preview.png"):
+		var foreground := Sprite2D.new()
+		foreground.name = "ForegroundRocks"
+		foreground.texture = load("res://addons/camp_layout_editor/foreground_preview.png")
+		foreground.centered = false
+		foreground.position = Vector2(-1024,-256)
+		foreground.z_index = 4090
+		world.add_child(foreground)
 	overlay = Guides.new()
 	overlay.canvas = self
 	add_child(overlay)
 	resized.connect(queue_redraw)
 func refresh() -> void:
 	if world == null or model == null or model.data.is_empty(): return
+	for key in live_sprites.keys():
+		var keep := false
+		for item in model.data.buildings:
+			if item.id == key and item.get("model_3d", "") == live_sprites[key].model_path: keep = true
+		if not keep:
+			live_sprites[key].queue_free()
+			live_sprites.erase(key)
 	for sprite in sprites:
+		if sprite.get_script() == preload("res://scripts/prototypes/camp_building_3d_sprite.gd"): continue
 		world.remove_child(sprite)
 		sprite.queue_free()
 	sprites.clear()
 	for item in model.data.buildings:
+		if item.has("model_3d"):
+			var live = live_sprites.get(item.id)
+			if live == null:
+				live = preload("res://scripts/prototypes/camp_building_3d_sprite.gd").new()
+				world.add_child(live)
+				live_sprites[item.id] = live
+			live.configure(item)
+			var shift: Array = item.get("visual_offset", [0,0])
+			live.position = model.point(Vector2i(item.door[0],item.door[1])) + Vector2(shift[0],shift[1])
+			live.z_index = roundi(live.position.y)
+			live.modulate.a = 0.35 if translucent else 1.0
+			sprites.append(live)
+			continue
 		var sprite := Sprite2D.new()
 		# Editor plugins may enter before a newly added PNG finishes its first import.
 		if ResourceLoader.exists(item.texture):

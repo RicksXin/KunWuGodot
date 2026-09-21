@@ -63,7 +63,7 @@ func _load_external_collision_layer() -> void:
 	external_collision_polygons.clear()
 	collision_bounds.clear()
 	collision_loaded = false
-	var manifest: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
+	var manifest: Variant = definition.get("regionsDocument") if definition.has("regionsDocument") else JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
 	if not manifest is Dictionary:
 		push_error("Missing Demo collision manifest")
 		return

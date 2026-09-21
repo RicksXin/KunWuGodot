@@ -473,7 +473,7 @@ func debug_start_combat(encounter_id: String = "") -> Dictionary:
 		for hero in heroes:
 			member_ids.append(str(hero.get("instanceId", "")))
 		var map_rule := get_expedition_map_rule(target_map_id)
-		var entry := {"x": int(target_map.get("entryX", 2)), "y": int(target_map.get("entryY", 2))}
+		var entry := {"x": float(target_map.get("entryX", 2)), "y": float(target_map.get("entryY", 2))}
 		var discovery_radius := int(map_rule.get("discoveryRadius", 2))
 		expedition = {
 			"mapId": target_map_id, "partyPresetId": preset_id, "partyMemberIds": member_ids,
@@ -1219,7 +1219,7 @@ func start_expedition(loadout: Dictionary = {}, map_id: String = "") -> Dictiona
 	for object in target_map.get("objects", []):
 		if str(object.get("refreshType", "permanent")) == "per_expedition" or str(object.get("kind", "")) == "enemy_group":
 			profile["completedMapObjects"].erase(map_object_key(target_map_id, str(object.get("id", ""))))
-	var entry := {"x": int(target_map.get("entryX", 2)), "y": int(target_map.get("entryY", 2))}
+	var entry := {"x": float(target_map.get("entryX", 2)), "y": float(target_map.get("entryY", 2))}
 	var discovery_radius := int(map_rule.get("discoveryRadius", 2))
 	profile["expedition"] = {
 		"mapId": target_map_id, "partyPresetId": preset_id, "partyMemberIds": ids,
@@ -1241,7 +1241,8 @@ func get_world_navigation() -> RefCounted:
 		if map_state_value(str(blocker.stateKey), null) != blocker.get("passValue", true):
 			active.append(blocker)
 	var signature := str(map_data.get("id", "")) + JSON.stringify(active)
-	if world_navigation == null:
+	if world_navigation == null or world_navigation.definition.get("id") != map_data.get("id") or world_navigation.definition.get("configRevision", 0) != map_data.get("configRevision", 0):
+		world_navigation_signature = ""
 		world_navigation = load("res://scripts/maps/map_navigation.gd").new()
 		world_navigation.setup(map_data)
 	if signature != world_navigation_signature:
@@ -1394,7 +1395,7 @@ func return_to_camp() -> Dictionary:
 	if bool(expedition.get("isResting", false)): return {"ok": false, "message": "请先结束休整"}
 	var pos: Dictionary = expedition["position"]
 	var active_map := get_map_definition()
-	var entry := {"x": int(active_map.get("entryX", 2)), "y": int(active_map.get("entryY", 2))}
+	var entry := {"x": float(active_map.get("entryX", 2)), "y": float(active_map.get("entryY", 2))}
 	if Vector2(float(pos.x),float(pos.y)).distance_to(Vector2(entry.x,entry.y)) > 28: return {"ok": false, "message": "请先返回入口传送阵"}
 	return {"ok": _finish_expedition(false)}
 
@@ -1454,18 +1455,15 @@ func heal_rest() -> Dictionary:
 		return {"ok": false, "message": "当前不在休整状态"}
 	if bool(expedition.get("restHealingUsed", false)):
 		return {"ok": false, "message": "本次休整已经运功疗伤"}
-	var healing_percent := int(expedition_config.get("field", {}).get("healingPercent", 25))
+	var healing_percent := int(expedition_config.get("field", {}).get("healingPercent", 35))
 	var member_ids: Array = expedition.get("partyMemberIds", [])
-	var healed := 0
 	for hero in profile.get("roster", []):
 		if hero.get("instanceId") not in member_ids or bool(hero.get("isDead", false)): continue
 		var max_hp := int(hero.get("maxHp", 1))
 		var current_hp := int(hero.get("currentHp", max_hp))
 		if current_hp >= max_hp: continue
-		var amount := maxi(1, ceili(float(max_hp) * float(healing_percent) / 100.0))
+		var amount := maxi(1, floori(float(max_hp) * float(healing_percent) / 100.0))
 		hero["currentHp"] = mini(max_hp, current_hp + amount)
-		healed += 1
-	if healed <= 0: return {"ok": false, "message": "队伍当前无需疗伤"}
 	expedition["restHealingUsed"] = true
 	save_profile()
 	return {"ok": true, "message": "全队恢复 %d%% 最大生命" % healing_percent}

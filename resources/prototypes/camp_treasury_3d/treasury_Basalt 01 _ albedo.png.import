@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://borglwepq22iw"
-path="res://.godot/imported/treasury_Basalt 01 _ albedo.png-44b8fdc9bf99c56d0926469580d86d5a.ctex"
+path.s3tc="res://.godot/imported/treasury_Basalt 01 _ albedo.png-44b8fdc9bf99c56d0926469580d86d5a.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "932657b721832a1127cc2a781a46c50f"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://resources/prototypes/camp_treasury_3d/treasury_Basalt 01 _ albedo.png"
-dest_files=["res://.godot/imported/treasury_Basalt 01 _ albedo.png-44b8fdc9bf99c56d0926469580d86d5a.ctex"]
+dest_files=["res://.godot/imported/treasury_Basalt 01 _ albedo.png-44b8fdc9bf99c56d0926469580d86d5a.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

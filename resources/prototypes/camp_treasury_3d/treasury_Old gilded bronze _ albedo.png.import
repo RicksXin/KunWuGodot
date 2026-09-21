@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://o1r1cgaju31c"
-path="res://.godot/imported/treasury_Old gilded bronze _ albedo.png-5bb66d508fc303dbdfa71641d35c0760.ctex"
+path.s3tc="res://.godot/imported/treasury_Old gilded bronze _ albedo.png-5bb66d508fc303dbdfa71641d35c0760.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "df972968bb9249566753f9383c5ee788"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://resources/prototypes/camp_treasury_3d/treasury_Old gilded bronze _ albedo.png"
-dest_files=["res://.godot/imported/treasury_Old gilded bronze _ albedo.png-5bb66d508fc303dbdfa71641d35c0760.ctex"]
+dest_files=["res://.godot/imported/treasury_Old gilded bronze _ albedo.png-5bb66d508fc303dbdfa71641d35c0760.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

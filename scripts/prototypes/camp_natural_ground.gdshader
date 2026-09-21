@@ -23,7 +23,7 @@ void fragment() {
  if(filled(cell-vec2(0,1))<0.5) distance_edge=min(distance_edge,0.5+within.y);
  vec3 dirt = texture(soil,plane/vec2(110.0,90.0)).rgb;
  float noise = dot(dirt,vec3(0.333));
- float border = 1.0-smoothstep(0.015,0.20+noise*0.16,distance_edge);
+ float border = 1.0-smoothstep(0.015,0.28+noise*0.20,distance_edge);
  vec3 moss = vec3(0.28,0.30,0.19)*(0.65+noise);
  vec3 ground = mix(slabs,moss,border*0.86);
  float grey = dot(ground,vec3(0.299,0.587,0.114));

@@ -78,8 +78,8 @@ func sync_camera(camera: Vector2, is_full: bool, zoom: float = -1.0) -> void:
 	delta = delta.clamp(Vector2(-180,-80),Vector2(180,80))
 	for layer in layers:
 		layer.position = layer.get_meta("origin")+delta*float(layer.get_meta("parallax"))
-		if layer.name in ["left","right"] and zoom > 0:
-			# Near rock feet stay attached to the terrain when panning or zooming.
+		if layer.name != "sky" and zoom > 0:
+			# Mountain layers share the map transform, including the distant silhouette.
 			var ratio := zoom/reference_zoom
 			layer.position = camera+(Vector2(layer.get_meta("origin"))+position-reference_camera)*ratio-position
 			layer.size = Vector2(layer.get_meta("dimensions"))*ratio

@@ -2,8 +2,15 @@
 
 更新：2026-09-20；Blender 建模已续接到“优化百宝箱 Blender 建模”任务，严格控制上下文。
 
+## Blender MCP 接入（2026-09-20）
+- 用户已授权安装。PyPI `mcp-for-blender` 2.0.0 已安装，Blender 5.2 插件路径 `~/Library/Application Support/Blender/5.2/scripts/addons/blender_mcp.py`，已启用并保存用户首选项。
+- Codex 全局 `~/.codex/config.toml` 新增 `mcp_servers.blender`：`/usr/local/bin/uvx --with 'cryptography<46' mcp-for-blender`；本机 x86 Python 默认 cryptography 50 源码构建受阻，改用兼容 wheel。`DISABLE_TELEMETRY=true`、`BLENDER_HOST=127.0.0.1`、`BLENDER_PORT=9876`；插件遥测 consent=false。
+- 原百宝库窗口有未保存修改且 CUA 点击报 noWindowsAvailable，保留未动。另开 `art/candidates/camp-revival-3d-v1/revival.blend` GUI 实例，监听 localhost:9876；没有保存/覆盖模型。
+- 完成真实 stdio MCP initialize/list_tools/get_addon_status/get_scene_info：31 工具、协议7匹配、Blender5.2.1、2413对象、23材质、遥测关闭；日志 `/tmp/kunwu-blender-mcp-test.log`。测试客户端已退出，Blender 服务仍运行。
+- 当前 Blender MCP 工具已加载并实际完成 V3 几何修改、另存和导出。后续仅连接一个 Blender 服务端，勿重复启动争抢9876。未启用云端生成服务，未调用任何付费接口。
+
 ## 当前目标与边界
-- 最新续接范围：用户认为守卫V2太呆，提供写实修仙武卫参考，要求按图调整。参考已归档候选reference/user-martial-guard.png；当前制作V3深青黑衣袍/分层鳞甲/兽纹肩甲/护腕高靴/束发散发/硬朗眉眼与有重心站姿。保留双人8秒错相待机和灯笼明暗；V2已备份revisions/guard-v2。当前只做独立3D预览候选，不改正式营地/布局JSON/存档，不调用生成API。
+- 最新范围：用户明确授权用MCP给招贤馆增加动效与修士进出、营造招募氛围；该授权仅新招贤馆访客，旧百宝库守卫仍维持删除。另存V2，保留V1及还魂殿，独立预览，不改正式营地JSON/存档。
 - 当前交付：用户明确要建筑绕竖直轴转身，旧2D旋转不是所需功能。已用本机Blender制作百宝库独立3D样件，Godot正交相机/SubViewport实时合入营地；Y轴0.1°控制，未替换现有二维布局，待视觉评审。
 - 最新完成：用户要求精细自定义旋转；新增贴图旋转-360～360°、0.1°输入、±1°/归零/撤销，rotation_degrees保存到建筑JSON；编辑器和运行时变换一致。仅2D贴图旋转，不改变导航、不生成3D新视角，当前布局未改动。
 - 当前修复：用户要求放大、建筑朝向控制、取消地形摆放限制。已支持按钮/滚轮/触控板缩放，左右翻转与招贤馆正背切换；地形/导航仅提示，允许保存。新增run_camp_layout_editor.command独立入口。
@@ -77,19 +84,97 @@
 - 当前截图：本目录 treasury-3d-{0,90,180,270}.png；模型近景：art/candidates/camp-treasury-3d-v1/preview-{0,90,180,270}.png。原同名0/90/180证据已由V3替代，不能当成V2截图。
 - 第一版已被用户否决；第二版已归档于候选 revisions/v2，仅用于回退。第三版仍为待视觉批准候选，与二维原画仍有风格和精细度差距；下一步按用户对比例、门面、材质及营地融合的反馈优化。
 
-## 修仙守卫V2与灯笼明暗（当前交付）
-- 本地Blender构建：候选目录 build_guard.py → guard.blend；运行模型 resources/prototypes/camp_treasury_3d/guard.glb。单守卫52522三角面、18骨骼、单蒙皮网格、14材质，GLB2155784字节。V1方块甲片方案已废弃；V2为柔和人体、束发发冠/马尾、面部五官、交领、玉佩、连续曲面袖、褶皱长袍、圆头布靴。近景发现的肩部开口已收进衣身并封闭袖端。无生成API/Meowa。
-- GuardIdle为8秒循环，胸肩呼吸/轻微重心变化、头部左右巡视、衣摆/发带/枪穗轻摆；Root和双脚固定。实例同速、错开3.25秒，不做同步齐动。
-- 独立组件 scripts/prototypes/camp_treasury_guards.gd；台阶外侧Godot坐标(-1.62,0,3.14)/(1.62,0,3.14)，微转±5°，随建筑父节点Y轴转向。现有camp_treasury_3d_demo.gd已接入，顶部“守卫待机”可暂停/继续。
-- assemble_guard_preview.py → treasury-guards.blend，源建筑和守卫分别保留；组合文件NLA错开97.5帧，30FPS、0～240帧；增加两盏灯发光材质和点光源关键帧，Blender中按空格播放。组合文件由两份源重新装配，不作为独立建模事实源。
-- 验证：Blender导出与组合NLA头部运动/首尾一致通过；Godot4.7.1导入、tools/validate_camp_treasury_guards.gd检查双骨架/8秒循环/脚部不滑/头部运动与错相/暂停继续/随建筑转向均通过。GLB检查蒙皮与动画存在；实渲染帧差异非零。验证均带存档保护参数。
-- 当前动态证据：候选 guards-v2-lanterns.gif（64帧、8.01秒）和 guards-v2-lanterns.mp4（64帧、8秒、960×960）；guard-v2-closeup.png为单独人物近景；实际营地截图本目录 treasury-guards-ingame.png已更新。旧guards-idle.*为废弃V1守卫；旧preview-0/90/180/270和treasury-3d-0/90/180/270仍为无守卫建筑V3证据。
-- 独立灯光组件 scripts/prototypes/camp_treasury_lanterns.gd：LanternGlass_Left/Right独立灯罩材质与OmniLight3D，4秒基频叠加小幅变化，左右错相；窗户常亮。顶部“灯笼明暗”可切回恒定暖光。建筑几何未改，只拆分两个灯罩材质，备份revisions/treasury-v3-before-lights。
-- V2最终验证：Godot4.7.1导入、守卫回归、灯罩/点光源独立性、正值明暗范围、8秒首尾连续、窗户不被改动、常亮开关均通过；Blender组合NLA验证通过。实渲染灯罩区域像素有变化，GIF/MP4均64帧，GLB骨骼与两份灯罩材质检查通过。
-- 当前待用户确认更接近真人比例的修仙风格化模型、站位、动作与暖光幅度；不能宣称照片级真人。未添加靠近反应/行礼/让路、巡逻、碰撞或战斗，不自动扩展。
+## 守卫已取消；保留建筑与灯火
+- 用户看过V4全身后仍明确否决并要求删人，V1～V4均废弃，不属于待确认候选，不得继续优化或自动恢复。
+- camp_treasury_3d_demo.gd移除双守卫加载、守卫待机开关和人物捕获流程；保留建筑转向、营地对照、独立灯笼明暗和常亮切换。人物源文件/历史图仅存档，不被该预览加载。
+- Blender由assemble_treasury_preview.py从treasury.blend重建为treasury-lanterns.blend；旧已分享treasury-guards.blend同步清除人物，旧assemble_guard_preview.py仅转发到无人物装配入口。两个文件都只含建筑和两盏动态灯，无Armature。
+- 当前复核入口run_camp_treasury_3d.command；最新截图treasury-3d-{0,90,180,270}.png。所有guard相关旧图/视频都为已否决历史，不能当当前证据。
+- 验证完成：Godot导入通过；实际预览确认无Guards/Skeleton3D/AnimationPlayer及守卫待机按钮，建筑存在、两盏灯明暗/常亮切换通过；Blender两份组合文件无骨架，保留两盏动态灯。四方向实渲染完成，正面图人工检查无人物。
+
+## 还魂殿3D V3（当前交付，待视觉确认）
+- 当前源：`art/candidates/camp-revival-3d-v3/revival-refined.blend`；原 V2 `camp-revival-3d-v1/revival.blend` 保留。MCP 对 V2 执行 V3 `refine.py` → `finish.py` → `export.py`，另存源与独立 `resources/prototypes/camp_revival_3d/revival.glb`。
+- 六道连续铜包屋脊+细金线+少量接箍；5整块石阶、低对比石纹。原 box helper 面序朝内导致三角斜纹，已对365个同类8顶点6面静态部件重算法线；原版 build.py 不作为最新构建入口。
+- 源2169对象，GLB24静态材质批次+8幡+3火，145924三角面、8615376字节。此轮是画质优化而非减面，未宣称性能提升。
+- 幡/火保留4形态键、固定根部和8秒循环；导出必须合并11条动画轨为 `SoulBannerAndFire`，不能退回逐对象独立播放。
+- Blender火焰为渐变+透明材质。Godot `shaders/prototypes/revival_soul_fire.gdshader` 提供白蓝核心、深蓝外焰、侧缘与尖端渐隐；glTF V轴翻转已修正。`camp_revival_banners.gd` 同一动画时钟驱动7上升火星/蓝色局部光/材质，暂停及循环一致。
+- 入口 `run_camp_revival_3d.command`，独立 `scenes/prototypes/camp_revival_3d_demo.tscn`；右侧营地对照仅临时隐藏旧revival图，无正式地图/JSON/存档变更。
+- 验证：MCP确认石阶顶面法线朝外、8幡顶边固定；GLB11形态轨/无骨架；Godot headless导入与变形/灯光/火星移动、共同暂停、首尾复位、转向通过；4角度图形及64全景+64近景捕获通过。
+- 最新媒体：V3 `revival-refined.gif`、`soul-fire-refined.gif`，各64帧8秒；`preview-{0,90,180,270}.png`。V1目录的媒体为历史V2证据。视觉未Approved，不晋升正式素材。
+
+## 最新：两座3D建筑接入摆放编辑器
+- 用户要求将做好的还魂殿与“百宝箱”（现有百宝库）放入编辑器。范围仅营地摆放工具与同一候选营地预览，不晋升正式营地素材。
+- JSON两座增加model_3d/yaw_degrees；已有坐标/占地/导航不变，显示宽换算为对应3D视口尺寸。忽略旧二维镜像/旋转/裁切，保留旧贴图作为来源记录。
+- scripts/prototypes/camp_building_3d_sprite.gd共享SubViewport、原预览材质灯光、最新GLB及动态；canvas缓存两模型，隐藏停止渲染，panel同一角度控件写yaw_degrees（0.1°），禁用3D水平镜像。运行camp_tile_rebuild.gd读取同一数据。
+- 动态脚本camp_revival_banners.gd、camp_treasury_lanterns.gd增加@tool，保留魂幡/魂火与灯笼，不恢复守卫。
+- Godot导入、live_buildings图形验证、原2D面板交互、布局数据保存/冲突保护与营地通路回归通过；测试仅写临时JSON。截图editor-live-buildings.png。操作见EDITOR_PLACEMENT.md。
+- 入口run_camp_layout_editor.command或Godot顶部“营地摆放”；选建筑→拖动/显示宽/朝向→保存JSON。旋转不自动调整导航门口，仍需用户检查实际摆放。
+
+## 招贤馆3D V1（静态建筑基底，已保留）
+- 用户要求继续招贤馆并保持现有贴图风格。参考 `resources/prototypes/camp_west_buildings_v4/recruit.png` 与 `camp_west_inward_v1/recruit-rear.png`，复用百宝库材质库；双层木楼、前后交叉山墙、侧亭/连廊、外廊、桌凳、旗架、盆景/陶罐；深蓝灰瓦、旧木、灰石、暗灰屋脊、米色红边旗布、暖琥珀灯。
+- 当前 Blender MCP 打开 `art/candidates/camp-recruit-3d-v1/recruit.blend`（已转普通可打开工作文件，不再是仅场景库）；保留还魂殿/百宝库。此目录 build/detail/polish/complete_sides/export.py 为制作步骤，顺序与注意见README，不重复叠加polish/complete_sides。
+- `resources/prototypes/camp_recruit_3d/recruit.glb`：3087源对象，29导出网格（9独立灯芯），161880三角面、9334320字节；未做LOD，不宣称最终性能验收。
+- 新独立 `scenes/prototypes/camp_recruit_3d_demo.tscn`、`scripts/prototypes/camp_recruit_3d_demo.gd`、`camp_recruit_lanterns.gd`；`run_camp_recruit_3d.command` 可旋转0.1°、暂停九灯明暗。侧窗与背窗向外偏移，左右两侧都有窗；盒状面序朝外，修正沿用工具的法线错误。
+- 验证：Godot headless导入/模型加载，九灯正值/错相变化/暂停/8秒循环，四向竖直转向、无人物；四向实机截图与64帧灯光捕获。最新图 `art/candidates/camp-recruit-3d-v1/preview-{0,90,180,270}.png`，完整界面 `Docs/Artifacts/camp-tilemap-exploration/recruit-3d-*.png`。
+- 独立候选尚未视觉批准；未改现有营地摆放JSON、正式场景或存档。
+
+## 招贤馆V2招募动效（当前交付，待视觉确认）
+- 用户明确要求通过MCP增加动效和人物进出。本次仅新建招贤馆访客；旧百宝库守卫仍不恢复。当前源 `art/candidates/camp-recruit-3d-v2/recruit-living.blend`，原V1保留。
+- `animate.py`在V1上切出真实入口通道、将内堂暗面后移、制作两面带纹样一起变形的招募幡；新建3个成人比例袍服人物与关节层级：青衣修士进出、蓝衣侧亭落座候招、赭衣持册接待。不是旧人物素材；本轮人物为营地远景模型。
+- 24秒循环：0～7秒沿四级台阶进馆，7～12秒内堂停留转身，12～19秒离馆，19～24秒门外短暂停留转向。腿部双段关节求解，根高度沿台阶平滑过渡；头/手臂/袍摆有小幅动作。接待者位置(-.22,-1.58,.535)，避免被旗布挡住。
+- `export.py`仅合并静态建筑，保留人物父子关节与2面幡形态键；GLB唯一动画 `RecruitmentLife`，25轨、24秒、3人物根、2形态轨，无重复目标轨；28静态导出网格，118动态对象，10153108字节。仍为独立候选，不是真实NPC招募业务。
+- `camp_recruit_lanterns.gd`统一时钟控制人物、幡与9灯；暂停/继续和seek24秒首尾一致。`camp_recruit_3d_demo.gd`已显示“招募场景动效”，原启动入口 `run_camp_recruit_3d.command` 保持。
+- 验证：MCP确认幡顶固定、人物阶高与内外位置；GLB单动画/3根/2形态轨/唯一目标；Godot headless导入及 `tools/validate_camp_recruit_3d.gd`通过入馆/内堂/出馆、台阶升高、幡变化、共同暂停/继续、24秒复位与4向旋转。
+- 最新媒体进入V2目录：192全景+192近景帧，24秒8FPS；`recruitment-life.gif/mp4`与`recruitment-detail.gif`；原V1灯笼动图仅历史。待用户视觉确认。
+
+## 招贤馆V2接入营地地图（2026-09-20）
+- 按用户“放到地图上”接入候选营地运行预览与摆放编辑器，共享 `camp_building_3d_sprite.gd`。JSON招贤馆新增model_3d、yaw_degrees=-90、model_anchor=[1.06,0,2.78]；保留当前origin=[7,12]、door=[6,12]、approach=[5,12]、display_width=235及其他用户布局。
+- 模型石阶入口锚点随3D朝向旋转并对齐地图门口；24秒人物进出、候招/接待动作、两幡与九灯已随地图播放。编辑器禁用旧二维正背面选择，使用0.1°立轴朝向。
+- 验证：headless导入无错误；三建筑live_buildings图形测试通过模型、旋转、入口锚点、缓存、撤销、临时JSON往返、像素拾取与运行一致性。实际地图截图 `recruit-on-map.png`。
+- 原全图连通回归在line148失败；对比接入前的二维招贤馆与接入后，均有相同5个孤立格(8,3)/(5,4)/(6,4)/(7,4)/(8,4)，7座建筑入口均可达。是现有布局问题，本次未改导航或用户摆放。诊断日志 /tmp/kunwu-recruit-map-check.log。
+- 仍只属于候选营地，非正式Map01/正式营地；不改玩家存档。入口 `run_camp_layout_editor.command`，选择招贤馆可调整。
+
+## 三座建筑暗黑色调修正（2026-09-20，用户已认可）
+- 用户反馈墙体泛白、整体偏亮。新增 `scripts/prototypes/camp_building_palette.gd`，按石材、切边、木构、瓦、铜、布分别调色；降低环境补光及主光，冷灰建筑保留暖灯/魂火局部亮点。第一轮过暗后已回调木构和石材，保留结构层次。
+- `camp_building_3d_sprite.gd`与treasury/revival/recruit三份独立3D预览共用调色。仅Godot表现层材质副本与灯光变更，Blender源、GLB、模型结构、动画与摆放JSON不变；后续源文件重导出仍通过此表现层统一。
+- Godot导入无错误；实际地图渲染检查通过，招贤馆完整动作回归通过；导航保持既有状态。截图 `dark-buildings-on-map.png`。重新打开 `run_camp_layout_editor.command` 查看；旧窗口不会自动刷新脚本。
+
+## 炼器坊 / 灵源院 / 交易行动效与编辑器接入（已实现，待视觉复核）
+- 用户认可暗色调并授权制作后直接进入编辑器。Blender MCP以原东侧三张贴图为参考，独立源在 `art/candidates/camp-crafting-trio-v1/{forge,garden,market}.blend`；build.py、roof_helpers.py、actor_helpers.py、polish.py可复做。源已转普通可打开文件并打包纹理；当前Blender打开garden.blend。
+- 炼器坊：敞口炉房、空心烟囱、煤炉、铁砧、锻工。锤头在t=1秒落到热铁，2秒一次；烟雾升腾消散、火星及局部炉光。前侧墙开放确保等轴视角看见炉火。
+- 灵源院：扩大药房院落、晒药棚、双药圃、渠/引水槽/水车、药童挥锄。水车16秒一转，药童4秒耕作周期；落水和渠面流动。display_width由245改320，保留用户origin/door/approach与导航占地。只扩大视觉，未改玩法生产规则。
+- 交易行：柜台、侧棚、卷轴/账簿/药罐/秤/货箱，两名交易人物、两面风幡、灯笼。
+- 三GLB分别进入resources/prototypes/camp_{forge,garden,market}_3d；单个16秒合并动画，通道2/4/8，三角54339/78339/68630；静态按材质合批。导出必须use_active_scene=True，避免混入其他场景。Godot共享camp_crafting_motion.gd单时钟驱动动画和烟火/水流，复用已认可camp_building_palette.gd。
+- JSON增加各自model_3d、yaw=0与入口锚点；camp_building_3d_sprite.gd支持三座，地图和摆放编辑器共用；原用户布局保留。六座3D均支持立轴0.1°旋转、拖放、撤销、JSON保存、像素拾取。
+- 验证：最终headless导入无错误；tools/validate_camp_crafting.gd通过三模型16秒动画、暂停/复位、独立烟/火星/水流、药童/水车/交易人物及旗幡、旋转入口锚点。每座64帧/16秒4FPS实渲染，动图{forge,garden,market}-living.gif在候选目录；近景PNG及crafting-trio-on-map.png在本状态包目录。
+- 六模型编辑器交互断言通过，但自动测试释放两个临时场景时GLES3仍报一组material null（非脚本错误）；独立动画捕获、实际地图运行无此错误。未把该清理问题标为已修复。日志 /tmp/kunwu-craft-editor-final.log。
+- 三座切回二维与当前3D对比，导航完全相同：7建筑入口均可达；既有5孤立格仍在，未改位置去消除历史警告。正式Map01、正式营地场景与玩家存档不变。
+
+## 屋顶差异化与百宝库中式改造（2026-09-20，已接入，待视觉复核）
+- 用户要求百宝库统一风格、各屋顶形状/颜色/样式差异化。六座最新源统一在 `art/candidates/camp-roof-diversity-v1/{treasury,revival,recruit,forge,garden,market}.blend`；此前源保留，*-before.glb为改造前导出备份。remodel.py从前版源派生，不在新版重复叠加。六源已打包纹理并转普通工作文件。
+- 百宝库：删除平屋面/女儿墙/屋面阵纹，增低矮宽檐四坡顶、木柱/横梁/斜撑和门额铜印；保留石库主体、重门、灯笼及原结构比例。屋顶灰橄榄色，降低石堡感。
+- 还魂殿：六折屋顶上部高度伸展1.38倍、紫黑瓦、莲花尖顶与细环；魂幡/火不动。招贤馆：主楼屋顶上部伸展1.18倍、深青瓦；层叠主楼/侧亭保留。
+- 炼器坊：炭黑错层低坡屋面、沿脊百叶烟楼/金属压顶，保留空心烟囱和烟源。灵源院：灰绿圆弧卷棚顶、弧形木山墙与编织晒药棚。交易行：暖褐四坡主顶、赭红弧垂布侧棚，保留两动态幡。
+- 屋瓦复用原烘焙纹理并复制图像调色，法线保留；统一Godot暗色palette/照明不变。所有6个现有GLB已更新，编辑器和独立预览自动使用；摆放JSON、占地、朝向与入口未改。议事殿原多重檐贴图本已独特，保持主殿层级。
+- 验证：Godot headless导入无错误；六建筑统一视角实渲染通过。招贤馆24秒进出/暂停/复位、还魂殿8幡3魂火/8秒循环、三工坊16秒动作/烟火/水流/暂停/入口锚点全部通过；百宝库两灯材质加载正常且无守卫。各动画合并/隔离场景导出机制保留。
+- 最新图片 `roof-identities.png`（六座对照）、`roof-identities-on-map.png`（地图摆放）在本状态包目录。入口 `run_camp_layout_editor.command`，选百宝库可看背面改造，朝向0°看正面。当前3D源复核以新roof-diversity目录为准，旧动图为屋顶改造前历史。
+- 地图7入口均可达，原5孤立格不变；正式Map01/正式营地/存档未改。本轮未处理上一轮测试退出的材质清理警告。
+
+## 当前：整景拖动与环境融合（2026-09-20）
+- 用户已定建筑摆放，要求修复拖动主区域与背景分离、建筑孤立、地块/岩壁生硬。此轮不改JSON坐标、朝向、占地、导航或模型源。
+- camp_exterior_preview.gd：所有山体层（rear/left/right/DistantRidge）共享world的完整平移/缩放，天空仍满屏；camp_terrain_sample.gd底部山雾跟随地图变换，避免固定屏幕雾线切开地形。
+- camp_building_3d_sprite.gd：6座3D底座增加水平GroundContact软阴影/不规则土苔面，与模型yaw和model_anchor同一变换；保持既有模型、动画和用户摆放。属于轻量接地处理，未制作完整庭院。
+- camp_mountain_cliff.gd：沿JSON边界添加不规则石土斜边与少量坡脚碎石；camp_natural_ground.gdshader加宽边缘土苔渐变。保留原高度/阶梯/通路，未把所有岩壁改成缓坡。
+- tools/validate_camp_composition.gd验证两组平移/缩放极值下所有山体相对地图坐标恒定、山雾变换、六座接地面、JSON逐字未改变；通过。composition-default.png / composition-pan-{0.7,1.4}.png实渲染已检查。
+- tools/capture_camp_editor_ground.gd已刷新addons/camp_layout_editor/ground_preview.png（无建筑烘入）；编辑器需重开加载新预览。视觉仍需用户复核。
+
+## 当前：还魂殿/交易行前景岩石遮挡
+- 用户红圈指定岩石应遮住建筑。JSON仅west_blend、central_slope新增occludes_buildings=true，未改建筑位置/朝向或岩石几何。
+- camp_tile_rebuild.gd对应岩石z_index=1盖过建筑与角色，文字仍在上层。摆放编辑器独立foreground_preview.png置于建筑上层；capture_camp_editor_ground.gd分别输出不含前景的地形与透明前景，避免重复烘入。
+- Godot导入通过；validate_camp_foreground.gd验证运行层级、编辑器层级与刷新保留，foreground-rocks.png实渲染检查通过。临时双场景退出仍出现此前已知GLES3 material null日志，未作为本次修复范围。
+- 重开营地预览或摆放工具查看最新遮挡，建筑拖到岩石后方时由岩石真实透明轮廓遮盖。
 
 ## 下一步与禁止事项
-- 当前任务先复核修仙守卫V2与灯火动态预览；按用户反馈调整。不要自动扩展其他建筑或替换正式运行素材。营地三座摆放调整属于此前任务背景。
+- 六座3D模型已接入摆放工具与候选营地且用户已定摆放；下一步复核整景拖动与建筑/岩壁融合效果。旧百宝库守卫仍取消；招贤馆访客、锻工、药童与交易人物为已授权新工作。不得自动替换正式运行素材。
 - 右侧三座已按用户要求补齐；不重做地形、不把实验候选自动晋升正式素材。当前未完成整套最终营地。
 - 任何新生成先确认需求；历史Meowa单次授权均已用尽，不能续用。扣分必须遵守 Docs/Tech/Meowa_API调用规范.md 和 tools/run_meowa_guarded.py。
 - 必读边界：AGENTS.md、Docs/ArtAssets/18_地图生成式美术生产与模型分工规范.md；需要Dual Grid/插件时再读相应技能。

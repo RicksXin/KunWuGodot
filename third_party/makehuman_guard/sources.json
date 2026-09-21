@@ -1,0 +1,61 @@
+{
+  "repository": "https://github.com/makehumancommunity/makehuman",
+  "assets": [
+    "LICENSE.ASSETS.md",
+    "makehuman/data/3dobjs/base.obj",
+    "makehuman/data/targets/macrodetails/asian-male-young.target",
+    "makehuman/data/targets/macrodetails/caucasian-male-young.target",
+    "makehuman/data/eyes/high-poly/high-poly.mhclo",
+    "makehuman/data/eyes/high-poly/high-poly.obj",
+    "makehuman/data/eyes/materials/brown_eye.png",
+    "makehuman/data/targets/chin/chin-bones-incr.target",
+    "makehuman/data/targets/chin/chin-prominent-incr.target",
+    "makehuman/data/targets/head/head-fat-decr.target",
+    "makehuman/data/targets/eyebrows/eyebrows-trans-down.target",
+    "makehuman/data/targets/forehead/forehead-scale-vert-decr.target"
+  ],
+  "license": "CC0 1.0; LICENSE.ASSETS.md",
+  "purpose": "Guard V4 anatomical head and eyes",
+  "system_pack": {
+    "url": "https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+    "license": "CC0 1.0",
+    "selected_files": [
+      "skins/young_asian_male/young_asian_male.mhmat",
+      "skins/young_asian_male/young_lightskinned_male_diffuse3.png",
+      "hair/ponytail01/ponytail01.obj",
+      "hair/ponytail01/ponytail01_diffuse.png",
+      "hair/ponytail01/ponytail01.mhclo",
+      "hair/ponytail01/ponytail01.mhmat",
+      "eyebrows/eyebrow010/eyebrow010.mhmat",
+      "eyebrows/eyebrow010/eyebrow010.obj",
+      "eyebrows/eyebrow010/eyebrow010.png",
+      "eyebrows/eyebrow010/eyebrow010.mhclo"
+    ]
+  },
+  "retrieved_on": "2026-09-20",
+  "license_documentation": "https://static.makehumancommunity.org/about/license.html",
+  "sha256": {
+    "LICENSE.ASSETS.md": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c",
+    "asian-male-young.target": "ed2e8c191cb6b87b4a2d97c80486acb2604fa549316c7aa2a738a5d5a14334dc",
+    "base.obj": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c",
+    "brown_eye.png": "4659691c7295ad6206c78b003e5fd0e5f91dcd53032fa914a229bb48cabe424b",
+    "caucasian-male-young.target": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5",
+    "chin-bones-incr.target": "245b7a9506a10d5828531922ab2ec6da0e813f71bd995dae48c9a4dfad171a49",
+    "chin-prominent-incr.target": "d2493ca5f69aabeb8557d77a56c49cfcf2062ff90c0cad03073d87990d11448b",
+    "eyebrows/eyebrow010/eyebrow010.mhclo": "f007d2739463323d1398f20e6c77afd683da997956527ce5bc7cf9e56160e81e",
+    "eyebrows/eyebrow010/eyebrow010.mhmat": "5af8c410d415fc33bbb726245350cfd0ac7d6baec4a16ab07a2696c90539bfbb",
+    "eyebrows/eyebrow010/eyebrow010.obj": "db7a9747ffdc534b10de584f2d140f2006cc528ffffb6eff5071fef2ed94dce9",
+    "eyebrows/eyebrow010/eyebrow010.png": "d0aca671c7d51008177a2a607dc8eba3d3e84935375c6fcac2f85841563e44f3",
+    "eyebrows-trans-down.target": "38f7de378d535d51f2e50dc2568121a8769445f9a62423bd0a5e688c47ea3225",
+    "forehead-scale-vert-decr.target": "d7b825f28c93766a0ee8e60002b8a0e9c2d8cd2c9b64e7bbd3a278e7103eae1c",
+    "hair/ponytail01/ponytail01.mhclo": "97fc50b12bcb3b1c7b33edddd8d427a2604ffb06fe79b31132bf47f82d7afbac",
+    "hair/ponytail01/ponytail01.mhmat": "b145f5a7c9606859ad523f5113482a1cf989cf0e26dccc2ea95c377cb1c2557f",
+    "hair/ponytail01/ponytail01.obj": "d9f5fe96fbedbc8006220d87aad0e4a33d15286eb6b21f5929661cdc490ebf5a",
+    "hair/ponytail01/ponytail01_diffuse.png": "dcb364300cac06ce8bef91b2f7c0970baf310898bbdd06b0c6b884ee9306eb97",
+    "head-fat-decr.target": "00473b6069f9cf6c05a2f1fd0c0bae20bb4ec45e9552bb5695f1d1533f3cc119",
+    "high-poly.mhclo": "b183cfe37120ab726f9b3f2ea6cd3a64c44ce7b4bd91a77c841cf70c04f83a0d",
+    "high-poly.obj": "da2493215b708a344c33dc72f2a9a5b8fa985dcc5a70ad3b208995cf871da8e1",
+    "skins/young_asian_male/young_asian_male.mhmat": "9fdfc9863cd15d1359311435f2da7de3906f81d6eea549fba6bf14cd82ceb6a0",
+    "skins/young_asian_male/young_lightskinned_male_diffuse3.png": "f50016a5507fc687dc8df06599c8ea48de950cd185de33a71cafc1319ddab4d5"
+  }
+}

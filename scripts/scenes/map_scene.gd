@@ -93,7 +93,7 @@ func _ready() -> void:
 	if OS.is_debug_build():
 		annotation_overlay = Node2D.new()
 		annotation_overlay.set_script(load("res://scripts/maps/map_annotations_overlay.gd"))
-		annotation_overlay.call("setup", background)
+		annotation_overlay.call("setup", background, definition)
 		annotation_overlay.visible = false
 		add_child(annotation_overlay)
 	actor = Node2D.new()

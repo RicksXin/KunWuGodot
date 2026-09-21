@@ -114,7 +114,7 @@ func _ready() -> void:
 	depth_sorted.add_child(buildings)
 	for item in data.buildings:
 		var origin := Vector2i(item.origin[0],item.origin[1])
-		var sprite := Sprite2D.new()
+		var sprite: Sprite2D = preload("res://scripts/prototypes/camp_building_3d_sprite.gd").new() if item.has("model_3d") else Sprite2D.new()
 		sprite.texture = load(item.texture)
 		sprite.scale = Vector2.ONE*220.0/sprite.texture.get_width()
 		sprite.offset.y = -sprite.texture.get_height()*0.5
@@ -148,6 +148,7 @@ func _ready() -> void:
 			material.set_shader_parameter("alpha_cut",float(item.get("alpha_cut",0.0)))
 			sprite.material = material
 		buildings.add_child(sprite)
+		if item.has("model_3d"): sprite.configure(item)
 		targets.append({"node":ids.get(door,-1),"position":sprite.position,"name":item.name,"visual":sprite})
 		var label := Label.new()
 		label.text = item.name
@@ -377,6 +378,8 @@ func _build_rock_slopes() -> void:
 		sprite.scale = Vector2.ONE*float(placement.scale)
 		sprite.position = flat(Vector2(placement.cell[0],placement.cell[1]))-Vector2(0,placement.height)
 		sprite.material = material
+		# Foreground rock silhouettes cover nearby buildings without moving either asset.
+		sprite.z_index = 1 if placement.get("occludes_buildings",false) else 0
 		edge_overlays.add_child(sprite)
 
 func can_step(a: Vector2i,b: Vector2i) -> bool:

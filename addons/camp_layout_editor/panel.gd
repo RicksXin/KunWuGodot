@@ -49,7 +49,7 @@ func _ready() -> void:
 	button(row,"适应地图",func(): canvas.fit())
 	var rotation_row := HBoxContainer.new()
 	add_child(rotation_row)
-	angle_field = number(rotation_row,"贴图旋转（°）",-360,360)
+	angle_field = number(rotation_row,"朝向 / 旋转（°）",-360,360)
 	angle_field.step = 0.1
 	angle_field.custom_minimum_size.x = 110
 	angle_field.value_changed.connect(rotate_building)
@@ -57,7 +57,7 @@ func _ready() -> void:
 	button(rotation_row,"＋1°",func(): angle_field.value += 1.0)
 	button(rotation_row,"归零",func(): angle_field.value = 0.0)
 	var rotation_note := Label.new()
-	rotation_note.text = "绕门口锚点旋转，可输入0.1°；只转贴图，不生成新侧面，占地与入口保持原位。"
+	rotation_note.text = "3D建筑：立轴朝向，精度0.1°；其他建筑：贴图旋转。占地与入口需单独检查。"
 	rotation_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rotation_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rotation_row.add_child(rotation_note)
@@ -94,7 +94,7 @@ func _ready() -> void:
 	ghost.toggled.connect(func(value): canvas.translucent=value; canvas.refresh())
 	controls.add_child(ghost)
 	var note := Label.new()
-	note.text = "翻转为左右面向；招贤馆另有正/背面。"
+	note.text = "水平翻转仅用于二维贴图；三维建筑调整朝向角度。"
 	controls.add_child(note)
 	status = Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -144,16 +144,17 @@ func sync() -> void:
 	x_field.value = item.origin[0]
 	y_field.value = item.origin[1]
 	width_field.value = item.get("display_width",220)
-	angle_field.value = item.get("rotation_degrees",0.0)
-	mirror.button_pressed = item.get("mirror_x",false)
+	angle_field.value = item.get("yaw_degrees",0.0) if item.has("model_3d") else item.get("rotation_degrees",0.0)
+	mirror.disabled = item.has("model_3d")
+	mirror.button_pressed = false if item.has("model_3d") else item.get("mirror_x",false)
 	view_choice.clear()
-	if item.id=="recruit":
+	if item.id=="recruit" and not item.has("model_3d"):
 		view_choice.add_item("招贤馆·正面")
 		view_choice.add_item("招贤馆·背面")
 		view_choice.select(1 if "recruit-rear" in item.texture else 0)
 		view_choice.disabled = false
 	else:
-		view_choice.add_item("当前素材视角")
+		view_choice.add_item("使用3D朝向角度" if item.has("model_3d") else "当前素材视角")
 		view_choice.disabled = true
 	loading = false
 	canvas.refresh()
@@ -204,9 +205,10 @@ func change_view(index: int) -> void:
 func rotate_building(angle: float) -> void:
 	if loading or model.data.is_empty(): return
 	var item: Dictionary = model.data.buildings[choice.selected]
-	if is_equal_approx(float(item.get("rotation_degrees",0.0)),angle): return
+	var key := "yaw_degrees" if item.has("model_3d") else "rotation_degrees"
+	if is_equal_approx(float(item.get(key,0.0)),angle): return
 	model.checkpoint()
-	item.rotation_degrees = angle
+	item[key] = angle
 	model.dirty = true
 	canvas.refresh()
 	report()

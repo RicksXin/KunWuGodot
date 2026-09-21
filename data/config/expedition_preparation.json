@@ -31,7 +31,7 @@
     "field": {
       "restUseLimitsByForgeLevel": [1],
       "grainDepletionStepLimit": 4,
-      "healingPercent": 25,
+      "healingPercent": 35,
       "defaultLootWeight": 1,
       "foodItems": [
         {

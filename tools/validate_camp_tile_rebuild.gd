@@ -61,6 +61,10 @@ func _run() -> void:
 	for item in camp.data.buildings:
 		if not item.get("preview_visible",false): continue
 		var visual: Sprite2D = camp.buildings.get_node(item.id)
+		if item.has("model_3d"):
+			assert(visual.rotation == 0.0 and visual.scale.x > 0)
+			assert(visual.position.is_equal_approx(camp.point(Vector2i(item.door[0],item.door[1])) + Vector2(item.get("visual_offset",[0,0])[0],item.get("visual_offset",[0,0])[1])))
+			continue
 		assert((visual.scale.x < 0) == item.get("mirror_x",false))
 		var anchor := Vector2(item.door_anchor[0],item.door_anchor[1])
 		var offset: Array = item.get("visual_offset",[0,0])

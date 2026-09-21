@@ -116,7 +116,12 @@ func _ready() -> void:
 	exterior.reference_zoom = world.scale.x
 
 func _process(_delta: float) -> void:
-	if is_instance_valid(exterior): exterior.sync_camera(world.position,current_pattern in [11,15],world.scale.x)
+	if is_instance_valid(exterior):
+		exterior.sync_camera(world.position,current_pattern in [11,15],world.scale.x)
+		if current_pattern == 15 and is_instance_valid(mountain_mist):
+			var ratio: float = world.scale.x / exterior.reference_zoom
+			mountain_mist.position = world.position + (Vector2(0,145)-exterior.reference_camera)*ratio
+			mountain_mist.size = Vector2(1280,455)*ratio
 
 func _initial_fixture() -> int:
 	if OS.get_cmdline_user_args().has("--connected-preview"): return 13

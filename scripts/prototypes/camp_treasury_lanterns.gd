@@ -1,3 +1,4 @@
+@tool
 extends Node3D
 ## Two independent lantern panes and nearby warm lights; window glass stays steady.
 const MATERIAL_KEYS := ["LanternGlass_Left", "LanternGlass_Right"]

@@ -7,14 +7,13 @@ var slider: HSlider
 var billboard: Sprite2D
 var camp: Node2D
 var map_canvas: Control
-var guards: Node3D
 var lanterns: Node3D
 var building_visual: Node3D
 func _ready() -> void:
 	get_window().content_scale_size = Vector2i(1440,900)
 	get_window().size = Vector2i(1440,900)
 	var title := Label.new()
-	title.text = "百宝库 · 修仙守卫与灯火（独立试验）"
+	title.text = "百宝库 · 建筑与灯火（独立试验）"
 	title.add_theme_font_size_override("font_size",24)
 	add_child(title)
 	var bar := HBoxContainer.new()
@@ -39,18 +38,13 @@ func _ready() -> void:
 		button.text = "%d°" % degree
 		button.pressed.connect(func(): set_yaw(degree))
 		bar.add_child(button)
-	var guard_motion := CheckButton.new()
-	guard_motion.text = "守卫待机"
-	guard_motion.button_pressed = true
-	guard_motion.toggled.connect(func(enabled: bool): guards.set_playing(enabled))
-	bar.add_child(guard_motion)
 	var lantern_motion := CheckButton.new()
 	lantern_motion.text = "灯笼明暗"
 	lantern_motion.button_pressed = true
 	lantern_motion.toggled.connect(func(enabled: bool): lanterns.set_flicker_enabled(enabled))
 	bar.add_child(lantern_motion)
 	var help := Label.new()
-	help.text = "左侧：实时3D模型　|　右侧：营地对照。守卫错开呼吸与巡视；灯笼暖光缓缓明暗。两个开关可分别对比。"
+	help.text = "左侧：实时3D模型　|　右侧：营地对照。灯笼暖光缓缓明暗，可切换为恒定灯光。"
 	add_child(help)
 	var views := HBoxContainer.new()
 	views.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -78,28 +72,23 @@ func _ready() -> void:
 	env.environment.background_mode = Environment.BG_COLOR
 	env.environment.background_color = Color(0.08,0.1,0.13,0)
 	env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.environment.ambient_light_color = Color(0.70,0.72,0.73)
-	env.environment.ambient_light_energy = 0.6
+	env.environment.ambient_light_color = Color(0.63,0.67,0.72)
+	env.environment.ambient_light_energy = 0.50
 	world.add_child(env)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-55,-35,0)
-	sun.light_color = Color(0.98,0.95,0.90)
-	sun.light_energy = 1.1
+	sun.light_color = Color(0.85,0.90,0.95)
+	sun.light_energy = 0.95
 	sun.shadow_enabled = true
 	world.add_child(sun)
 	model = Node3D.new()
 	world.add_child(model)
 	building_visual = load("res://resources/prototypes/camp_treasury_3d/treasury.glb").instantiate()
 	model.add_child(building_visual)
-	guards = load("res://scripts/prototypes/camp_treasury_guards.gd").new()
-	guards.name = "Guards"
-	model.add_child(guards)
 	for node in model.find_children("*","MeshInstance3D",true,false):
 		for surface in range(node.mesh.get_surface_count()):
 			var material: StandardMaterial3D = node.get_active_material(surface).duplicate()
-			# Preserve bronze/ceramic roughness and the authored untextured colours.
-			# A single restrained tint keeps the candidate close to the camp palette.
-			material.albedo_color *= Color(0.73, 0.72, 0.69)
+			preload("res://scripts/prototypes/camp_building_palette.gd").apply(material)
 			if material.emission_enabled:
 				material.emission = Color(0.7, 0.23, 0.025)
 				material.emission_energy_multiplier = 0.45
@@ -134,7 +123,6 @@ func _ready() -> void:
 	# glTF front (-Y Blender) becomes +Z Godot; view from +X/+Z shows entrance.
 	set_yaw(0)
 	if OS.get_cmdline_user_args().has("--capture-3d"): call_deferred("capture_views")
-	if OS.get_cmdline_user_args().has("--capture-guards"): call_deferred("capture_guards")
 func fit_map() -> void:
 	if not is_instance_valid(camp): return
 	var scale_factor := minf(map_canvas.size.x/1200.0,map_canvas.size.y/1050.0)
@@ -154,36 +142,9 @@ func capture_views() -> void:
 		assert(model.basis.y.is_equal_approx(Vector3.UP))
 		assert(is_equal_approx(model.rotation_degrees.y,float(value)))
 		await get_tree().process_frame
-		await RenderingServer.frame_post_draw
+		RenderingServer.force_draw(false)
 		get_viewport().get_texture().get_image().save_png("res://Docs/Artifacts/camp-tilemap-exploration/treasury-3d-%d.png" % value)
 		viewport.get_texture().get_image().save_png("res://art/candidates/camp-treasury-3d-v1/preview-%d.png" % value)
 	print("PASS treasury 3D: loaded GLB; yaw 0/90/180/270 captured; upright model with fixed camera")
 	get_tree().quit()
 
-func capture_guards() -> void:
-	set_yaw(0)
-	var directory := "res://art/candidates/camp-treasury-3d-v1/guard-frames"
-	DirAccess.make_dir_recursive_absolute(directory)
-	# One full shared cycle, with separate starting phases; seamless preview loop.
-	for frame in range(64):
-		guards.seek_preview(float(frame) / 8.0)
-		lanterns.seek_preview(float(frame) / 8.0)
-		await get_tree().process_frame
-		await RenderingServer.frame_post_draw
-		viewport.get_texture().get_image().save_png("%s/frame-%03d.png" % [directory, frame])
-		if frame == 0:
-			get_viewport().get_texture().get_image().save_png("res://Docs/Artifacts/camp-tilemap-exploration/treasury-guards-ingame.png")
-	# Offline portrait only; the live camp camera retains the normal building view.
-	building_visual.hide()
-	lanterns.hide()
-	guards.guards[1].hide()
-	camera.size = 2.35
-	camera.position = Vector3(0.58, 1.90, 9.14)
-	camera.look_at(Vector3(-1.62, 0.94, 3.14))
-	guards.seek_preview(0.0)
-	lanterns.seek_preview(0.0)
-	await get_tree().process_frame
-	await RenderingServer.frame_post_draw
-	viewport.get_texture().get_image().save_png("res://art/candidates/camp-treasury-3d-v1/guard-v3-closeup.png")
-	print("PASS guard capture: 64 frames at 8 FPS; two independently phased skeletons")
-	get_tree().quit()

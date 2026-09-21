@@ -166,6 +166,7 @@ func _adapt_remote_modules(remote_modules: Dictionary) -> Dictionary:
 	var default_profile: Dictionary = _load_json("res://data/config/default_profile.json")
 	for preset in progression.get("newPlayerPresets", []):
 		if bool(preset.get("isDefault", false)) and preset.get("payload") is Dictionary:
+			if preset["payload"].has("onboardingRuntimeEnabled") and not bool(preset["payload"]["onboardingRuntimeEnabled"]): continue
 			default_profile = preset["payload"].duplicate(true)
 			break
 	var assets_by_code := _index_by_code(base.get("assets", []))
@@ -175,6 +176,8 @@ func _adapt_remote_modules(remote_modules: Dictionary) -> Dictionary:
 	var maps := _adapt_maps(remote_modules["maps"], assets_by_code, reward_packs)
 	var expedition := _adapt_expedition(remote_modules["expedition"], maps, assets_by_code)
 	var ling_pu := _adapt_economy(remote_modules["economy"])
+	if remote_modules["economy"].get("productionRuntime") == "resource_service":
+		ling_pu = _load_json("res://data/config/ling_pu_config.json").get("ling_pu", {})
 	if combat.get("encounters", []).is_empty() or maps.is_empty() or expedition.is_empty(): return {}
 	return {
 		"localization": localization,
@@ -198,6 +201,7 @@ func has_formal_map_combat(combat: Dictionary) -> bool:
 func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Dictionary, loot_pools: Dictionary) -> Dictionary:
 	var skills: Array = []
 	for row in module.get("skills", []):
+		if module.has("skillRuntimeEnabled") and not bool(module["skillRuntimeEnabled"]) and not row.get("enemyRuntime") is Dictionary: continue
 		var skill: Dictionary = row.duplicate(true)
 		skill["id"] = str(row.get("code", ""))
 		var status := _adapt_skill_status(row.get("effects", []))
@@ -207,6 +211,11 @@ func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Diction
 			for key in ["useBelowHpPercent", "warningTicks", "appliesStatus"]:
 				if runtime.has(key): skill[key] = runtime[key]
 		skills.append(skill)
+	if module.has("skillRuntimeEnabled") and not bool(module["skillRuntimeEnabled"]):
+		var embedded: Dictionary = _load_embedded_combat("res://data/config/combat_d0.json")
+		var existing_ids: Array = skills.map(func(skill): return str(skill.get("id", "")))
+		for skill in embedded.get("skills", []):
+			if str(skill.get("id", "")) not in existing_ids: skills.append(skill)
 	var enemies_by_code: Dictionary = {}
 	for row in module.get("enemies", []):
 		var enemy := {
@@ -227,6 +236,7 @@ func _adapt_combat(module: Dictionary, assets: Dictionary, reward_packs: Diction
 		enemies_by_code[enemy["id"]] = enemy
 	var encounters: Array = []
 	for row in module.get("encounters", []):
+		if row.get("design") is Dictionary and row["design"].get("rewardState") == "runtime_package": continue
 		var enemies: Array = []
 		for member in row.get("members", []):
 			var enemy_code := str(member.get("enemyCode", ""))
@@ -287,6 +297,7 @@ func _adapt_maps(module: Dictionary, assets: Dictionary, reward_packs: Dictionar
 	var result: Dictionary = {}
 	for row in module.get("maps", []):
 		if str(row.get("status", "active")) != "active" or row.get("terrainDocument") == null: continue
+		var continuous: bool = row.get("runtimeDocument") is Dictionary and int(row["runtimeDocument"].get("positionVersion", 0)) == 2
 		var objects: Array = []
 		for placement in row.get("placements", []):
 			var prototype: Dictionary = prototypes.get(str(placement.get("prototypeCode", "")), {})
@@ -294,16 +305,26 @@ func _adapt_maps(module: Dictionary, assets: Dictionary, reward_packs: Dictionar
 			var object: Dictionary = prototype.get("interactionConfig", {}).duplicate(true) if prototype.get("interactionConfig") is Dictionary else {}
 			object.merge({
 				"id": str(placement.get("instanceCode", "")), "kind": str(prototype.get("kind", "")),
-				"x": int(placement.get("x", 0)), "y": int(placement.get("y", 0)),
+				"x": float(placement.get("x", 0)) if continuous else int(placement.get("x", 0)), "y": float(placement.get("y", 0)) if continuous else int(placement.get("y", 0)),
 				"title": str(prototype.get("title", "")), "description": str(prototype.get("description", "")),
-				"encounterId": str(prototype.get("encounterCode", "")), "refreshType": str(prototype.get("refreshType", "permanent")),
+				"encounterId": str(object.get("encounterId", prototype.get("encounterCode", ""))) if continuous else str(prototype.get("encounterCode", "")), "refreshType": str(prototype.get("refreshType", "permanent")),
 			}, true)
 			var reward_code := str(placement.get("firstRewardPackCode", prototype.get("rewardPackCode", "")))
 			var reward := _single_reward(reward_packs.get(reward_code, {}), assets)
 			if not reward.is_empty(): object["reward"] = reward
+			if continuous:
+				var override: Dictionary = placement.get("overrideConfig", {}) if placement.get("overrideConfig") is Dictionary else {}
+				if override.get("sourceKeys") is Array:
+					for key in object.keys():
+						if key not in override["sourceKeys"]: object.erase(key)
 			objects.append(object)
 		var map_id := str(row.get("code", ""))
 		var terrain: Dictionary = row.get("terrainDocument", {}) if row.get("terrainDocument") is Dictionary else {}
+		if continuous:
+			var restored: Dictionary = row["runtimeDocument"].duplicate(true)
+			restored.merge({"id": map_id, "mapId": map_id, "schemaVersion": row.get("schemaVersion", 4), "name": row.get("displayName", map_id), "nameKey": row.get("nameKey", ""), "worldSize": [row.get("activeWidth"), row.get("activeHeight")], "entryX": row.get("entryX"), "entryY": row.get("entryY"), "objects": objects, "visual": row.get("visualConfig", {}), "regionsDocument": terrain.get("document", {}), "expeditionRule": row.get("expeditionRule", {}), "mapNumber": row.get("mapNumber", 1), "unlockCondition": row.get("unlockCondition"), "configRevision": module.get("sourceRevision", 0)}, true)
+			result[map_id] = restored
+			continue
 		result[map_id] = {
 			"id": map_id, "name": str(row.get("displayName", row.get("nameKey", map_id))),
 			"nameKey": str(row.get("nameKey", "")), "mapNumber": int(row.get("mapNumber", 0)),
@@ -325,6 +346,7 @@ func _adapt_expedition(module: Dictionary, maps: Dictionary, assets: Dictionary)
 	for row in module.get("items", []):
 		var asset_code := str(row.get("assetCode", ""))
 		var asset: Dictionary = assets.get(asset_code, {})
+		if row.get("parameterJson") is Dictionary and row["parameterJson"].get("foodOnly", false): continue
 		items.append({
 			"id": asset_code, "inventoryId": asset_code if str(asset.get("storageKind", "")) == "inventory" else null,
 			"nameKey": str(asset.get("nameKey", asset_code)),
@@ -334,9 +356,12 @@ func _adapt_expedition(module: Dictionary, maps: Dictionary, assets: Dictionary)
 	for row in module.get("foodRest", []):
 		var asset_code := str(row.get("assetCode", ""))
 		var asset: Dictionary = assets.get(asset_code, {})
+		var food_weight: int = int(asset.get("weight", rule.get("defaultLootWeight", 1)))
+		for item_rule in module.get("items", []):
+			if item_rule.get("assetCode") == asset_code and item_rule.get("weightOverride") != null: food_weight = int(item_rule["weightOverride"])
 		food_items.append({
 			"itemId": asset_code, "nameKey": str(asset.get("nameKey", asset_code)),
-			"weight": int(asset.get("weight", rule.get("defaultLootWeight", 1))), "grainRestored": int(row.get("grainRestored", 0)),
+			"weight": food_weight, "grainRestored": int(row.get("grainRestored", 0)),
 		})
 	var map_rules: Array = []
 	for map_id in maps:

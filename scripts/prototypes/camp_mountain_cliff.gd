@@ -42,3 +42,31 @@ static func build(parent: Node2D, edges: Array[Dictionary], rims: Node2D) -> voi
 		lip.uv = lip_uv
 		lip.color = Color(0.48,0.57,0.43)
 		rims.add_child(lip)
+
+		# A shallow rocky shoulder overlaps the paving and exposed face, breaking the cut edge.
+		var shoulder := Polygon2D.new()
+		shoulder.texture = ROCK
+		shoulder.material = material
+		shoulder.polygon = PackedVector2Array([
+			a-Vector2(0,10),a.lerp(b,0.25)-Vector2(0,18+irregularity),
+			a.lerp(b,0.63)-Vector2(0,14),b-Vector2(0,10),
+			b+Vector2(0,6),a.lerp(b,0.70)+Vector2(0,10),a+Vector2(0,6)])
+		var shoulder_uv := PackedVector2Array()
+		for p in shoulder.polygon: shoulder_uv.append(Vector2(p.x*3.0,p.y*3.0))
+		shoulder.uv = shoulder_uv
+		shoulder.color = Color(0.48,0.53,0.44,0.9)
+		rims.add_child(shoulder)
+		# Small uneven scree pockets at the foot; kept shallow to leave the lane readable.
+		for i in range(3):
+			var t := (float(i)+0.45)/3.0
+			var foot := a.lerp(b,t)+Vector2(0,depth-2)
+			var radius := 6.0+3.0*absf(sin(foot.x*0.21))
+			var scree := Polygon2D.new()
+			scree.texture = ROCK
+			scree.material = material
+			scree.polygon = PackedVector2Array([foot+Vector2(-radius,2),foot+Vector2(-radius*0.5,-5),foot+Vector2(radius*0.3,-7),foot+Vector2(radius,3),foot+Vector2(2,7)])
+			var scree_uv := PackedVector2Array()
+			for p in scree.polygon: scree_uv.append(p*4.0)
+			scree.uv = scree_uv
+			scree.color = Color(0.47,0.52,0.48)
+			parent.add_child(scree)

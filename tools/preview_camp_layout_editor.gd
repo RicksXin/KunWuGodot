@@ -6,6 +6,9 @@ func run() -> void:
 	var panel = load("res://addons/camp_layout_editor/panel.gd").new()
 	root.add_child(panel)
 	await process_frame
+	# Retain the 2D-image interaction fixture; live 3D has its own validation.
+	for item in panel.model.data.buildings: item.erase("model_3d")
+	panel.canvas.refresh()
 	panel.canvas.fit()
 	panel.select(1)
 	await process_frame
