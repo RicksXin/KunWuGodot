@@ -10,6 +10,7 @@ func run() -> void:
 	for item in panel.model.data.buildings: item.erase("model_3d")
 	panel.canvas.refresh()
 	panel.canvas.fit()
+	panel.canvas.snap_to_grid = true
 	panel.select(1)
 	await process_frame
 	await RenderingServer.frame_post_draw

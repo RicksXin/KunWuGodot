@@ -907,6 +907,11 @@ func check_map_object_requirements(requirements: Dictionary) -> Dictionary:
 	return {"ok": true, "message": ""}
 
 func resolve_map_object_action(object: Dictionary, action_id: String) -> Dictionary:
+	# Lamp repair is permanent: stale/double submissions must not grant flags or ore again.
+	var lamp_id := str(object.get("id", ""))
+	if lamp_id in ["m1_event_lamp_01", "m1_event_lamp_02", "m1_event_lamp_03"]:
+		if map_state_value("map_01.landmarks.%s.state" % lamp_id, "") == "LAMP_REPAIRED" or bool(profile.get("completedMapObjects", {}).get(map_object_key("map_01", lamp_id), false)):
+			return {"ok": false, "message": "这盏阵灯已经修复", "alreadyCompleted": true}
 	var selected: Dictionary = {}
 	for raw_action in object.get("choices", []):
 		if raw_action is Dictionary and str(raw_action.get("id", "")) == action_id:

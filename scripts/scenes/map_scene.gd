@@ -1,6 +1,8 @@
 extends Node2D
 
 const Navigation = preload("res://scripts/maps/map_navigation.gd")
+const Lamp = preload("res://scripts/prototypes/map01_formation_lamp.gd")
+const LAMP_IDS := ["m1_event_lamp_01", "m1_event_lamp_02", "m1_event_lamp_03"]
 const Actor = preload("res://scripts/maps/map_actor.gd")
 const DATA_PATH := "res://data/maps/map_01.json"
 const VIEW := Vector2i(817, 375)
@@ -19,6 +21,7 @@ var expedition_ui: Control
 var return_platform: Sprite2D
 var fog: Node2D
 var object_nodes: Dictionary = {}
+var lamp_nodes: Dictionary = {}
 var proximity_object: Dictionary = {}
 var interact_button: Button
 var stats_label: Label
@@ -281,7 +284,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not is_instance_valid(expedition_ui) or expedition_ui.call("_map_input_blocked"):
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
+		if event.keycode == KEY_E:
+			_interact()
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_ESCAPE:
 			expedition_ui.call("request_return")
 		elif event.keycode == KEY_TAB:
 			show_routes = not show_routes
@@ -395,6 +401,14 @@ func _build_expedition() -> void:
 		var host := Node2D.new()
 		host.position = Vector2(object.x,object.y)
 		host.z_index = 5
+		if object.id in LAMP_IDS:
+			var lamp := Lamp.new()
+			lamp.configure(str(Game.map_state_value("map_01.landmarks.%s.state" % object.id,"")))
+			host.add_child(lamp)
+			add_child(host)
+			object_nodes[object.id] = host
+			lamp_nodes[object.id] = lamp
+			continue
 		var texture_path: String = definition.visual.markerTextures.get(object.kind, definition.visual.markerTextures.get("resource", ""))
 		var sprite := Sprite2D.new()
 		sprite.texture = load(texture_path)
@@ -412,13 +426,22 @@ func _build_expedition() -> void:
 func refresh_state() -> void:
 	if not is_instance_valid(stats_label) or Game.profile.get("expedition") == null: return
 	var expedition: Dictionary = Game.profile.expedition
-	stats_label.text = "灵粮 %d · 休整 %d · WASD行走" % [expedition.remainingGrain, expedition.restUsesRemaining]
+	var repaired_count := 0
+	for id in LAMP_IDS:
+		if Game.map_state_value("map_01.landmarks.%s.state" % id,"") == "LAMP_REPAIRED": repaired_count += 1
+	stats_label.text = "灵粮 %d · 休整 %d · 阵灯 %d/3" % [expedition.remainingGrain, expedition.restUsesRemaining,repaired_count]
 	proximity_object = {}
 	var nearest := INF
 	for object in definition.objects:
 		var point := Vector2(object.x,object.y)
 		var completed := bool(Game.profile.completedMapObjects.get(Game.map_object_key("map_01",object.id),false))
-		object_nodes[object.id].visible = Game.is_revealed(int(point.x),int(point.y)) and not completed
+		var is_lamp := lamp_nodes.has(object.id)
+		object_nodes[object.id].visible = Game.is_revealed(int(point.x),int(point.y)) and (is_lamp or not completed)
+		if is_lamp:
+			var state := str(Game.map_state_value("map_01.landmarks.%s.state" % object.id,""))
+			lamp_nodes[object.id].apply_state(state)
+			object_nodes[object.id].z_index = 1 if actor.position.y > point.y else 3
+			completed = completed or state == "LAMP_REPAIRED"
 		var targets: Array = [[object.x,object.y]] + object.get("activationPoints",[])
 		for target in targets:
 			var at := Vector2(target[0],target[1])
@@ -430,10 +453,12 @@ func refresh_state() -> void:
 	if actor.position.distance_to(return_platform.position) <= float(definition.returnPoint.radius):
 		proximity_object = {"id":"__return_camp__","title":"归营阵 · 返回营地"}
 	interact_button.visible = not proximity_object.is_empty() and not expedition_ui.call("_map_input_blocked")
-	if interact_button.visible: interact_button.text = str(proximity_object.get("title","互动"))
+	if interact_button.visible: interact_button.text = "E · "+str(proximity_object.get("title","互动"))
 	fog.queue_redraw()
 
 func _interact() -> void:
+	if expedition_ui.call("_map_input_blocked"): return
+	refresh_state()
 	if proximity_object.is_empty(): return
 	route.clear()
 	held_directions.clear()

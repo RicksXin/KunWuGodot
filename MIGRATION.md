@@ -8,7 +8,7 @@
 | Cocos 概念 | Godot 对应 | 当前事实 |
 |---|---|---|
 | `Boot.scene` / `AppRoot` | `scenes/boot.tscn` + `Game` | 启动、配置加载、场景切换 |
-| `Camp.scene` | `scenes/camp.tscn` + `camp.gd` | 营地横滑、建筑与固定 HUD |
+| `Camp.scene` | `scenes/camp.tscn` + `scripts/scenes/camp_landscape.gd`（继承 `camp.gd` 业务） | 正式 1280×720 横版营地、平移缩放、建筑与固定 HUD |
 | `Map.scene` / `TiledMap` | `scenes/map.tscn` + `scripts/scenes/map_scene.gd` + `scripts/maps/map_navigation.gd` | `817×375` 横屏探索页、迷雾、Marker、拖动与缩放；离开时恢复竖屏 |
 | Map01 布局与内容 | `data/maps/map_01.json` + `data/maps/map_01_regions.json` | 高清连续移动、碰撞、对象、互动与地图文案事实源 |
 | Map01 视觉 | `scenes/maps/map_01.tscn` + `assets/maps/map_01/map01_background.png` | 唯一正式高清背景；不承载碰撞或对象坐标 |
@@ -57,3 +57,10 @@ TileMapDual `v5.0.2` 插件仅作为后续地图可能使用的通用扩展工�
 
 自动验证不能替代视觉验收。地图背景、网格、Marker、迷雾、拖动和缩放仍需在 `375×817` 逻辑视口
 与目标设备上人工确认。
+
+## 2026-09-24：横版营地晋升正式入口
+
+用户确认当前营地 Demo 的视觉作为正式营地，正式营地横版。`scenes/camp.tscn` 接入 `camp_landscape.gd`，复用已验收的 `camp_tile_rebuild.gd` 及素材，不复制布局。`data/prototypes/camp_tile_rebuild.json` 为正式营地与编辑器共享布局；相关 prototypes 路径保留以避免破坏资源引用。
+原 `camp.gd` 保留建筑业务与存档命令，旧竖屏大厅不再从启动/归营进入。弹窗维持旧内容坐标，在横屏中整体居中适配；Map01 保持其自身横屏尺寸，归营重新应用营地横屏。实验工具仍从设置进入。
+
+玩家视角默认 1.1 倍，缩放限定 1.0～1.35 倍并限制拖动中心，不能全览营地。HUD 直接复用原头像、资源、任务、底部五图标及回调，仅适配横版位置和等比显示；无全景按钮。编辑器保留完整查看能力。

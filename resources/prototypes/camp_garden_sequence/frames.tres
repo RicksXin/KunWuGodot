@@ -1,0 +1,139 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://cljd5ohd8tl7x"]
+
+[ext_resource type="Texture2D" uid="uid://c62huutrwjyvc" path="res://resources/prototypes/camp_garden_sequence/sheet.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="F0"]
+atlas = ExtResource("1")
+region = Rect2(0, 0, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F1"]
+atlas = ExtResource("1")
+region = Rect2(1088, 0, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F2"]
+atlas = ExtResource("1")
+region = Rect2(2176, 0, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F3"]
+atlas = ExtResource("1")
+region = Rect2(3264, 0, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F4"]
+atlas = ExtResource("1")
+region = Rect2(0, 832, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F5"]
+atlas = ExtResource("1")
+region = Rect2(1088, 832, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F6"]
+atlas = ExtResource("1")
+region = Rect2(2176, 832, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F7"]
+atlas = ExtResource("1")
+region = Rect2(3264, 832, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F8"]
+atlas = ExtResource("1")
+region = Rect2(0, 1664, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F9"]
+atlas = ExtResource("1")
+region = Rect2(1088, 1664, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F10"]
+atlas = ExtResource("1")
+region = Rect2(2176, 1664, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F11"]
+atlas = ExtResource("1")
+region = Rect2(3264, 1664, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F12"]
+atlas = ExtResource("1")
+region = Rect2(0, 2496, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F13"]
+atlas = ExtResource("1")
+region = Rect2(1088, 2496, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F14"]
+atlas = ExtResource("1")
+region = Rect2(2176, 2496, 1088, 832)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="F15"]
+atlas = ExtResource("1")
+region = Rect2(3264, 2496, 1088, 832)
+filter_clip = true
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("F0")
+}, {
+"duration": 1.0,
+"texture": SubResource("F1")
+}, {
+"duration": 1.0,
+"texture": SubResource("F2")
+}, {
+"duration": 1.0,
+"texture": SubResource("F3")
+}, {
+"duration": 1.0,
+"texture": SubResource("F4")
+}, {
+"duration": 1.0,
+"texture": SubResource("F5")
+}, {
+"duration": 1.0,
+"texture": SubResource("F6")
+}, {
+"duration": 1.0,
+"texture": SubResource("F7")
+}, {
+"duration": 1.0,
+"texture": SubResource("F8")
+}, {
+"duration": 1.0,
+"texture": SubResource("F9")
+}, {
+"duration": 1.0,
+"texture": SubResource("F10")
+}, {
+"duration": 1.0,
+"texture": SubResource("F11")
+}, {
+"duration": 1.0,
+"texture": SubResource("F12")
+}, {
+"duration": 1.0,
+"texture": SubResource("F13")
+}, {
+"duration": 1.0,
+"texture": SubResource("F14")
+}, {
+"duration": 1.0,
+"texture": SubResource("F15")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 8.0
+}]

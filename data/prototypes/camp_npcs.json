@@ -1,0 +1,32 @@
+[
+  {
+    "id": "traveler",
+    "name": "青衣行脚者",
+    "texture": "res://assets/debug/wuxia_characters/107-1787907675175-frames64-oldfix2.png",
+    "spawn": [
+      3,
+      4
+    ],
+    "speed": 37
+  },
+  {
+    "id": "elder",
+    "name": "白发长者",
+    "texture": "res://assets/debug/wuxia_characters/1787905054773-frames64-oldfix2.png",
+    "spawn": [
+      7,
+      8
+    ],
+    "speed": 28
+  },
+  {
+    "id": "cultivator",
+    "name": "红衣女修",
+    "texture": "res://assets/debug/wuxia_characters/1787925244917-frames64.png",
+    "spawn": [
+      11,
+      10
+    ],
+    "speed": 34
+  }
+]

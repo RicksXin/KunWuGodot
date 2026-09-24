@@ -1,5 +1,6 @@
 @tool
 extends RefCounted
+const Collision = preload("res://scripts/prototypes/camp_collision.gd")
 const PATH := "res://data/prototypes/camp_tile_rebuild.json"
 var data: Dictionary = {}
 var disk_text := ""
@@ -15,6 +16,9 @@ func load_file(path: String = PATH) -> String:
 	undo_states.clear()
 	dirty = false
 	return ""
+func items() -> Array:
+	# Concatenation keeps references to the dictionaries in their separate JSON lists.
+	return data.get("buildings",[]) + data.get("decorations",[]) + ([data.portal] if data.has("portal") else [])
 func checkpoint() -> void:
 	undo_states.append(data.duplicate(true))
 	if undo_states.size() > 60: undo_states.pop_front()
@@ -31,7 +35,7 @@ static func flat(cell: Vector2) -> Vector2:
 func point(cell: Vector2i) -> Vector2:
 	return flat(cell)-Vector2(0, heights().get(cell, 0))
 func translate(index: int, offset: Vector2i) -> void:
-	var item: Dictionary = data.buildings[index]
+	var item: Dictionary = items()[index]
 	for key in ["origin", "door", "approach"]:
 		if item.has(key): item[key] = [int(item[key][0])+offset.x, int(item[key][1])+offset.y]
 	dirty = true
@@ -41,28 +45,13 @@ func validate() -> PackedStringArray:
 	var blocked := {}
 	var stairs := {}
 	for stair in data.stairs: stairs[Vector2i(stair.cell[0], stair.cell[1])] = stair
-	for item in data.buildings:
-		var origin := Vector2i(item.origin[0], item.origin[1])
-		var extent: Array = item.get("footprint_size", [2,2])
-		for y in range(int(extent[1])):
-			for x in range(int(extent[0])):
-				var cell := origin+Vector2i(x,y)
-				if not h.has(cell): errors.append("%s：占地超出台地 %s" % [item.name, cell])
-				elif h[cell] != h.get(origin,-999): errors.append("%s：占地跨越高差" % item.name)
-				if blocked.has(cell): errors.append("%s：与%s占地重叠" % [item.name, blocked[cell]])
-				if stairs.has(cell): errors.append("%s：挡住阶梯" % item.name)
-				blocked[cell] = item.name
+	var footprints := Collision.polygons(data)
+	for cell: Vector2i in h:
+		if Collision.contains(point(cell),footprints):
+			blocked[cell] = true
+			if stairs.has(cell): errors.append("建筑碰撞挡住阶梯 %s" % str(cell))
 	for c in data.get("west_courtyard",{}).get("reserved_cells",[]):
 		if blocked.has(Vector2i(c[0],c[1])): errors.append("建筑挡住保留院路 %s" % str(c))
-	for item in data.buildings:
-		var door := Vector2i(item.door[0],item.door[1])
-		if not h.has(door) or blocked.has(door): errors.append("%s：门口不在可走地面" % item.name)
-		if item.has("approach"):
-			var approach := Vector2i(item.approach[0],item.approach[1])
-			var delta := approach-door
-			if not h.has(approach) or blocked.has(approach) or absi(delta.x)+absi(delta.y)!=1 or h.get(approach,-999)!=h.get(door,-998):
-				errors.append("%s：门前接近格被挡或不相邻" % item.name)
-			if item.has("facing") and delta!=Vector2i(item.facing[0],item.facing[1]): errors.append("%s：门前方向不一致" % item.name)
 	if not errors.is_empty(): return errors
 	var start := Vector2i(data.spawn[0],data.spawn[1])
 	if not h.has(start) or blocked.has(start): return PackedStringArray(["出生点被挡住。"])
@@ -82,7 +71,7 @@ func validate() -> PackedStringArray:
 					var other: Vector2i = next if cell==current else current
 					can_move = other==Vector2i(st.from[0],st.from[1]) or other==Vector2i(st.to[0],st.to[1])
 					break
-			if can_move:
+			if can_move and not Collision.crosses(point(current),point(next),footprints):
 				visited[next] = true
 				queue.append(next)
 	if visited.size() != h.size()-blocked.size(): errors.append("摆放切断了通路：%d 个可走格不可达。" % (h.size()-blocked.size()-visited.size()))

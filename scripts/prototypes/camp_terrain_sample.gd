@@ -5,7 +5,6 @@ const Terrain = preload("res://scripts/prototypes/camp_dual_terrain.gd")
 var terrain: Terrain
 var world: Node2D
 var exterior: Control
-var mountain_mist: TextureRect
 var structure: Node2D
 var marker: Polygon2D
 var status: Label
@@ -106,8 +105,11 @@ func _ready() -> void:
 	marker.color = Color("e9bc65")
 	marker.visible = false
 	world.add_child(marker)
-	_build_mountain_mist()
 	_build_hud()
+	# Screen-wide foreground mist must remain below the fixed controls.
+	for control in get_children():
+		if control is Control and control != background and control != exterior:
+			control.z_index = 10
 	terrace = preload("res://scripts/prototypes/camp_terrace_slice.gd").new()
 	world.add_child(terrace)
 	terrace.feedback.connect(func(text: String): status.text = text)
@@ -118,10 +120,6 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if is_instance_valid(exterior):
 		exterior.sync_camera(world.position,current_pattern in [11,15],world.scale.x)
-		if current_pattern == 15 and is_instance_valid(mountain_mist):
-			var ratio: float = world.scale.x / exterior.reference_zoom
-			mountain_mist.position = world.position + (Vector2(0,145)-exterior.reference_camera)*ratio
-			mountain_mist.size = Vector2(1280,455)*ratio
 
 func _initial_fixture() -> int:
 	if OS.get_cmdline_user_args().has("--connected-preview"): return 13
@@ -312,33 +310,9 @@ func _build_hud() -> void:
 	status = _label("原尺寸像素预览 · 拖动地图查看 · 修改仅本次有效", Vector2(28,672), 16)
 	_label("内置纹理候选已确认 / 不写入存档", Vector2(865,674), 15)
 
-func _build_mountain_mist() -> void:
-	mountain_mist = TextureRect.new()
-	mountain_mist.name = "MountainFootMist"
-	mountain_mist.position = Vector2(0,145)
-	mountain_mist.size = Vector2(1280,455)
-	mountain_mist.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	mountain_mist.texture = preload("res://resources/prototypes/camp_exterior_candidate/sky.png")
-	mountain_mist.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var shader := Shader.new()
-	shader.code = """shader_type canvas_item;
-	void fragment() {
-		float side = pow(abs(UV.x-0.5)*2.0,0.6);
-		float line = mix(0.88,0.57,side);
-		vec3 cloud = texture(TEXTURE,vec2(UV.x,0.5+UV.y*0.5)).rgb;
-		float detail = (cloud.r+cloud.g+cloud.b)/3.0;
-		float haze = smoothstep(line,1.02,UV.y+detail*0.06);
-		COLOR = vec4(mix(cloud*vec3(0.43,0.49,0.57),vec3(0.12,0.17,0.21),0.45),haze*0.88);
-	}"""
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	mountain_mist.material = material
-	add_child(mountain_mist)
-
 func load_fixture(index: int) -> void:
 	current_pattern = index
 	exterior.set_cloudscape(index == 15)
-	mountain_mist.visible = index == 15
 	environment_toggle.text = "显示路线" if index in [14,15] else "环境候选"
 	environment_toggle.set_pressed_no_signal(false if index in [14,15] else exterior.enabled)
 	layout_selector.select(index)

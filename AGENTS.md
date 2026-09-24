@@ -60,7 +60,7 @@
 - 战斗数据流保持 `CombatCommand → 结算器 → CombatEvent → 表现层`，业务规则不得回写到纯 UI
   节点。
 - 七维内部字段名冻结：`strength magic technique speed constitution armor resistance`。
-- UI 设计基准保持 `375×817`；营地全景与固定 HUD 的层级、横滑关系不得破坏。
+- UI 旧面板基准保留 `375×817`；按用户 2026-09-24 确认，正式营地为 `1280×720` 横版，复用已确认营地视觉，原 HUD 不改版，仅适配横版位置与等比显示，不随场景平移缩放；玩家保持放大局部视角并限制缩放，不能全览营地；旧业务面板居中适配。
 - 像素素材使用 nearest filtering；除非素材明确需要，不启用 mipmaps 或线性过滤。
 - 存档只通过现有 `Game` autoload 和 `user://kunwu_profile.json` 流程读写；测试不得无提示覆盖用户存档。
 - 保留与当前任务无关的用户或其他代理改动，不顺带重构。

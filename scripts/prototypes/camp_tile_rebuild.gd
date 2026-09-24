@@ -2,6 +2,8 @@ extends Node2D
 signal feedback(text: String)
 const Terrain = preload("res://scripts/prototypes/camp_dual_terrain.gd")
 var heights: Dictionary = {}
+const Collision = preload("res://scripts/prototypes/camp_collision.gd")
+var footprints: Array[PackedVector2Array] = []
 var blocked: Dictionary = {}
 var stair_cells: Dictionary = {}
 var graph := AStar2D.new()
@@ -10,6 +12,11 @@ var data: Dictionary
 var definition_override: Dictionary = {}
 var layers: Array[TileMapLayer] = []
 var buildings: Node2D
+var mountain_mist: Node2D
+var npcs: Node2D
+var decorations: Node2D
+var ground_decorations: Node2D
+var portal: Sprite2D
 var depth_sorted: Node2D
 var overlay: Node2D
 var actor: Polygon2D
@@ -38,9 +45,9 @@ func _ready() -> void:
 	_build_stair_landings()
 	_build_rear_slopes()
 	_build_rear_decor("back")
-	for item in data.buildings:
-		for y in range(int(item.get("footprint_size",[2,2])[1])):
-			for x in range(int(item.get("footprint_size",[2,2])[0])): blocked[Vector2i(item.origin[0]+x,item.origin[1]+y)] = true
+	footprints = Collision.polygons(data)
+	for cell: Vector2i in heights:
+		if Collision.contains(point(cell),footprints): blocked[cell] = true
 	for h in [0,48,96]:
 		var level := Node2D.new()
 		add_child(level)
@@ -93,7 +100,10 @@ func _ready() -> void:
 		sprite.texture = preload("res://assets/prototypes/camp_stairs/stairs_fullcamp_x.png") if st.axis=="x" else preload("res://assets/prototypes/camp_stairs/stairs_fullcamp_y.png")
 		sprite.centered = false
 		sprite.position = a-Vector2(72,8)
-		sprite.modulate = Color(0.72,0.77,0.82)
+		var stone_material := ShaderMaterial.new()
+		stone_material.shader = preload("res://scripts/prototypes/camp_stair_stone.gdshader")
+		stone_material.set_shader_parameter("paving",preload("res://resources/prototypes/camp_natural_materials/paving.png"))
+		sprite.material = stone_material
 		add_child(sprite)
 	var id := 0
 	for cell: Vector2i in heights:
@@ -104,7 +114,10 @@ func _ready() -> void:
 	for cell: Vector2i in ids:
 		for axis in [Vector2i.RIGHT,Vector2i.DOWN]:
 			var neighbor: Vector2i = cell+axis
-			if ids.has(neighbor) and can_step(cell,neighbor): graph.connect_points(ids[cell],ids[neighbor])
+			if ids.has(neighbor) and can_step(cell,neighbor) and not Collision.crosses(point(cell),point(neighbor),footprints): graph.connect_points(ids[cell],ids[neighbor])
+	ground_decorations = Node2D.new()
+	ground_decorations.name = "GroundDecorations"
+	add_child(ground_decorations)
 	depth_sorted = Node2D.new()
 	depth_sorted.name = "DepthSortedActors"
 	depth_sorted.y_sort_enabled = true
@@ -114,7 +127,7 @@ func _ready() -> void:
 	depth_sorted.add_child(buildings)
 	for item in data.buildings:
 		var origin := Vector2i(item.origin[0],item.origin[1])
-		var sprite: Sprite2D = preload("res://scripts/prototypes/camp_building_3d_sprite.gd").new() if item.has("model_3d") else Sprite2D.new()
+		var sprite: Sprite2D = preload("res://scripts/prototypes/camp_building_3d_sprite.gd").new() if item.has("model_3d") else (preload("res://scripts/prototypes/camp_building_sequence.gd").new() if item.has("sprite_frames") else Sprite2D.new())
 		sprite.texture = load(item.texture)
 		sprite.scale = Vector2.ONE*220.0/sprite.texture.get_width()
 		sprite.offset.y = -sprite.texture.get_height()*0.5
@@ -132,21 +145,25 @@ func _ready() -> void:
 			sprite.position = point(door)+Vector2(visual_offset[0],visual_offset[1])
 			# Mirror around the authored threshold so the doorway stays on its navigation cell.
 			if item.get("mirror_x",false): sprite.scale.x = -sprite.scale.x
-			var shader := Shader.new()
-			shader.code = """shader_type canvas_item;
-			uniform float alpha_cut = 0.0;
-			void fragment() {
-			 vec4 c = texture(TEXTURE,UV);
-			 if (c.a < alpha_cut) discard;
-			 float timber = smoothstep(0.04,0.16,c.r-c.b)*smoothstep(0.42,0.60,UV.y);
-			 vec3 cold = c.rgb*vec3(0.69,0.77,0.85);
-			 vec3 warm = c.rgb*vec3(1.12,0.94,0.70);
-			 COLOR = vec4(mix(cold,warm,timber*0.70),c.a);
-			}"""
-			var material := ShaderMaterial.new()
-			material.shader = shader
-			material.set_shader_parameter("alpha_cut",float(item.get("alpha_cut",0.0)))
-			sprite.material = material
+			if not item.has("sprite_frames"):
+				var shader := Shader.new()
+				shader.code = """shader_type canvas_item;
+				uniform float alpha_cut = 0.0;
+				void fragment() {
+				 vec4 c = texture(TEXTURE,UV);
+				 if (c.a < alpha_cut) discard;
+				 float timber = smoothstep(0.04,0.16,c.r-c.b)*smoothstep(0.42,0.60,UV.y);
+				 vec3 cold = c.rgb*vec3(0.69,0.77,0.85);
+				 vec3 warm = c.rgb*vec3(1.12,0.94,0.70);
+				 COLOR = vec4(mix(cold,warm,timber*0.70),c.a);
+				}"""
+				var material := ShaderMaterial.new()
+				material.shader = shader
+				material.set_shader_parameter("alpha_cut",float(item.get("alpha_cut",0.0)))
+				sprite.material = material
+		if item.has("sprite_frames"):
+			sprite.configure(item)
+		sprite.z_index = 0 if item.get("occlusion_enabled",true) else -1
 		buildings.add_child(sprite)
 		if item.has("model_3d"): sprite.configure(item)
 		targets.append({"node":ids.get(door,-1),"position":sprite.position,"name":item.name,"visual":sprite})
@@ -159,6 +176,18 @@ func _ready() -> void:
 		label.add_theme_constant_override("outline_size",5)
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		buildings.add_child(label)
+	decorations = Node2D.new()
+	decorations.name = "Decorations"
+	decorations.y_sort_enabled = true
+	depth_sorted.add_child(decorations)
+	for item in data.get("decorations",[]):
+		var prop = preload("res://scripts/prototypes/camp_decoration.gd").new()
+		prop.configure(item)
+		prop.place(item,point(Vector2i(item.origin[0],item.origin[1])))
+		if item.get("ground_decal",false):
+			ground_decorations.add_child(prop)
+		else:
+			decorations.add_child(prop)
 	overlay = Node2D.new()
 	add_child(overlay)
 	for cell: Vector2i in ids:
@@ -185,11 +214,25 @@ func _ready() -> void:
 			arrival.default_color = Color(0.5,1.0,0.45,0.9)
 			overlay.add_child(arrival)
 	overlay.hide()
-	var portal := Sprite2D.new()
-	portal.texture = preload("res://assets/camp/buildings/env_camp_portal.png")
-	portal.scale = Vector2.ONE*220.0/portal.texture.get_width()
-	portal.position = point(Vector2i(data.spawn[0],data.spawn[1]))
-	add_child(portal)
+	if data.has("portal"):
+		var item: Dictionary = data.portal
+		portal = preload("res://scripts/prototypes/camp_building_sequence.gd").new()
+		portal.configure(item)
+		portal.centered = false
+		portal.offset = -Vector2(item.door_anchor[0],item.door_anchor[1])
+		portal.scale = Vector2.ONE*float(item.display_width)/portal.texture.get_width()
+		if item.get("mirror_x",false): portal.scale.x *= -1.0
+		portal.rotation_degrees = float(item.get("rotation_degrees",0.0))
+		var shift: Array = item.get("visual_offset",[0,0])
+		portal.position = point(Vector2i(item.door[0],item.door[1]))+Vector2(shift[0],shift[1])
+		portal.visible = item.get("preview_visible",true)
+	else:
+		portal = Sprite2D.new()
+		portal.texture = preload("res://assets/camp/buildings/env_camp_portal.png")
+		portal.scale = Vector2.ONE*220.0/portal.texture.get_width()
+		portal.position = point(Vector2i(data.spawn[0],data.spawn[1]))
+	portal.name = "Portal"
+	ground_decorations.add_child(portal)
 	route_line = Line2D.new()
 	route_line.width = 3
 	route_line.default_color = Color("e5c575")
@@ -198,6 +241,13 @@ func _ready() -> void:
 	actor.polygon = PackedVector2Array([Vector2(0,-12),Vector2(6,-3),Vector2(0,0),Vector2(-6,-3)])
 	actor.color = Color("f2d883")
 	depth_sorted.add_child(actor)
+	npcs = preload("res://scripts/prototypes/camp_npcs.gd").new()
+	npcs.name = "CampNPCs"
+	depth_sorted.add_child(npcs)
+	npcs.configure(data)
+	mountain_mist = preload("res://scripts/prototypes/camp_mist.gd").new()
+	mountain_mist.z_index = 2
+	add_child(mountain_mist)
 	reset_walk()
 
 func _build_rear_slopes() -> void:

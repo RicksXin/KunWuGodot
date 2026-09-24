@@ -693,6 +693,7 @@
     },
     {
       "id": "m1_dungeon_rockfall",
+      "equipmentRewards": [{"qualityCode": "fa_qi", "quantity": 1}],
       "escapeEnemyHpPercent": 35,
       "firstSoulCrystalReward": 32,
       "repeatSoulCrystalReward": 0,

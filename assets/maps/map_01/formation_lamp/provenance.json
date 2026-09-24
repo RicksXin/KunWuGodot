@@ -1,0 +1,32 @@
+{
+  "status": "Approved",
+  "approvedDate": "2026-09-24",
+  "provider": "built-in imagegen",
+  "model": "not exposed by tool",
+  "sources": [
+    {
+      "file": "source_states.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "279d6bcd5fc2dd3c9c47901c4cb12357f00900c49d1090f97530d997e29b0f9e"
+    },
+    {
+      "file": "source_repaired_states.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "05309eb99d592183a3c2771bfeb6d8847afa4389a4e7d5dc1ac5fca4a755981b"
+    }
+  ],
+  "atlasSha256": "49c58e2aa8580183ad7848c995537f7d71ca7ac0609931859fed2a6cc4ac0f01",
+  "repairTransition": {
+    "frames": 16,
+    "fps": 8,
+    "seconds": 2,
+    "method": "local premultiplied-alpha bottom-to-top sweep of approved endpoints",
+    "status": "timing revision awaiting user review"
+  }
+}
